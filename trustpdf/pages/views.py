@@ -19,8 +19,9 @@ def split_view(request):
     return render(request, 'split.html')
 
 
-
-
+# ------------------ #
+#      Site Map      #
+# ------------------ #
 def sitemap_xml_view(request):
     urls = [
         reverse('index'),
@@ -45,3 +46,8 @@ def sitemap_xml_view(request):
     xml += '</urlset>'
 
     return HttpResponse(xml, content_type='application/xml')
+
+
+# ------------------ #
+#     Robots.txt     #
+# ------------------ #
