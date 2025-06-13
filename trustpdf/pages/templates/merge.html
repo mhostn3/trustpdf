@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}TrustPDF - Merge PDF{% endblock %}
+
+{% block style %}
+<style>
+#fileList li {
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#totalSize {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+  <h1 class="display-5">Merge PDF Files</h1>
+  <p class="lead">Merge your PDF files directly in your browser. No uploads, no tracking, 100% private.</p>
+  <p class="text-muted small">For best results, keep total file size below ~100 MB, especially on mobile devices.</p>
+</div>
+
+<div class="card shadow-sm p-4">
+  <div class="mb-3">
+    <label for="pdfFiles" class="form-label" id="fileInputLabel">Select or Drag PDF files (in order)</label>
+    <div class="drop-zone border rounded" id="dropZone">
+      <input class="form-control d-none" type="file" id="pdfFiles" accept="application/pdf" multiple>
+      <span id="dropZoneText">Click or drag PDF files here</span>
+    </div>
+    <div id="totalSize" class="mt-2"></div>
+    <ul class="list-group mt-3" id="fileList"></ul>
+  </div>
+  <button id="mergeBtn" class="btn btn-primary" onclick="mergePDFs()">Merge PDFs</button>
+</div>
+
+<div id="downloadArea" class="mt-4 text-center" style="display: none;">
+  <a id="downloadLink" class="btn btn-success mt-3">Download Merged PDF</a>
+  <button class="btn btn-outline-secondary mt-3 ms-2" onclick="startAgain()">Start Again</button>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    let fileMap = new Map();
+    let sortableList;
+
+    const dropZone = document.getElementById('dropZone');
+    const input = document.getElementById('pdfFiles');
+    const totalSizeDisplay = document.getElementById('totalSize');
+
+    window.addEventListener("dragover", e => e.preventDefault());
+    window.addEventListener("drop", e => e.preventDefault());
+
+    dropZone.addEventListener('click', () => input.click());
+    input.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('border-primary');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-primary'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('border-primary');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+      for (let file of files) {
+        if (file.type === 'application/pdf' && !fileMap.has(file.name)) {
+          fileMap.set(file.name, file);
+
+          const li = document.createElement('li');
+          li.className = 'list-group-item';
+          li.dataset.filename = file.name;
+
+          const fileWrapper = document.createElement('div');
+          fileWrapper.className = 'd-flex align-items-center';
+
+          const icon = document.createElement('i');
+          icon.className = 'bi bi-file-earmark-pdf-fill pdf-icon';
+
+          const span = document.createElement('span');
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+          span.textContent = `${file.name} (${sizeMB} MB)`;
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'btn btn-sm btn-outline-danger';
+          removeBtn.textContent = 'Remove';
+          removeBtn.onclick = () => {
+            fileMap.delete(file.name);
+            li.remove();
+            updateTotalSize();
+          };
+
+          fileWrapper.appendChild(icon);
+          fileWrapper.appendChild(span);
+          li.appendChild(fileWrapper);
+          li.appendChild(removeBtn);
+
+          document.getElementById('fileList').appendChild(li);
+        }
+      }
+      updateTotalSize();
+    }
+
+    function updateTotalSize() {
+      const totalBytes = [...fileMap.values()].reduce((acc, file) => acc + file.size, 0);
+      const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+      totalSizeDisplay.textContent = `Total size: ${totalMB} MB`;
+    }
+
+    sortableList = new Sortable(document.getElementById('fileList'), {
+      animation: 150
+    });
+
+    async function mergePDFs() {
+      const listItems = document.querySelectorAll('#fileList li');
+      if (!listItems.length) return alert("Please select PDF files to merge.");
+
+      // Disable UI
+      document.getElementById('dropZone').style.display = 'none';
+      document.getElementById('fileInputLabel').style.display = 'none';
+      document.querySelectorAll('#fileList .btn-outline-danger').forEach(btn => btn.remove());
+      sortableList.option("disabled", true);
+
+      const mergedPdf = await PDFLib.PDFDocument.create();
+
+      for (let li of listItems) {
+        const file = fileMap.get(li.dataset.filename);
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        copiedPages.forEach(page => mergedPdf.addPage(page));
+      }
+
+      const mergedPdfBytes = await mergedPdf.save();
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const downloadLink = document.getElementById('downloadLink');
+
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const firstFilename = listItems[0].dataset.filename || 'file';
+      const shortName = firstFilename.slice(0, 5).replace(/[^a-z0-9]/gi, '').toLowerCase();
+      const filename = `TrustPDF_${shortName}_${dateStr}.pdf`;
+      downloadLink.download = filename;
+      downloadLink.href = URL.createObjectURL(blob);
+
+      document.getElementById('downloadArea').style.display = 'block';
+      document.getElementById('mergeBtn').style.display = 'none';
+    }
+
+    function startAgain() {
+      fileMap.clear();
+      document.getElementById('fileList').innerHTML = '';
+      document.getElementById('downloadArea').style.display = 'none';
+      document.getElementById('mergeBtn').style.display = 'inline-block';
+      document.getElementById('dropZone').style.display = 'block';
+      document.getElementById('fileInputLabel').style.display = 'block';
+      updateTotalSize();
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,20 @@
+.drop-zone {
+    padding: 5rem;
+    min-height: 180px;
+    border: 2px dashed #6c757d;
+    background-color: #f8f9fa;
+    text-align: center;
+    cursor: pointer;
+}
+.drop-zone:hover {
+    border-color: #0d6efd;
+    background-color: #e9ecef;
+}
+.pdf-icon {
+    margin-right: 0.5rem;
+    color: #dc3545;
+}
+.container-narrow {
+    max-width: 720px;
+    margin: 0 auto;
+}

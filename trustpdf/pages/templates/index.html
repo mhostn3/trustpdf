@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}TrustPDF - Secure PDF Tools{% endblock %}
+
+{% block style %}
+<style>
+  .clickable-card:hover {
+    transform: translateY(-4px);
+    transition: 0.2s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="text-center mb-5">
+  <h1 class="display-4">Welcome to TrustPDF</h1>
+  <p class="lead">Private. Secure. Client-side PDF tools with no upload required.</p>
+</div>
+
+<div class="row justify-content-center container-fluid px-5">
+  <div class="col-md-6 mb-5">
+    <a href="{% url 'merge' %}" class="text-decoration-none text-dark">
+      <div class="card h-100 shadow-sm p-4 clickable-card">
+        <div class="card-body text-center">
+          <img src="{% static 'img/merge.png' %}" alt="Merge PDF Icon" class="mb-3" style="max-height: 120px;">
+          <h3 class="card-title mb-3">Merge PDFs</h3>
+          <p class="card-text mb-0">Combine multiple PDF files into one. Everything happens locally in your browser.</p>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-6 mb-5">
+    <a href="{% url 'split' %}" class="text-decoration-none text-dark">
+      <div class="card h-100 shadow-sm p-4 clickable-card">
+        <div class="card-body text-center">
+          <img src="{% static 'img/split.png' %}" alt="Split PDF Icon" class="mb-3" style="max-height: 120px;">
+          <h3 class="card-title mb-3">Split PDF</h3>
+          <p class="card-text mb-0">Extract specific pages from a PDF. Fully private and secure — no server involved.</p>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}
