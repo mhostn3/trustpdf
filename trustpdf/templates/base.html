@@ -35,12 +35,20 @@
     {% block content %}{% endblock %}
   </div>
 
-  <footer class="mt-5 text-center text-muted">
-    <small>&copy; 2025 TrustPDF. All processing done in your browser.</small>
-  </footer>
+<footer class="mt-5 mb-2 text-center text-muted">
+  <small>
+    &copy; 2025 TrustPDF. All processing done in your browser.<br>
+    <a href="{% url 'cookies' %}" class="text-muted text-decoration-underline">Cookies</a>
+    &nbsp;|&nbsp;
+    <a href="" class="text-muted text-decoration-underline">Privacy Policy</a>
+    &nbsp;|&nbsp;
+    <a href="" class="text-muted text-decoration-underline">Contact</a>
+  </small>
+</footer>
 
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  {% include 'cookie_banner.html' %}
   {% block script %}{% endblock %}
   </body>
 </html>
