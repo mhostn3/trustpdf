@@ -6,6 +6,9 @@ def index_view(request):
 def cookies_view(request):
     return render(request, 'cookies.html')
 
+def privacy_view(request):
+    return render(request, 'privacy.html')
+
 def merge_view(request):
     return render(request, 'merge.html')
 
