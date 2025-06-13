@@ -8,4 +8,5 @@ urlpatterns = [
     path('privacy/', views.privacy_view, name='privacy'),
     path('merge/', views.merge_view, name='merge'),
     path('split/', views.split_view, name='split'),
+    path('sitemap.xml', views.sitemap_xml_view, name='sitemap_xml'),
 ]
