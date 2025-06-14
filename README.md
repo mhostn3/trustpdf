@@ -73,14 +73,9 @@ We use **Google Analytics 4 (GA4)** to monitor basic site traffic — no persona
 
 ---
 
-## 🤝 Feedback
-
-We welcome issues!  
-If you found a bug, have a suggestion, or notice a typo, please [open an issue](https://github.com/mhostn3/trustpdf/issues).
-
----
-
 ## 🤝 Contributions
+
+If you found a bug, have a suggestion, or notice a typo, please [open an issue](https://github.com/mhostn3/trustpdf/issues).
 
 Pull requests are currently not accepted, but you’re welcome to:
 - Open an issue if you find a bug
