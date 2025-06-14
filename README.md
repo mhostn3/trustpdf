@@ -34,7 +34,7 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 <p><em>Merge PDFs</em></p>
 <img src="trustpdf/static/img/merge_screenshot.png" alt="Merge Screenshot" height="150">
 
-<p><em>Merge PDFs</em></p>
+<p><em>Split PDFs</em></p>
 <img src="trustpdf/static/img/split_screenshot.png" alt="Split Screenshot" height="150">
 
 ---
