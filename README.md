@@ -32,10 +32,10 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 ## 📷 Screenshots
 
 <p><em>Merge PDFs</em></p>
-<img src="trustpdf/static/img/merge.png" alt="Merge Screenshot" height="150">
+<img src="trustpdf/static/img/merge_screenshot.png" alt="Merge Screenshot" height="150">
 
 <p><em>Merge PDFs</em></p>
-<img src="trustpdf/static/img/split.png" alt="Split Screenshot" height="150">
+<img src="trustpdf/static/img/split_screenshot.png" alt="Split Screenshot" height="150">
 
 ---
 
