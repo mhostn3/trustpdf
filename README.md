@@ -12,7 +12,7 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 
 ---
 
-## 🌐 Live Demo
+## 🌐 Live
 
 👉 Visit: [https://www.trustpdf.net](https://www.trustpdf.net)
 
@@ -62,7 +62,7 @@ This project is **source-available**, but not open-source in the traditional sen
 
 ## 🙋‍♂️ Author
 
-Created by [Martin Hostnik](mailto:info@koplemo.com)  
+Created by [mhostn3](https://github.com/mhostn3)  
 🔗 [www.trustpdf.net](https://www.trustpdf.net)
 
 ---
