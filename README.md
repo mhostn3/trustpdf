@@ -84,13 +84,20 @@ This project is **source-available**, but not open-source in the traditional sen
 ## 🙋‍♂️ Author
 
 Created by [Martin Hostnik](mailto:info@koplemo.com)  
-🔗 [www.trustpdf.net](https://www,trustpdf.net)
+🔗 [www.trustpdf.net](https://www.trustpdf.net)
 
 ---
 
 ## 📈 Analytics
 
 We use **Google Analytics 4 (GA4)** to monitor basic site traffic — no personal data is collected.
+
+---
+
+## 🤝 Feedback
+
+We welcome issues!  
+If you found a bug, have a suggestion, or notice a typo, please [open an issue](https://github.com/mhostn3/trustpdf/issues).
 
 ---
 
