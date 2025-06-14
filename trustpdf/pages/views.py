@@ -48,6 +48,3 @@ def sitemap_xml_view(request):
     return HttpResponse(xml, content_type='application/xml')
 
 
-# ------------------ #
-#     Robots.txt     #
-# ------------------ #
