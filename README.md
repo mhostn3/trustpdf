@@ -11,7 +11,7 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 
 ## 🌐 Live Demo
 
-👉 Visit: [https://trustpdf.net](https://trustpdf.net)
+👉 Visit: [https://www.trustpdf.net](https://www.trustpdf.net)
 
 ---
 
@@ -29,10 +29,10 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 ## 📷 Screenshots
 
 _Merge PDFs_
-![Merge Screenshot](static/img/merge_icon.png)
+![Merge Screenshot](static/img/merge.png)
 
 _Split PDFs_
-![Split Screenshot](static/img/split_icon.png)
+![Split Screenshot](static/img/split.png)
 
 ---
 
@@ -80,8 +80,8 @@ This project is **source-available**, but not open-source in the traditional sen
 
 ## 🙋‍♂️ Author
 
-Created by [Martin Hostnik](mailto:info@trustpdf.net)  
-🔗 [trustpdf.net](https://trustpdf.net)
+Created by [Martin Hostnik](mailto:info@koplemo.com)  
+🔗 [www.trustpdf.net](https://www,trustpdf.net)
 
 ---
 
