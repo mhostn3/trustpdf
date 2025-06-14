@@ -1,6 +1,6 @@
 # TrustPDF
 
-**TrustPDF** is a privacy-first, client-side web app for working with PDF files.  
+**TrustPDF** is a privacy-first, client-side PDF tool, released as open source under the AGPLv3 license.
 It allows users to **merge** and **split** PDF documents directly in the browser — with **no uploads, no accounts, and no tracking**.
 
 <div align="center">
@@ -51,12 +51,18 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 
 ## 📜 License
 
-This project is **source-available**, but not open-source in the traditional sense.
+This project is licensed under the **GNU Affero General Public License v3 (AGPL-3.0)**.
 
-- You may view, study, and adapt the code **for personal or educational purposes**
-- You may **not** host public clones, reuse large portions commercially, or publish derivative tools based on this code
+You are free to:
+- Use, modify, and share the code
+- Run the software publicly (e.g. on your own server)
+- Fork and contribute to it
 
-🔐 See [`LICENSE.txt`](LICENSE.txt) for full details.
+You must:
+- Make the source code of any modified version publicly available **if you run it as a web service**
+
+🔗 [Read the full license](https://www.gnu.org/licenses/agpl-3.0.html)  
+📁 See [`LICENSE`](LICENSE) for details.
 
 ---
 
