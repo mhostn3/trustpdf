@@ -4,7 +4,7 @@
 It allows users to **merge** and **split** PDF documents directly in the browser — with **no uploads, no accounts, and no tracking**.
 
 <div align="center">
-  <img src="static/img/logo_dark.png" alt="TrustPDF Logo" height="80">
+  <img src="trustpdf/static/img/logo_dark.png" alt="TrustPDF Logo" height="80">
 </div>
 
 ---
@@ -29,10 +29,10 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 ## 📷 Screenshots
 
 _Merge PDFs_
-![Merge Screenshot](static/img/merge.png)
+![Merge Screenshot](trustpdf/static/img/merge.png)
 
 _Split PDFs_
-![Split Screenshot](static/img/split.png)
+![Split Screenshot](trustpdf/static/img/split.png)
 
 ---
 
