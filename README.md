@@ -49,27 +49,6 @@ It allows users to **merge** and **split** PDF documents directly in the browser
 
 ---
 
-## 📁 Folder Structure
-
-trustpdf/
-├── static/
-│ ├── css/
-│ ├── img/
-│ └── js/
-├── templates/
-│ ├── index.html
-│ ├── merge.html
-│ ├── split.html
-│ ├── privacy.html
-│ ├── cookies.html
-│ └── base.html
-├── views.py
-├── urls.py
-└── ...
-
-
----
-
 ## 📜 License
 
 This project is **source-available**, but not open-source in the traditional sense.
