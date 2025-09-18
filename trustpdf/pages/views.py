@@ -18,6 +18,9 @@ def merge_view(request):
 def split_view(request):
     return render(request, 'split.html')
 
+def about_view(request):
+    return render(request, 'about.html')
+
 
 # ------------------ #
 #      Site Map      #

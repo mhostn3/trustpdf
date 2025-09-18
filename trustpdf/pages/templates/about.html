@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}About - TrustPDF{% endblock %}
+
+{% block content %}
+
+<div class="text-center mb-4">
+  <h1 class="display-5">About</h1>
+  <p class="lead"><strong>TrustPDF</strong> is a privacy-first, client-side PDF tool, released as open source under the <strong>AGPLv3 license</strong>.</p>
+  <p class="text-muted small">It allows you to <strong>merge</strong> and <strong>split</strong> PDF documents directly in your browser<br>with <strong>no uploads, no accounts, no tracking</strong>.</p>
+</div>
+
+<div class="card shadow-sm p-4 my-1">
+  <label class="form-label">🚀 Features</label>
+  <ul>
+    <li>🔒 100% <strong>client-side</strong> PDF processing — your files never leave your device</li>
+    <li>📎 Merge multiple PDFs into one</li>
+    <li>✂️ Extract pages from a PDF using flexible page ranges (e.g. <code>1-3,6,9</code>)</li>
+    <li>📱 Optimized for mobile and desktop use</li>
+    <li>🧭 No login, no storage, no third-party cookies — fully <strong>private</strong></li>
+    <li>🧩 Built with PDF-Lib, Bootstrap 5, and SortableJS</li>
+  </ul>
+</div>
+
+<div class="card shadow-sm p-4 my-1">
+  <label class="form-label">🛠 Tech Stack</label>
+  <ul>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML" class="text-decoration-none link-dark">HTML5</a></li>
+    <li><a href="https://getbootstrap.com/" class="text-decoration-none link-dark">Bootstrap 5</a></li>
+    <li><a href="https://github.com/Hopding/pdf-lib" class="text-decoration-none link-dark">PDF-Lib</a></li>
+    <li><a href="https://github.com/SortableJS/Sortable" class="text-decoration-none link-dark">SortableJS</a></li>
+    <li><a href="https://www.djangoproject.com/" class="text-decoration-none link-dark">Django</a> (for static file delivery and routing)</li>
+  </ul>
+</div>
+
+<div class="card shadow-sm p-4 my-1">
+  <label class="form-label">📜 License</label>
+  <p>
+    This project is licensed under the <strong>GNU Affero General Public License v3.0 (AGPL-3.0)</strong>.<br>
+    You may: use, modify, and share the code; run the software publicly (e.g., host it yourself).<br>
+    You must: publish the source code of any running version (e.g., on a website or SaaS).
+  </p>
+  <p>📄 See <code>LICENSE</code> for details<br>
+  🔗 <a href="https://www.gnu.org/licenses/agpl-3.0.html" class="text-decoration-none link-dark">Full AGPLv3 License Text</a></p>
+</div>
+
+<div class="card shadow-sm p-4 my-1">
+  <label class="form-label">🙋‍♂️ Author</label>
+  <p>
+    Created by <a href="https://github.com/mhostn3" class="link-dark">mhostn3</a><br>
+    🔗 <a href="https://www.trustpdf.net" class="text-decoration-none link-dark">www.trustpdf.net</a>
+  </p>
+</div>
+
+<div class="card shadow-sm p-4 my-1">
+  <label class="form-label">📈 Analytics</label>
+  <p>
+    We use <a href="https://umami.is" class="text-decoration-none link-dark">Umami Cloud</a> for anonymous traffic analytics.<br>
+    No cookies, no tracking, no personal data collected.
+  </p>
+</div>
+
+<div class="card shadow-sm p-4 my-1">
+  <label class="form-label">Pull requests are not accepted right now, but you are welcome to:</label>
+  <ul>
+    <li><a href="https://github.com/mhostn3/trustpdf/issues" class="text-decoration-none link-dark">Open an issue</a> for bugs or suggestions</li>
+    <li>Fork the repo for learning, self-hosting, or private use</li>
+  </ul>
+</div>
+
+<div class="card shadow-sm p-4 my-1">
+  <label class="form-label">Thanks for respecting the values of TrustPDF: <strong>privacy, simplicity, and transparency</strong>.</label>
+  <div class="text-center mt-3">
+    <a href="https://www.buymeacoffee.com/mhostn3" target="_blank" class="btn btn-outline-secondary">☕ Buy me a coffee</a>
+  </div>
+</div>
+
+{% endblock %}
