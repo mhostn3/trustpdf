@@ -21,6 +21,9 @@ def split_view(request):
 def about_view(request):
     return render(request, 'about.html')
 
+def privacy_tools_view(request):
+    return render(request, 'privacy_tools.html')
+
 
 # ------------------ #
 #      Site Map      #
@@ -32,6 +35,8 @@ def sitemap_xml_view(request):
         reverse('split'),
         reverse('privacy'),
         reverse('cookies'),
+        reverse('about'),
+        reverse('privacy_tools'),
     ]
     base_url = request.build_absolute_uri('/')[:-1]  # remove trailing slash
 

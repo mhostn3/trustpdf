@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="TrustPDF is a free, open-source, privacy-first tool to merge and split PDF files directly in your browser. No upload required.">
+  <meta name="description" content="{% block meta_description %}TrustPDF is a free, open-source, privacy-first tool to merge and split PDF files directly in your browser. No upload required.{% endblock %}">
   <meta property="og:title" content="TrustPDF - Private PDF Tools">
   <meta property="og:description" content="Free, open-source PDF tools to merge and split directly in your browser.">
   <meta property="og:url" content="https://www.trustpdf.net/">
   <meta property="og:type" content="website">
-  <title>TrustPDF - {% block title %}Private PDF Tools{% endblock %}</title>
+  <title>TrustPDF | {% block title %}Private PDF Tools{% endblock %}</title>
   <link rel="canonical" href="https://www.trustpdf.net/" />
   <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
   <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
