@@ -36,6 +36,9 @@
             <a class="nav-link {% if request.resolver_match.url_name == 'split' %}active{% endif %}" href="{% url 'split' %}">Split</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'privacy_tools' %}active{% endif %}" href="{% url 'privacy_tools' %}">Privacy Tools</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
           </li>
         </ul>
@@ -55,6 +58,8 @@
     <a href="{% url 'cookies' %}" class="text-muted text-decoration-underline">Cookies</a>
     &nbsp;|&nbsp;
     <a href="{% url 'privacy' %}" class="text-muted text-decoration-underline">Privacy</a>
+    &nbsp;|&nbsp;
+    <a href="{% url 'privacy_tools' %}" class="text-muted text-decoration-underline">Privacy Tools</a>
     &nbsp;|&nbsp;
     <a href="mailto:info@koplemo.com" class="text-muted text-decoration-underline">Contact</a>
   </small>
