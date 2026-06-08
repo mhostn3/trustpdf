@@ -1,20 +1,71 @@
+#fileList li {
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#totalSize {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
 .drop-zone {
-    padding: 5rem;
-    min-height: 180px;
-    border: 2px dashed #6c757d;
-    background-color: #f8f9fa;
+    border: 2px dashed #cfd6df;
+    border-radius: 1rem;
+    background: #f8f9fa;
+    padding: 2.5rem 1.5rem;
     text-align: center;
     cursor: pointer;
+    transition: all 0.2s ease-in-out;
 }
+
 .drop-zone:hover {
     border-color: #0d6efd;
-    background-color: #e9ecef;
+    background: #f3f7ff;
 }
-.pdf-icon {
-    margin-right: 0.5rem;
+
+.drop-zone.border-primary {
+    border-color: #0d6efd !important;
+    background: #eef5ff;
+    transform: scale(1.01);
+}
+
+.drop-zone-content {
+    pointer-events: none;
+}
+
+.drop-zone-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem auto;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
+}
+
+.drop-zone-icon i {
+    font-size: 2rem;
     color: #dc3545;
 }
-.container-narrow {
-    max-width: 720px;
-    margin: 0 auto;
+
+.drop-zone-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.drop-zone-subtitle {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.drop-zone-note {
+    font-size: 0.8rem;
+    color: #adb5bd;
+    margin-top: 0.75rem;
 }

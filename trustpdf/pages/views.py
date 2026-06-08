@@ -3,27 +3,6 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import timezone
 
-def index_view(request):
-    return render(request, 'index.html')
-
-def cookies_view(request):
-    return render(request, 'cookies.html')
-
-def privacy_view(request):
-    return render(request, 'privacy.html')
-
-def merge_view(request):
-    return render(request, 'merge.html')
-
-def split_view(request):
-    return render(request, 'split.html')
-
-def about_view(request):
-    return render(request, 'about.html')
-
-def privacy_tools_view(request):
-    return render(request, 'privacy_tools.html')
-
 
 # ------------------ #
 #      Site Map      #

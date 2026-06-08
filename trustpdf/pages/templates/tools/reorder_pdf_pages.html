@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Reorder Pages{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-7 mx-auto">
+
+    <div class="text-center mb-4">
+      <h1 class="display-5">Reorder PDF Pages</h1>
+      <p class="lead">Drag pages into a new order and export the result directly in your browser. No uploads, no tracking, 100% private.</p>
+      <p class="text-muted small">For best results, keep total file size below ~100 MB, especially on mobile devices.</p>
+    </div>
+
+    <div class="card shadow-sm p-4">
+      <div class="mb-3">
+        <label for="pdfInput" class="form-label" id="fileInputLabel">Select or Drag PDF file</label>
+
+        <div class="drop-zone" id="dropZone">
+          <input class="form-control d-none" type="file" id="pdfInput" accept="application/pdf">
+
+          <div class="drop-zone-content">
+            <div class="drop-zone-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+            <div class="drop-zone-title">Drop PDF file here</div>
+            <div class="drop-zone-subtitle">or click to select file from your device</div>
+            <div class="drop-zone-note">Only one file supported · Files stay in your browser</div>
+          </div>
+        </div>
+
+        <div id="pageListWrapper" class="mt-3" style="display: none;">
+          <label class="form-label">Drag pages into the desired order</label>
+          <ul id="pageList" class="list-group"></ul>
+        </div>
+      </div>
+
+      <button
+        id="processBtn"
+        class="btn btn-primary"
+        onclick="processTool()"
+        data-umami-event="Reorder PDF Pages">
+        Reorder Pages
+      </button>
+    </div>
+
+    <div id="downloadArea" class="mt-4 text-center" style="display: none;">
+      <a
+        id="downloadLink"
+        class="btn btn-success mt-3"
+        onclick="downloadProcessedFile(event)"
+        data-umami-event="Save Reordered PDF">
+        ⭳ Save Reordered PDF
+      </a>
+
+      <button class="btn btn-outline-secondary mt-3 ms-2" onclick="startAgain()">↻ Start Again</button>
+
+      {% include 'snippets/privacy_tip.html' %}
+
+      <div class="mt-3">
+        <a
+          href="https://www.buymeacoffee.com/mhostn3"
+          target="_blank"
+          class="btn btn-outline-secondary"
+          data-umami-event="Buy me a coffee (Reorder)">
+          ☕ Buy me a coffee
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static 'js/pdf.min.js' %}"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "{% static 'js/pdf.worker.min.js' %}";
+</script>
+
+<script src="{% static 'js/trustpdf-download.js' %}"></script>
+<script src="{% static 'js/trustpdf-file-handler.js' %}"></script>
+<script src="{% static 'js/trustpdf-ui.js' %}"></script>
+
+<script>
+  let pageSortable = null;
+
+  window.fileHandler = new TrustPDFFileHandler({
+    dropZoneId: 'dropZone',
+    inputId: 'pdfInput',
+    multiple: false,
+    sortable: false,
+    accept: ['application/pdf'],
+    onChange: async function (files) {
+      if (files.length) {
+        await renderPageThumbnails(files[0]);
+      }
+    }
+  });
+
+  window.downloadManager = new TrustPDFDownload();
+
+  window.resetToolSpecificFields = function () {
+    document.getElementById("pageList").innerHTML = "";
+    document.getElementById("pageListWrapper").style.display = "none";
+
+    if (pageSortable) {
+      pageSortable.destroy();
+      pageSortable = null;
+    }
+  };
+
+
+  async function renderPageThumbnails(file) {
+    const pageList = document.getElementById("pageList");
+    const pageListWrapper = document.getElementById("pageListWrapper");
+
+    pageList.innerHTML = "";
+    pageListWrapper.style.display = "block";
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: 0.25 });
+
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
+
+      const li = document.createElement("li");
+      li.className = "list-group-item d-flex align-items-center justify-content-between";
+      li.dataset.pageIndex = pageNumber - 1;
+
+      const left = document.createElement("div");
+      left.className = "d-flex align-items-center";
+
+      const handle = document.createElement("span");
+      handle.className = "me-3 text-muted";
+      handle.style.cursor = "move";
+      handle.textContent = "☰";
+
+      const label = document.createElement("span");
+      label.className = "fw-bold me-3";
+      label.textContent = `Page ${pageNumber}`;
+
+      canvas.className = "border rounded bg-light";
+      canvas.style.maxHeight = "90px";
+
+      left.appendChild(handle);
+      left.appendChild(label);
+      left.appendChild(canvas);
+
+      li.appendChild(left);
+      pageList.appendChild(li);
+    }
+
+    if (pageSortable) {
+      pageSortable.destroy();
+    }
+
+    pageSortable = new Sortable(pageList, {
+      animation: 150
+    });
+  }
+
+
+  async function processTool() {
+    const loadedFile = window.fileHandler.getSingleFile();
+
+    if (!loadedFile) {
+      return alert("Please select a PDF file.");
+    }
+
+    const items = document.querySelectorAll("#pageList li");
+
+    if (!items.length) {
+      return alert("Please wait until page previews are loaded.");
+    }
+
+    hideProcessButton();
+
+    const order = Array.from(items).map(li => Number(li.dataset.pageIndex));
+
+    const buffer = await loadedFile.arrayBuffer();
+    const sourcePdf = await PDFLib.PDFDocument.load(buffer);
+    const newPdf = await PDFLib.PDFDocument.create();
+
+    const copiedPages = await newPdf.copyPages(sourcePdf, order);
+    copiedPages.forEach(page => newPdf.addPage(page));
+
+    const newBytes = await newPdf.save();
+
+    const blob = new Blob([newBytes], {
+      type: 'application/pdf'
+    });
+
+    const filename = makeTrustPDFFilename(loadedFile.name, 'reorder');
+
+    prepareDownload(blob, filename);
+  }
+</script>
+{% endblock %}

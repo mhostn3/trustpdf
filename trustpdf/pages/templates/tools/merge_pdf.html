@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Merge PDF{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-7 mx-auto">
+
+    <div class="text-center mb-4">
+      <h1 class="display-5">Merge PDF Files</h1>
+      <p class="lead">Merge your PDF files directly in your browser. No uploads, no tracking, 100% private.</p>
+      <p class="text-muted small">For best results, keep total file size below ~100 MB, especially on mobile devices.</p>
+    </div>
+
+    <div class="card shadow-sm p-4">
+      <div class="mb-3">
+        <label for="pdfFiles" class="form-label" id="fileInputLabel">Select or Drag PDF files (in order)</label>
+
+        <div class="drop-zone" id="dropZone">
+          <input class="form-control d-none" type="file" id="pdfFiles" accept="application/pdf" multiple>
+
+          <div class="drop-zone-content">
+            <div class="drop-zone-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+            <div class="drop-zone-title">Drop PDF files here</div>
+            <div class="drop-zone-subtitle">or click to select files from your device</div>
+            <div class="drop-zone-note">Multiple files supported · Files stay in your browser</div>
+          </div>
+        </div>
+
+        <div id="totalSize" class="mt-2"></div>
+        <ul class="list-group mt-3" id="fileList"></ul>
+      </div>
+
+      <button
+        id="processBtn"
+        class="btn btn-primary"
+        onclick="processTool()"
+        data-umami-event="Merge PDFs">
+        Merge PDFs
+      </button>
+    </div>
+
+    <div id="downloadArea" class="mt-4 text-center" style="display: none;">
+      <a
+        id="downloadLink"
+        class="btn btn-success mt-3"
+        onclick="downloadProcessedFile(event)"
+        data-umami-event="Save Merged PDF">
+        ⭳ Save Merged PDF
+      </a>
+
+      <button class="btn btn-outline-secondary mt-3 ms-2" onclick="startAgain()">↻ Start Again</button>
+
+      {% include 'snippets/privacy_tip.html' %}
+
+      <div class="mt-3">
+        <a
+          href="https://www.buymeacoffee.com/mhostn3"
+          target="_blank"
+          class="btn btn-outline-secondary"
+          data-umami-event="Buy me a coffee (Merge)">
+          ☕ Buy me a coffee
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static 'js/trustpdf-download.js' %}"></script>
+<script src="{% static 'js/trustpdf-file-handler.js' %}"></script>
+<script src="{% static 'js/trustpdf-ui.js' %}"></script>
+
+<script>
+  window.fileHandler = new TrustPDFFileHandler({
+    dropZoneId: 'dropZone',
+    inputId: 'pdfFiles',
+    fileListId: 'fileList',
+    totalSizeId: 'totalSize',
+    multiple: true,
+    sortable: true,
+    accept: ['application/pdf']
+  });
+
+  window.downloadManager = new TrustPDFDownload();
+
+  window.resetToolSpecificFields = function () {};
+
+
+  async function processTool() {
+    const files = window.fileHandler.getFiles();
+
+    if (!files.length) {
+      return alert("Please select PDF files to merge.");
+    }
+
+    hideUploadArea();
+    hideProcessButton();
+
+    window.fileHandler.disableRemoving();
+    window.fileHandler.disableSorting();
+
+    const mergedPdf = await PDFLib.PDFDocument.create();
+
+    for (let file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+
+      const copiedPages = await mergedPdf.copyPages(
+        pdf,
+        pdf.getPageIndices()
+      );
+
+      copiedPages.forEach(page => mergedPdf.addPage(page));
+    }
+
+    const mergedPdfBytes = await mergedPdf.save();
+
+    const blob = new Blob([mergedPdfBytes], {
+      type: 'application/pdf'
+    });
+
+    const filename = makeTrustPDFFilename(files[0].name, 'merge');
+
+    prepareDownload(blob, filename);
+  }
+</script>
+{% endblock %}

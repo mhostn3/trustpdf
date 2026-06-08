@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Metadata Viewer{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-7 mx-auto">
+
+    <div class="text-center mb-4">
+      <h1 class="display-5">PDF Metadata Viewer</h1>
+      <p class="lead">Inspect common PDF document properties directly in your browser. No uploads, no tracking, 100% private.</p>
+      <p class="text-muted small">For best results, keep total file size below ~100 MB, especially on mobile devices.</p>
+    </div>
+
+    <div class="card shadow-sm p-4">
+      <div class="mb-3">
+        <label for="pdfInput" class="form-label" id="fileInputLabel">Select or Drag PDF file</label>
+
+        <div class="drop-zone" id="dropZone">
+          <input class="form-control d-none" type="file" id="pdfInput" accept="application/pdf">
+
+          <div class="drop-zone-content">
+            <div class="drop-zone-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+            <div class="drop-zone-title">Drop PDF file here</div>
+            <div class="drop-zone-subtitle">or click to select file from your device</div>
+            <div class="drop-zone-note">Only one file supported · Files stay in your browser</div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        id="processBtn"
+        class="btn btn-primary"
+        onclick="processTool()"
+        data-umami-event="View PDF Metadata">
+        View Metadata
+      </button>
+    </div>
+
+    <div id="metadataResult" class="card shadow-sm p-4 mt-4" style="display: none;"></div>
+
+    <div id="downloadArea" class="mt-4 text-center" style="display: none;">
+      <button class="btn btn-outline-secondary mt-3 ms-2" onclick="startAgain()">↻ Start Again</button>
+
+      {% include 'snippets/privacy_tip.html' %}
+
+      <div class="mt-3">
+        <a
+          href="https://www.buymeacoffee.com/mhostn3"
+          target="_blank"
+          class="btn btn-outline-secondary"
+          data-umami-event="Buy me a coffee (Metadata Viewer)">
+          ☕ Buy me a coffee
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static 'js/trustpdf-download.js' %}"></script>
+<script src="{% static 'js/trustpdf-file-handler.js' %}"></script>
+<script src="{% static 'js/trustpdf-ui.js' %}"></script>
+
+<script>
+  window.fileHandler = new TrustPDFFileHandler({
+    dropZoneId: 'dropZone',
+    inputId: 'pdfInput',
+    multiple: false,
+    sortable: false,
+    accept: ['application/pdf']
+  });
+
+  window.downloadManager = new TrustPDFDownload();
+
+  window.resetToolSpecificFields = function () {
+    document.getElementById("metadataResult").innerHTML = "";
+    document.getElementById("metadataResult").style.display = "none";
+  };
+
+
+  function escapeHTML(value) {
+    if (value === null || value === undefined || value === "") {
+      return "<span class='text-muted'>Not set</span>";
+    }
+
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+
+  function formatDate(value) {
+    if (!value) {
+      return "<span class='text-muted'>Not set</span>";
+    }
+
+    try {
+      return escapeHTML(value.toLocaleString());
+    } catch {
+      return escapeHTML(value);
+    }
+  }
+
+
+  async function processTool() {
+    const loadedFile = window.fileHandler.getSingleFile();
+
+    if (!loadedFile) {
+      return alert("Please select a PDF file.");
+    }
+
+    hideProcessButton();
+
+    const buffer = await loadedFile.arrayBuffer();
+    const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+    const pageCount = pdfDoc.getPageCount();
+
+    const rows = [
+      ["File name", loadedFile.name],
+      ["File size", `${(loadedFile.size / (1024 * 1024)).toFixed(2)} MB`],
+      ["Pages", pageCount],
+      ["Title", pdfDoc.getTitle()],
+      ["Author", pdfDoc.getAuthor()],
+      ["Subject", pdfDoc.getSubject()],
+      ["Keywords", pdfDoc.getKeywords()],
+      ["Creator", pdfDoc.getCreator()],
+      ["Producer", pdfDoc.getProducer()],
+      ["Creation date", formatDate(pdfDoc.getCreationDate())],
+      ["Modification date", formatDate(pdfDoc.getModificationDate())]
+    ];
+
+    const tableRows = rows.map(row => {
+      const value = row[0].includes("date")
+        ? row[1]
+        : escapeHTML(row[1]);
+
+      return `
+        <tr>
+          <th style="width: 35%;">${escapeHTML(row[0])}</th>
+          <td>${value}</td>
+        </tr>
+      `;
+    }).join("");
+
+    const result = document.getElementById("metadataResult");
+
+    result.innerHTML = `
+      <h2 class="h4 mb-3">PDF Metadata</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    result.style.display = "block";
+    showDownloadArea();
+  }
+</script>
+{% endblock %}

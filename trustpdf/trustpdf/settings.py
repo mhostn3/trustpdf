@@ -17,6 +17,8 @@ import os, environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 PRE_BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+SITE_URL = "https://www.trustpdf.net"
+
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(os.path.join(PRE_BASE_DIR, '.env'))
 

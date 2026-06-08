@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Metadata Editor{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-7 mx-auto">
+
+    <div class="text-center mb-4">
+      <h1 class="display-5">PDF Metadata Editor</h1>
+      <p class="lead">Update title, author, subject and keywords directly in your browser. No uploads, no tracking, 100% private.</p>
+      <p class="text-muted small">For best results, keep total file size below ~100 MB, especially on mobile devices.</p>
+    </div>
+
+    <div class="card shadow-sm p-4">
+      <div class="mb-3">
+        <label for="pdfInput" class="form-label" id="fileInputLabel">Select or Drag PDF file</label>
+
+        <div class="drop-zone" id="dropZone">
+          <input class="form-control d-none" type="file" id="pdfInput" accept="application/pdf">
+
+          <div class="drop-zone-content">
+            <div class="drop-zone-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+            <div class="drop-zone-title">Drop PDF file here</div>
+            <div class="drop-zone-subtitle">or click to select file from your device</div>
+            <div class="drop-zone-note">Only one file supported · Files stay in your browser</div>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label for="pdfTitle" class="form-label">Title</label>
+          <input type="text" id="pdfTitle" class="form-control" placeholder="Document title">
+        </div>
+
+        <div class="mt-3">
+          <label for="pdfAuthor" class="form-label">Author</label>
+          <input type="text" id="pdfAuthor" class="form-control" placeholder="Author">
+        </div>
+
+        <div class="mt-3">
+          <label for="pdfSubject" class="form-label">Subject</label>
+          <input type="text" id="pdfSubject" class="form-control" placeholder="Subject">
+        </div>
+
+        <div class="mt-3">
+          <label for="pdfKeywords" class="form-label">Keywords</label>
+          <input type="text" id="pdfKeywords" class="form-control" placeholder="keyword 1, keyword 2, keyword 3">
+          <div class="form-text">Separate keywords with commas.</div>
+        </div>
+      </div>
+
+      <button
+        id="processBtn"
+        class="btn btn-primary"
+        onclick="processTool()"
+        data-umami-event="Edit PDF Metadata">
+        Update Metadata
+      </button>
+    </div>
+
+    <div id="downloadArea" class="mt-4 text-center" style="display: none;">
+      <a
+        id="downloadLink"
+        class="btn btn-success mt-3"
+        onclick="downloadProcessedFile(event)"
+        data-umami-event="Save PDF Metadata">
+        ⭳ Save Updated PDF
+      </a>
+
+      <button class="btn btn-outline-secondary mt-3 ms-2" onclick="startAgain()">↻ Start Again</button>
+
+      {% include 'snippets/privacy_tip.html' %}
+
+      <div class="mt-3">
+        <a
+          href="https://www.buymeacoffee.com/mhostn3"
+          target="_blank"
+          class="btn btn-outline-secondary"
+          data-umami-event="Buy me a coffee (Metadata Editor)">
+          ☕ Buy me a coffee
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static 'js/trustpdf-download.js' %}"></script>
+<script src="{% static 'js/trustpdf-file-handler.js' %}"></script>
+<script src="{% static 'js/trustpdf-ui.js' %}"></script>
+
+<script>
+  window.fileHandler = new TrustPDFFileHandler({
+    dropZoneId: 'dropZone',
+    inputId: 'pdfInput',
+    multiple: false,
+    sortable: false,
+    accept: ['application/pdf'],
+    onChange: async function (files) {
+      if (files.length) {
+        await fillExistingMetadata(files[0]);
+      }
+    }
+  });
+
+  window.downloadManager = new TrustPDFDownload();
+
+  window.resetToolSpecificFields = function () {
+    document.getElementById("pdfTitle").value = "";
+    document.getElementById("pdfAuthor").value = "";
+    document.getElementById("pdfSubject").value = "";
+    document.getElementById("pdfKeywords").value = "";
+  };
+
+
+  async function fillExistingMetadata(file) {
+    const buffer = await file.arrayBuffer();
+    const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+
+    document.getElementById("pdfTitle").value = pdfDoc.getTitle() || "";
+    document.getElementById("pdfAuthor").value = pdfDoc.getAuthor() || "";
+    document.getElementById("pdfSubject").value = pdfDoc.getSubject() || "";
+
+    const keywords = pdfDoc.getKeywords();
+
+    if (Array.isArray(keywords)) {
+      document.getElementById("pdfKeywords").value = keywords.join(", ");
+    } else {
+      document.getElementById("pdfKeywords").value = keywords || "";
+    }
+  }
+
+
+  function getKeywordList(value) {
+    return value
+      .split(",")
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+
+
+  async function processTool() {
+    const loadedFile = window.fileHandler.getSingleFile();
+
+    if (!loadedFile) {
+      return alert("Please select a PDF file.");
+    }
+
+    hideProcessButton();
+
+    const title = document.getElementById("pdfTitle").value.trim();
+    const author = document.getElementById("pdfAuthor").value.trim();
+    const subject = document.getElementById("pdfSubject").value.trim();
+    const keywords = getKeywordList(document.getElementById("pdfKeywords").value);
+
+    const buffer = await loadedFile.arrayBuffer();
+    const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+
+    pdfDoc.setTitle(title);
+    pdfDoc.setAuthor(author);
+    pdfDoc.setSubject(subject);
+    pdfDoc.setKeywords(keywords);
+    pdfDoc.setModificationDate(new Date());
+
+    const newBytes = await pdfDoc.save();
+
+    const blob = new Blob([newBytes], {
+      type: 'application/pdf'
+    });
+
+    const filename = makeTrustPDFFilename(loadedFile.name, 'metadata');
+
+    prepareDownload(blob, filename);
+  }
+</script>
+{% endblock %}

@@ -1,45 +1,113 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+  
 <head>
+  {% load static %}
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{% block meta_description %}TrustPDF is a free, open-source, privacy-first tool to merge and split PDF files directly in your browser. No upload required.{% endblock %}">
-  <meta property="og:title" content="TrustPDF - Private PDF Tools">
-  <meta property="og:description" content="Free, open-source PDF tools to merge and split directly in your browser.">
-  <meta property="og:url" content="https://www.trustpdf.net/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {# Basic SEO #}
+  <title>{% block title %}{{ seo_title|default:"TrustPDF - Private Client-Side PDF Tools" }}{% endblock %}</title>
+
+  <meta name="description"
+        content="{% block meta_description %}{{ meta_description|default:'Private, client-side PDF tools. Merge, split, rotate, reorder, inspect, and edit PDF files directly in your browser with no uploads, no accounts, and no tracking.' }}{% endblock %}">
+
+  {% if meta_keywords %}
+    <meta name="keywords" content="{{ meta_keywords }}">
+  {% endif %}
+
+  <meta name="author" content="Martin Hostnik">
+  <meta name="robots" content="index, follow">
+
+  {# Canonical URL #}
+  {% if canonical_url %}
+    <link rel="canonical" href="{{ canonical_url }}">
+  {% else %}
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  {% endif %}
+
+  {# Open Graph #}
+  <meta property="og:site_name" content="TrustPDF">
   <meta property="og:type" content="website">
-  <title>TrustPDF | {% block title %}Private PDF Tools{% endblock %}</title>
-  <link rel="canonical" href="https://www.trustpdf.net/" />
-  <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
-  <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
-  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" >
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <meta property="og:title"
+        content="{{ og_title|default:seo_title|default:'TrustPDF - Private Client-Side PDF Tools' }}">
+  <meta property="og:description"
+        content="{{ og_description|default:meta_description|default:'Private, client-side PDF tools with no uploads, no accounts, and no tracking.' }}">
+
+  {% if og_url %}
+    <meta property="og:url" content="{{ og_url }}">
+  {% elif canonical_url %}
+    <meta property="og:url" content="{{ canonical_url }}">
+  {% else %}
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% endif %}
+
+  {% if og_image %}
+    <meta property="og:image" content="{{ og_image }}">
+  {% else %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og/trustpdf-og.png' %}">
+  {% endif %}
+
+  <meta property="og:image:alt" content="{{ og_title|default:'TrustPDF private PDF tools preview image' }}">
+
+  {# Twitter / X Cards #}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title"
+        content="{{ twitter_title|default:og_title|default:seo_title|default:'TrustPDF - Private Client-Side PDF Tools' }}">
+  <meta name="twitter:description"
+        content="{{ twitter_description|default:og_description|default:meta_description|default:'Private, client-side PDF tools with no uploads, no accounts, and no tracking.' }}">
+
+  {% if twitter_image %}
+    <meta name="twitter:image" content="{{ twitter_image }}">
+  {% elif og_image %}
+    <meta name="twitter:image" content="{{ og_image }}">
+  {% else %}
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og/trustpdf-og.png' %}">
+  {% endif %}
+
+  {# Favicons #}
+  <link rel="icon" href="{% static 'img/favicon.ico' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+
+  {# CSS #}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
   <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-  <script defer src="https://cloud.umami.is/script.js" data-website-id="9ad1d916-d376-4371-b1b1-fafdf77ddaf4"></script>
-  {% block style %}{% endblock %}
+
+  {% block head_extra %}{% endblock %}
 </head>
 
-<body class="bg-light">
+<body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container container-narrow d-flex justify-content-between align-items-center">
-      <a class="navbar-brand" href="{% url 'index' %}"><i class="bi bi-file-pdf"></i>&nbsp;TrustPDF</a>
+      <a class="navbar-brand" href="{% url 'pages:index' %}">
+        <img src="{% static 'img/brand/trustpdf-icon-black.png' %}" alt="TrustPDF Icon" style="max-height: 40px;">&nbsp;TrustPDF</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'merge' %}active{% endif %}" href="{% url 'merge' %}">Merge</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Tools
+            </a>
+            <ul class="dropdown-menu">
+              {% for tool in tools %}
+                <li><a class="dropdown-item" href="{% url tool.url_name %}"><img src="{% static tool.icon %}" alt="{% static tool.title %} Icon" style="max-height: 28px;">{{ tool.title }}</a></li>
+              {% endfor %}
+            </ul>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'split' %}active{% endif %}" href="{% url 'split' %}">Split</a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'privacy_tools' %}active{% endif %}" href="{% url 'pages:privacy_tools' %}">Privacy Tools</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'privacy_tools' %}active{% endif %}" href="{% url 'privacy_tools' %}">Privacy Tools</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'pages:about' %}">About</a>
           </li>
         </ul>
       </div>
@@ -53,13 +121,13 @@
 <footer class="mt-3 mb-2 text-center text-muted">
   <small>
     &copy; 2025 TrustPDF. All processing done in your browser.<br>
-    <a href="{% url 'about' %}" class="text-muted text-decoration-underline">About</a>
+    <a href="{% url 'pages:about' %}" class="text-muted text-decoration-underline">About</a>
     &nbsp;|&nbsp;
-    <a href="{% url 'cookies' %}" class="text-muted text-decoration-underline">Cookies</a>
+    <a href="{% url 'pages:cookies' %}" class="text-muted text-decoration-underline">Cookies</a>
     &nbsp;|&nbsp;
-    <a href="{% url 'privacy' %}" class="text-muted text-decoration-underline">Privacy</a>
+    <a href="{% url 'pages:privacy' %}" class="text-muted text-decoration-underline">Privacy</a>
     &nbsp;|&nbsp;
-    <a href="{% url 'privacy_tools' %}" class="text-muted text-decoration-underline">Privacy Tools</a>
+    <a href="{% url 'pages:privacy_tools' %}" class="text-muted text-decoration-underline">Privacy Tools</a>
     &nbsp;|&nbsp;
     <a href="mailto:info@koplemo.com" class="text-muted text-decoration-underline">Contact</a>
   </small>

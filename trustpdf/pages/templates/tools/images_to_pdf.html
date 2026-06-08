@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Images to PDF{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-7 mx-auto">
+
+    <div class="text-center mb-4">
+      <h1 class="display-5">Images to PDF</h1>
+      <p class="lead">Convert JPG or PNG images into one PDF directly in your browser. No uploads, no tracking, 100% private.</p>
+      <p class="text-muted small">For best results, keep total file size below ~100 MB, especially on mobile devices.</p>
+    </div>
+
+    <div class="card shadow-sm p-4">
+      <div class="mb-3">
+        <label for="imageFiles" class="form-label" id="fileInputLabel">Select or Drag images</label>
+
+        <div class="drop-zone" id="dropZone">
+          <input class="form-control d-none" type="file" id="imageFiles" accept="image/jpeg,image/png" multiple>
+
+          <div class="drop-zone-content">
+            <div class="drop-zone-icon"><i class="bi bi-file-earmark-image"></i></div>
+            <div class="drop-zone-title">Drop JPG or PNG images here</div>
+            <div class="drop-zone-subtitle">or click to select images from your device</div>
+            <div class="drop-zone-note">Multiple images supported · Files stay in your browser</div>
+          </div>
+        </div>
+
+        <div id="totalSize" class="mt-2"></div>
+        <ul class="list-group mt-3" id="fileList"></ul>
+      </div>
+
+      <button
+        id="processBtn"
+        class="btn btn-primary"
+        onclick="processTool()"
+        data-umami-event="Images to PDF">
+        Convert to PDF
+      </button>
+    </div>
+
+    <div id="downloadArea" class="mt-4 text-center" style="display: none;">
+      <a
+        id="downloadLink"
+        class="btn btn-success mt-3"
+        onclick="downloadProcessedFile(event)"
+        data-umami-event="Save Images PDF">
+        ⭳ Save PDF
+      </a>
+
+      <button class="btn btn-outline-secondary mt-3 ms-2" onclick="startAgain()">↻ Start Again</button>
+
+      {% include 'snippets/privacy_tip.html' %}
+
+      <div class="mt-3">
+        <a
+          href="https://www.buymeacoffee.com/mhostn3"
+          target="_blank"
+          class="btn btn-outline-secondary"
+          data-umami-event="Buy me a coffee (Images to PDF)">
+          ☕ Buy me a coffee
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="{% static 'js/trustpdf-download.js' %}"></script>
+<script src="{% static 'js/trustpdf-file-handler.js' %}"></script>
+<script src="{% static 'js/trustpdf-ui.js' %}"></script>
+
+<script>
+  window.fileHandler = new TrustPDFFileHandler({
+    dropZoneId: 'dropZone',
+    inputId: 'imageFiles',
+    fileListId: 'fileList',
+    totalSizeId: 'totalSize',
+    multiple: true,
+    sortable: true,
+    accept: ['image/jpeg', 'image/png']
+  });
+
+  window.downloadManager = new TrustPDFDownload();
+
+  window.resetToolSpecificFields = function () {};
+
+
+  async function processTool() {
+    const files = window.fileHandler.getFiles();
+
+    if (!files.length) {
+      return alert("Please select images.");
+    }
+
+    hideUploadArea();
+    hideProcessButton();
+
+    window.fileHandler.disableRemoving();
+    window.fileHandler.disableSorting();
+
+    const pdfDoc = await PDFLib.PDFDocument.create();
+
+    for (let file of files) {
+      const bytes = await file.arrayBuffer();
+
+      let image;
+
+      if (file.type === 'image/png') {
+        image = await pdfDoc.embedPng(bytes);
+      } else if (file.type === 'image/jpeg') {
+        image = await pdfDoc.embedJpg(bytes);
+      } else {
+        continue;
+      }
+
+      const page = pdfDoc.addPage([image.width, image.height]);
+
+      page.drawImage(image, {
+        x: 0,
+        y: 0,
+        width: image.width,
+        height: image.height
+      });
+    }
+
+    if (pdfDoc.getPageCount() === 0) {
+      showProcessButton();
+      showUploadArea();
+      return alert("No valid JPG or PNG images found.");
+    }
+
+    const pdfBytes = await pdfDoc.save();
+
+    const blob = new Blob([pdfBytes], {
+      type: 'application/pdf'
+    });
+
+    const filename = makeTrustPDFFilename(files[0].name, 'images');
+
+    prepareDownload(blob, filename);
+  }
+</script>
+{% endblock %}
