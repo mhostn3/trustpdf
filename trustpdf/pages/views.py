@@ -7,16 +7,19 @@ from django.utils import timezone
 # ------------------ #
 #      Site Map      #
 # ------------------ #
+from .tools import TOOLS
+
 def sitemap_xml_view(request):
     urls = [
-        reverse('index'),
-        reverse('merge'),
-        reverse('split'),
-        reverse('privacy'),
-        reverse('cookies'),
-        reverse('about'),
-        reverse('privacy_tools'),
+        reverse('pages:index'),
+        reverse('pages:about'),
+        reverse('pages:privacy'),
+        reverse('pages:cookies'),
+        reverse('pages:privacy_tools'),
     ]
+    for tool in TOOLS:
+        urls.append(reverse(f"pages:{tool['url_name'].split(':')[1]}"))
+
     base_url = request.build_absolute_uri('/')[:-1]  # remove trailing slash
 
     now = timezone.now().date().isoformat()

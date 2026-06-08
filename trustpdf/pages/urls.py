@@ -23,7 +23,6 @@ urlpatterns = [
 ]
 
 
-
 TOOLS_BY_URL_NAME = {tool["url_name"]: tool for tool in TOOLS}
 class ToolView(TemplateView):
     template_name = None
