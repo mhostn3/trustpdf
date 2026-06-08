@@ -74,10 +74,21 @@
 
 
 {% block script %}
-<script src="{% static 'js/pdf.min.js' %}"></script>
+
 <script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "{% static 'js/pdf.worker.min.js' %}";
+  window.pdfjsReady = null;
 </script>
+
+<script type="module">
+  window.pdfjsReady = import("{% static 'js/pdf.min.js' %}").then((pdfjsLib) => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "{% static 'js/pdf.worker.min.js' %}";
+    window.pdfjsLib = pdfjsLib;
+    return pdfjsLib;
+  });
+</script>
+
+<script src="{% static 'js/pdf-lib.min.js' %}"></script>
+<script src="{% static 'js/Sortable.min.js' %}"></script>
 
 <script src="{% static 'js/trustpdf-download.js' %}"></script>
 <script src="{% static 'js/trustpdf-file-handler.js' %}"></script>
@@ -85,6 +96,9 @@
 
 <script>
   let pageSortable = null;
+  let selectedPdfBytes = null;
+
+  window.downloadManager = new TrustPDFDownload();
 
   window.fileHandler = new TrustPDFFileHandler({
     dropZoneId: 'dropZone',
@@ -99,11 +113,19 @@
     }
   });
 
-  window.downloadManager = new TrustPDFDownload();
-
   window.resetToolSpecificFields = function () {
-    document.getElementById("pageList").innerHTML = "";
-    document.getElementById("pageListWrapper").style.display = "none";
+    selectedPdfBytes = null;
+
+    const pageList = document.getElementById("pageList");
+    const pageListWrapper = document.getElementById("pageListWrapper");
+
+    if (pageList) {
+      pageList.innerHTML = "";
+    }
+
+    if (pageListWrapper) {
+      pageListWrapper.style.display = "none";
+    }
 
     if (pageSortable) {
       pageSortable.destroy();
@@ -115,62 +137,108 @@
   async function renderPageThumbnails(file) {
     const pageList = document.getElementById("pageList");
     const pageListWrapper = document.getElementById("pageListWrapper");
+    const processBtn = document.getElementById("processBtn");
+
+    if (!pageList || !pageListWrapper) {
+      alert("Page preview area is missing.");
+      return;
+    }
+
+    if (!window.pdfjsReady) {
+      alert("PDF preview library is not ready. Please refresh the page.");
+      return;
+    }
+
+    if (typeof Sortable === "undefined") {
+      alert("SortableJS is not loaded.");
+      return;
+    }
 
     pageList.innerHTML = "";
     pageListWrapper.style.display = "block";
 
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    if (processBtn) {
+      processBtn.disabled = true;
+      processBtn.textContent = "Loading previews...";
+    }
 
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-      const page = await pdf.getPage(pageNumber);
-      const viewport = page.getViewport({ scale: 0.25 });
+    try {
+      const pdfjsLib = await window.pdfjsReady;
 
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
+      const arrayBuffer = await file.arrayBuffer();
 
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      /*
+        Keep a copy for PDF-Lib export.
+        PDF.js can consume the data buffer, so we store a separate Uint8Array.
+      */
+      selectedPdfBytes = new Uint8Array(arrayBuffer.slice(0));
 
-      await page.render({
-        canvasContext: context,
-        viewport: viewport
+      const pdf = await pdfjsLib.getDocument({
+        data: new Uint8Array(arrayBuffer)
       }).promise;
 
-      const li = document.createElement("li");
-      li.className = "list-group-item d-flex align-items-center justify-content-between";
-      li.dataset.pageIndex = pageNumber - 1;
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const page = await pdf.getPage(pageNumber);
+        const viewport = page.getViewport({ scale: 0.25 });
 
-      const left = document.createElement("div");
-      left.className = "d-flex align-items-center";
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
 
-      const handle = document.createElement("span");
-      handle.className = "me-3 text-muted";
-      handle.style.cursor = "move";
-      handle.textContent = "☰";
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.className = "border rounded bg-light";
+        canvas.style.maxHeight = "90px";
+        canvas.style.width = "auto";
 
-      const label = document.createElement("span");
-      label.className = "fw-bold me-3";
-      label.textContent = `Page ${pageNumber}`;
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
 
-      canvas.className = "border rounded bg-light";
-      canvas.style.maxHeight = "90px";
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex align-items-center justify-content-between";
+        li.dataset.pageIndex = String(pageNumber - 1);
 
-      left.appendChild(handle);
-      left.appendChild(label);
-      left.appendChild(canvas);
+        const left = document.createElement("div");
+        left.className = "d-flex align-items-center";
 
-      li.appendChild(left);
-      pageList.appendChild(li);
+        const handle = document.createElement("span");
+        handle.className = "me-3 text-muted";
+        handle.style.cursor = "move";
+        handle.textContent = "☰";
+
+        const label = document.createElement("span");
+        label.className = "fw-bold me-3";
+        label.textContent = `Page ${pageNumber}`;
+
+        left.appendChild(handle);
+        left.appendChild(label);
+        left.appendChild(canvas);
+
+        li.appendChild(left);
+        pageList.appendChild(li);
+      }
+
+      if (pageSortable) {
+        pageSortable.destroy();
+      }
+
+      pageSortable = new Sortable(pageList, {
+        animation: 150,
+        handle: ".text-muted"
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("Could not load PDF previews. Please check that the file is a valid PDF.");
+      window.resetToolSpecificFields();
+
+    } finally {
+      if (processBtn) {
+        processBtn.disabled = false;
+        processBtn.textContent = "Reorder Pages";
+      }
     }
-
-    if (pageSortable) {
-      pageSortable.destroy();
-    }
-
-    pageSortable = new Sortable(pageList, {
-      animation: 150
-    });
   }
 
 
@@ -178,35 +246,55 @@
     const loadedFile = window.fileHandler.getSingleFile();
 
     if (!loadedFile) {
-      return alert("Please select a PDF file.");
+      alert("Please select a PDF file.");
+      return;
+    }
+
+    if (typeof PDFLib === "undefined") {
+      alert("PDF-Lib is not loaded.");
+      return;
     }
 
     const items = document.querySelectorAll("#pageList li");
 
     if (!items.length) {
-      return alert("Please wait until page previews are loaded.");
+      alert("Please wait until page previews are loaded.");
+      return;
     }
 
-    hideProcessButton();
+    try {
+      hideProcessButton();
 
-    const order = Array.from(items).map(li => Number(li.dataset.pageIndex));
+      const order = Array.from(items).map(li => Number(li.dataset.pageIndex));
 
-    const buffer = await loadedFile.arrayBuffer();
-    const sourcePdf = await PDFLib.PDFDocument.load(buffer);
-    const newPdf = await PDFLib.PDFDocument.create();
+      let pdfBytes = selectedPdfBytes;
 
-    const copiedPages = await newPdf.copyPages(sourcePdf, order);
-    copiedPages.forEach(page => newPdf.addPage(page));
+      if (!pdfBytes) {
+        const buffer = await loadedFile.arrayBuffer();
+        pdfBytes = new Uint8Array(buffer);
+      }
 
-    const newBytes = await newPdf.save();
+      const sourcePdf = await PDFLib.PDFDocument.load(pdfBytes);
+      const newPdf = await PDFLib.PDFDocument.create();
 
-    const blob = new Blob([newBytes], {
-      type: 'application/pdf'
-    });
+      const copiedPages = await newPdf.copyPages(sourcePdf, order);
+      copiedPages.forEach(page => newPdf.addPage(page));
 
-    const filename = makeTrustPDFFilename(loadedFile.name, 'reorder');
+      const newBytes = await newPdf.save();
 
-    prepareDownload(blob, filename);
+      const blob = new Blob([newBytes], {
+        type: "application/pdf"
+      });
+
+      const filename = makeTrustPDFFilename(loadedFile.name, "reorder");
+
+      prepareDownload(blob, filename);
+
+    } catch (error) {
+      console.error(error);
+      alert("Could not reorder the PDF. Please check that the file is valid and try again.");
+      showProcessButton();
+    }
   }
 </script>
 {% endblock %}
