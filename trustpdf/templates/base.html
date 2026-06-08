@@ -9,62 +9,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   {# Basic SEO #}
-  <title>{% block title %}{{ seo_title|default:"TrustPDF - Private Client-Side PDF Tools" }}{% endblock %}</title>
+  <title>
+    {% block title %}
+      {% if seo_title %}
+        {{ seo_title }}
+      {% else %}
+        TrustPDF - Private Client-Side PDF Tools
+      {% endif %}
+    {% endblock %}
+  </title>
 
   <meta name="description"
-        content="{% block meta_description %}{{ meta_description|default:'Private, client-side PDF tools. Merge, split, rotate, reorder, inspect, and edit PDF files directly in your browser with no uploads, no accounts, and no tracking.' }}{% endblock %}">
+        content="{% block meta_description %}{% if meta_description %}{{ meta_description }}{% else %}Private, client-side PDF tools. Merge, split, rotate, reorder, inspect, and edit PDF files directly in your browser with no uploads, no accounts, and no tracking.{% endif %}{% endblock %}">
 
   {% if meta_keywords %}
     <meta name="keywords" content="{{ meta_keywords }}">
   {% endif %}
 
   <meta name="author" content="Martin Hostnik">
-  <meta name="robots" content="index, follow">
+
+  <meta name="robots"
+        content="{% block robots %}{% if robots %}{{ robots }}{% else %}index, follow{% endif %}{% endblock %}">
 
   {# Canonical URL #}
   {% if canonical_url %}
     <link rel="canonical" href="{{ canonical_url }}">
-  {% else %}
+  {% elif request %}
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
   {% endif %}
 
   {# Open Graph #}
   <meta property="og:site_name" content="TrustPDF">
   <meta property="og:type" content="website">
+
   <meta property="og:title"
-        content="{{ og_title|default:seo_title|default:'TrustPDF - Private Client-Side PDF Tools' }}">
+        content="{% if og_title %}{{ og_title }}{% elif seo_title %}{{ seo_title }}{% else %}TrustPDF - Private Client-Side PDF Tools{% endif %}">
+
   <meta property="og:description"
-        content="{{ og_description|default:meta_description|default:'Private, client-side PDF tools with no uploads, no accounts, and no tracking.' }}">
+        content="{% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}Private, client-side PDF tools with no uploads, no accounts, and no tracking.{% endif %}">
 
   {% if og_url %}
     <meta property="og:url" content="{{ og_url }}">
   {% elif canonical_url %}
     <meta property="og:url" content="{{ canonical_url }}">
-  {% else %}
+  {% elif request %}
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
   {% endif %}
 
   {% if og_image %}
     <meta property="og:image" content="{{ og_image }}">
-  {% else %}
+  {% elif request %}
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og/trustpdf-og.png' %}">
+  {% else %}
+    <meta property="og:image" content="{% static 'img/og/trustpdf-og.png' %}">
   {% endif %}
 
-  <meta property="og:image:alt" content="{{ og_title|default:'TrustPDF private PDF tools preview image' }}">
+  <meta property="og:image:alt"
+        content="{% if og_image_alt %}{{ og_image_alt }}{% elif og_title %}{{ og_title }}{% elif seo_title %}{{ seo_title }}{% else %}TrustPDF private PDF tools preview image{% endif %}">
 
   {# Twitter / X Cards #}
   <meta name="twitter:card" content="summary_large_image">
+
   <meta name="twitter:title"
-        content="{{ twitter_title|default:og_title|default:seo_title|default:'TrustPDF - Private Client-Side PDF Tools' }}">
+        content="{% if twitter_title %}{{ twitter_title }}{% elif og_title %}{{ og_title }}{% elif seo_title %}{{ seo_title }}{% else %}TrustPDF - Private Client-Side PDF Tools{% endif %}">
+
   <meta name="twitter:description"
-        content="{{ twitter_description|default:og_description|default:meta_description|default:'Private, client-side PDF tools with no uploads, no accounts, and no tracking.' }}">
+        content="{% if twitter_description %}{{ twitter_description }}{% elif og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}Private, client-side PDF tools with no uploads, no accounts, and no tracking.{% endif %}">
 
   {% if twitter_image %}
     <meta name="twitter:image" content="{{ twitter_image }}">
   {% elif og_image %}
     <meta name="twitter:image" content="{{ og_image }}">
-  {% else %}
+  {% elif request %}
     <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og/trustpdf-og.png' %}">
+  {% else %}
+    <meta name="twitter:image" content="{% static 'img/og/trustpdf-og.png' %}">
   {% endif %}
 
   {# Favicons #}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block robots %}{{ robots }}{% endblock %}
+
+{% block content %}
+  {% include 'errors/error_page.html' %}
+{% endblock %}
