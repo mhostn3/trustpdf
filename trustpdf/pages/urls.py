@@ -1,5 +1,5 @@
 from django.urls import path
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 from django.templatetags.static import static
 
 from . import views
@@ -67,3 +67,5 @@ for tool in TOOLS:
         ),
     )
 
+urlpatterns.append(path("merge/", RedirectView.as_view(pattern_name="pages:merge_pdf", permanent=False)))
+urlpatterns.append(path("split/", RedirectView.as_view(pattern_name="pages:split_pdf", permanent=False)))
