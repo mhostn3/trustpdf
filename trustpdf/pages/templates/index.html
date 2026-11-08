@@ -1,30 +1,17 @@
 {% extends 'base.html' %}
-
 {% load static %}
-
-{% block title %}Secure PDF Tools{% endblock %}
-
-{% block style %}
-<style>
-  .clickable-card:hover {
-    transform: translateY(-4px);
-    transition: 0.2s ease;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  }
-</style>
-{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col col-lg-7 mx-auto text-center mb-4">
-    <h1 class="d-none">Welcome to TrustPDF</h1>
-    <img src="{% static 'img/brand/trustpdf-logo.png' %}" width="350px">
-    <p class="lead mb-1">Private. Secure. Client-side PDF tools with no upload required.</p>
-    <p class="text-muted small">
-      Open-source under the 
-      <a class="link-secondary" href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" data-umami-event="AGPL v3 license">AGPL v3 license</a>. 
-      View on 
-      <a class="link-secondary" href="https://github.com/mhostn3/trustpdf" target="_blank" data-umami-event="GitHub">GitHub</a>.
+    <h1 class="visually-hidden">TrustPDF: private client-side PDF tools</h1>
+    <img src="{% static 'img/brand/trustpdf-logo.webp' %}" alt="TrustPDF" width="350" height="316" class="img-fluid bg-white rounded-4 p-2">
+    <p class="lead mb-1">Private, secure PDF tools that run entirely in your browser. No uploads, no accounts, no cookies.</p>
+    <p class="text-body-secondary small">
+      Open source under the
+      <a class="link-secondary" href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener" data-umami-event="AGPL v3 license">AGPL v3 license</a>.
+      View on
+      <a class="link-secondary" href="https://github.com/mhostn3/trustpdf" target="_blank" rel="noopener" data-umami-event="GitHub">GitHub</a>.
     </p>
   </div>
 </div>

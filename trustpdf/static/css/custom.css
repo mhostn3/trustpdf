@@ -1,71 +1,184 @@
+/* Homepage tool cards */
+.clickable-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clickable-card:hover,
+.clickable-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* File list (merge, images to pdf) */
 #fileList li {
-    cursor: move;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#fileList li .file-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 #totalSize {
-    font-size: 0.9rem;
-    color: #6c757d;
+  font-size: 0.9rem;
+  color: var(--bs-secondary-color);
 }
 
+/* Drop zone */
 .drop-zone {
-    border: 2px dashed #cfd6df;
-    border-radius: 1rem;
-    background: #f8f9fa;
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+  border: 2px dashed var(--bs-border-color);
+  border-radius: 1rem;
+  background: var(--bs-tertiary-bg);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out, background 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
 
-.drop-zone:hover {
-    border-color: #0d6efd;
-    background: #f3f7ff;
+.drop-zone:hover,
+.drop-zone:focus-visible {
+  border-color: var(--bs-primary);
+  background: var(--bs-primary-bg-subtle);
+  outline: none;
 }
 
 .drop-zone.border-primary {
-    border-color: #0d6efd !important;
-    background: #eef5ff;
-    transform: scale(1.01);
+  border-color: var(--bs-primary) !important;
+  background: var(--bs-primary-bg-subtle);
+  transform: scale(1.01);
 }
 
 .drop-zone-content {
-    pointer-events: none;
+  pointer-events: none;
 }
 
 .drop-zone-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 1rem auto;
-    border-radius: 50%;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem auto;
+  border-radius: 50%;
+  background: var(--bs-body-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
 }
 
 .drop-zone-icon i {
-    font-size: 2rem;
-    color: #dc3545;
+  font-size: 2rem;
+  color: var(--bs-danger);
 }
 
 .drop-zone-title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #212529;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--bs-body-color);
 }
 
 .drop-zone-subtitle {
-    font-size: 0.95rem;
-    color: #6c757d;
-    margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: var(--bs-secondary-color);
+  margin-top: 0.25rem;
 }
 
 .drop-zone-note {
-    font-size: 0.8rem;
-    color: #adb5bd;
-    margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--bs-tertiary-color);
+  margin-top: 0.75rem;
+}
+
+/* Page picker (split, rotate, remove, reorder) */
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.page-grid li {
+  position: relative;
+  border: 2px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  background: var(--bs-tertiary-bg);
+  padding: 0.5rem 0.5rem 0.25rem;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.page-grid li:hover,
+.page-grid li:focus-visible {
+  border-color: var(--bs-primary);
+  outline: none;
+}
+
+.page-grid li.selected {
+  border-color: var(--bs-primary);
+  background: var(--bs-primary-bg-subtle);
+}
+
+.page-grid li.selected::after {
+  content: "\2713";
+  position: absolute;
+  top: 0.25rem;
+  right: 0.35rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  line-height: 1.4rem;
+  border-radius: 50%;
+  background: var(--bs-primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.page-grid.sortable li {
+  cursor: grab;
+}
+
+.page-grid .sortable-ghost {
+  opacity: 0.4;
+}
+
+.page-grid canvas,
+.page-grid img {
+  display: block;
+  max-width: 100%;
+  height: 120px;
+  object-fit: contain;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.page-grid .page-label {
+  display: block;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  color: var(--bs-secondary-color);
+}
+
+.page-grid li.selected .page-label {
+  color: var(--bs-primary);
+  font-weight: 600;
+}
+
+/* Rotation preview */
+.page-grid li.rotate-90 canvas { transform: rotate(90deg) scale(0.8); }
+.page-grid li.rotate-180 canvas { transform: rotate(180deg); }
+.page-grid li.rotate-270 canvas { transform: rotate(270deg) scale(0.8); }
+
+/* Busy state */
+.is-busy {
+  opacity: 0.7;
+  pointer-events: none;
 }

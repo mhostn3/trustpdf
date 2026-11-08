@@ -1,53 +1,62 @@
 {% extends 'base.html' %}
-{% block title %}Cookies Policy - TrustPDF{% endblock %}
 
 {% block content %}
 <div class="row">
-      <div class="col col-lg-7 mx-auto">
-  <h1 class="mb-4">Cookies Policy</h1>
+  <div class="col col-lg-7 mx-auto">
 
-  <p><strong>Effective date:</strong> June 15, 2025</p>
+    <div class="text-center mb-4">
+      <h1 class="display-5">Cookie Policy</h1>
+      <p class="lead">The short version: TrustPDF sets no cookies.</p>
+      <p class="text-body-secondary small">Last updated: 8 November 2026</p>
+    </div>
 
-  <p>
-    At <strong>TrustPDF</strong>, your privacy is our top priority. This policy explains our use of cookies — or rather, the lack of them.
-  </p>
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">🍪 We do not use cookies</h2>
+      <p>TrustPDF does not set any cookies, and does not store anything in your browser's local storage:</p>
+      <ul class="mb-0">
+        <li>No cookies for advertising or tracking.</li>
+        <li>No cookies for preferences, sessions, or saved data. The light/dark appearance follows your operating system setting and is not stored.</li>
+        <li>No analytics cookies, not even anonymous ones.</li>
+      </ul>
+      <p class="mt-3 mb-0">
+        Because no cookies are set, there is no cookie banner and nothing for you to accept or reject.
+      </p>
+    </div>
 
-  <h4 class="mt-4">🍪 We Do Not Use Cookies</h4>
-  <p>
-    TrustPDF does <strong>not</strong> use any cookies at all:
-  </p>
-  <ul>
-    <li>No cookies for advertising or tracking.</li>
-    <li>No cookies for preferences, sessions, or saved data.</li>
-    <li>No analytics cookies — not even for anonymous traffic.</li>
-  </ul>
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">📊 Cookie-free analytics</h2>
+      <p class="mb-0">
+        We use <a href="https://umami.is" class="link-secondary" rel="noopener">Umami Cloud</a> to count page views
+        and tool usage. It works without cookies, local storage, or fingerprinting, and cannot follow you across
+        sites or sessions. Details are in the
+        <a href="{% url 'pages:privacy' %}" class="link-secondary">Privacy Policy</a>.
+      </p>
+    </div>
 
-  <h4 class="mt-4">📊 Privacy-Friendly Analytics</h4>
-  <p>
-    We use <a class="text-decoration-none link-dark" href="https://umami.is/"><strong>Umami Cloud</strong></a>, a privacy-focused, cookie-free analytics tool. It collects basic anonymous visit statistics without using cookies, localStorage, or personal data.
-  </p>
-  <ul>
-    <li>There is no tracking across sessions or devices.</li>
-    <li>Your IP address is not stored or profiled.</li>
-    <li>No identifiers or unique fingerprints are used.</li>
-  </ul>
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">❌ No third-party ads or trackers</h2>
+      <p class="mb-0">
+        TrustPDF includes no advertising networks, tracking pixels, social media plugins, or third-party
+        content delivery networks. Every script, stylesheet, and font is served from this site.
+      </p>
+    </div>
 
-  <h4 class="mt-4">❌ No Third-Party Ads or Trackers</h4>
-  <p>
-    TrustPDF does not include any advertising networks, tracking pixels, or social media plugins.
-  </p>
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">🔗 Other websites</h2>
+      <p class="mb-0">
+        Links to Proton (affiliate links), Buy Me a Coffee, GitHub, and other sites lead to services with their
+        own cookie policies, which apply once you leave TrustPDF.
+      </p>
+    </div>
 
-  <h4 class="mt-4">🧼 You Remain Anonymous</h4>
-  <p>
-    You can use TrustPDF without creating an account, without logging in, and without sharing any personal data — even temporarily.
-  </p>
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">📩 Questions</h2>
+      <p class="mb-0">
+        If you have any questions about cookies or analytics, contact us at
+        <a href="mailto:{{ contact_email }}" class="link-secondary">{{ contact_email }}</a>.
+      </p>
+    </div>
 
-  <h4 class="mt-4">📩 Questions</h4>
-  <p>
-    If you have any questions about our use of cookies or analytics, feel free to contact us:<br>
-    <strong>info@koplemo.com</strong>
-  </p>
-</div>
-</div>
+  </div>
 </div>
 {% endblock %}

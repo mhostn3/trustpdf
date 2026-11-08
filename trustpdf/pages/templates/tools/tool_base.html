@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-8 mx-auto">
+
+    <div class="text-center mb-4">
+      <h1 class="display-5">{% block heading %}{{ tool.title }}{% endblock %}</h1>
+      <p class="lead">{% block lead %}{{ tool.description }}{% endblock %}</p>
+      <p class="text-body-secondary small">
+        Everything happens in your browser; nothing is uploaded.
+        Very large files (over ~100 MB) can be slow on phones.
+      </p>
+    </div>
+
+    <div class="card shadow-sm p-4">
+      <div id="uploadArea">
+        {% block upload %}
+          {% include 'snippets/drop_zone.html' with accept="pdf" multiple=False %}
+        {% endblock %}
+        <div id="fileInfo" class="small text-body-secondary mt-2" aria-live="polite"></div>
+      </div>
+
+      {% block options %}{% endblock %}
+
+      <div id="toolMessage" class="mt-3" aria-live="polite"></div>
+
+      <div class="mt-3 d-flex align-items-center gap-3 flex-wrap">
+        <button id="processBtn" type="button" class="btn btn-primary" data-umami-event="{{ tool.title }}">
+          {% block process_label %}Process{% endblock %}
+        </button>
+        <span id="busyIndicator" class="d-none text-body-secondary" role="status">
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span><span id="busyText">Working…</span>
+        </span>
+      </div>
+    </div>
+
+    {% block results %}{% endblock %}
+
+    <div id="downloadArea" class="mt-4 text-center d-none">
+      {% block download %}
+        <button id="downloadBtn" type="button" class="btn btn-success btn-lg mt-3" data-umami-event="Save {{ tool.short_title }}">
+          ⭳ {% block download_label %}Save PDF{% endblock %}
+        </button>
+      {% endblock %}
+      <button id="startAgainBtn" type="button" class="btn btn-outline-secondary mt-3 ms-2">↻ Start Again</button>
+      <div id="downloadName" class="small text-body-secondary mt-2"></div>
+
+      {% include 'snippets/privacy_tip.html' %}
+
+      <div class="mt-3">
+        <a href="https://www.buymeacoffee.com/mhostn3"
+           target="_blank"
+           rel="noopener"
+           class="btn btn-outline-secondary"
+           data-umami-event="Buy me a coffee ({{ tool.short_title }})">
+          ☕ Buy me a coffee
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/pdf-lib.min.js' %}"></script>
+<script src="{% static 'js/Sortable.min.js' %}"></script>
+<script src="{% static 'js/trustpdf-core.js' %}"></script>
+{% block tool_libs %}{% endblock %}
+<script src="{% static 'js/trustpdf-zip.js' %}"></script>
+<script src="{% static tool_script %}"></script>
+{% endblock %}

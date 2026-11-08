@@ -5,7 +5,7 @@
       <h1 class="display-1 fw-bold">{{ error_code }}</h1>
       <h2 class="display-6">{{ error_title }}</h2>
 
-      <p class="lead text-muted">
+      <p class="lead text-body-secondary">
         {{ error_message }}
       </p>
     </div>
@@ -13,7 +13,7 @@
     <div class="card shadow-sm p-4 my-1 text-center">
 
       {% if error_privacy_note %}
-        <p class="text-muted">
+        <p class="text-body-secondary">
           {{ error_privacy_note }}
         </p>
       {% endif %}
@@ -26,11 +26,11 @@
 
       <hr class="my-4">
 
-      <p class="text-muted small mb-0">
+      <p class="text-body-secondary small mb-0">
         If you think this is a mistake or the problem continues, please contact us at
-        <a href="mailto:info@koplemo.com?subject=TrustPDF%20-%20{{ error_code }}%20Error"
-           class="text-decoration-none link-dark fw-semibold">
-          info@koplemo.com
+        <a href="mailto:{{ contact_email }}?subject=TrustPDF%20-%20{{ error_code }}%20Error"
+           class="text-decoration-none link-secondary fw-semibold">
+          {{ contact_email }}
         </a>.
       </p>
 
