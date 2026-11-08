@@ -1,0 +1,39 @@
+{% extends 'tools/tool_base.html' %}
+
+{% block heading %}Protect PDF with a Password{% endblock %}
+{% block lead %}Encrypt a PDF so it can only be opened with a password, and optionally block printing or copying.{% endblock %}
+
+{% block options %}
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-md-6">
+      <label for="userPassword" class="form-label">Password to open the PDF</label>
+      <input type="password" id="userPassword" class="form-control" autocomplete="new-password" minlength="4">
+    </div>
+    <div class="col-md-6">
+      <label for="userPassword2" class="form-label">Repeat the password</label>
+      <input type="password" id="userPassword2" class="form-control" autocomplete="new-password">
+    </div>
+    <div class="col-md-6">
+      <label for="ownerPassword" class="form-label">Owner password <span class="text-secondary fw-normal">(optional)</span></label>
+      <input type="password" id="ownerPassword" class="form-control" autocomplete="new-password">
+      <div class="form-text">Lets you lift the restrictions below later. Same as the open password if left empty.</div>
+    </div>
+    <div class="col-md-6">
+      <span class="form-label d-block">Allow readers to</span>
+      <div class="form-check"><input class="form-check-input" type="checkbox" id="allowPrint" checked><label class="form-check-label" for="allowPrint">Print</label></div>
+      <div class="form-check"><input class="form-check-input" type="checkbox" id="allowCopy" checked><label class="form-check-label" for="allowCopy">Copy text and images</label></div>
+      <div class="form-check"><input class="form-check-input" type="checkbox" id="allowModify"><label class="form-check-label" for="allowModify">Edit the document</label></div>
+    </div>
+    <div class="col-12">
+      <div class="form-check"><input class="form-check-input" type="checkbox" id="showPasswords"><label class="form-check-label" for="showPasswords">Show passwords</label></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Protect PDF{% endblock %}
+{% block download_label %}Save Protected PDF{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+  {% include 'snippets/qpdf_libs.html' %}
+{% endblock %}

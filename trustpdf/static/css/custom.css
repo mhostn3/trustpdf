@@ -1015,3 +1015,76 @@ code {
   columns: 2;
   column-gap: 1.5rem;
 }
+
+/* Page preview with an overlay (crop, sign) ----------------------------- */
+
+.preview-stage {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  border: 1px solid var(--tp-border);
+  border-radius: 0.5rem;
+  box-shadow: var(--tp-shadow);
+  background: #fff;
+  line-height: 0;
+  overflow: hidden;
+}
+
+.preview-stage canvas {
+  display: block;
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+.preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.crop-box {
+  position: absolute;
+  border: 2px dashed var(--tp-primary);
+  background: rgba(47, 91, 234, 0.08);
+  box-shadow: 0 0 0 9999px rgba(17, 24, 39, 0.35);
+  cursor: move;
+  box-sizing: border-box;
+}
+
+.crop-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid var(--tp-primary);
+  border-radius: 50%;
+}
+
+.crop-handle[data-handle="nw"] { top: -9px; left: -9px; cursor: nwse-resize; }
+.crop-handle[data-handle="ne"] { top: -9px; right: -9px; cursor: nesw-resize; }
+.crop-handle[data-handle="sw"] { bottom: -9px; left: -9px; cursor: nesw-resize; }
+.crop-handle[data-handle="se"] { bottom: -9px; right: -9px; cursor: nwse-resize; }
+
+.signature-overlay {
+  position: absolute;
+  cursor: move;
+  outline: 2px dashed var(--tp-primary);
+  outline-offset: 4px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.signature-pad-wrapper {
+  border: 2px dashed #c9d3ea;
+  border-radius: 0.75rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.signature-pad {
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}

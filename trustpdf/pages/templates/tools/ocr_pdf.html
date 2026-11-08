@@ -1,0 +1,77 @@
+{% extends 'tools/tool_base.html' %}
+{% load static %}
+
+{% block heading %}OCR PDF: Make Scans Searchable{% endblock %}
+{% block lead %}Recognize the text in scanned PDFs so you can search, select and copy it. The pages keep their look.{% endblock %}
+
+{% block options %}
+  <div id="ocrConfig"
+       data-worker-path="{% get_static_prefix %}vendor/tesseract-7.0.0/worker.min.js"
+       data-core-path="{% get_static_prefix %}vendor/tesseract-7.0.0"
+       data-lang-path="{% get_static_prefix %}vendor/tessdata-fast"></div>
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-md-4">
+      <label for="ocrLang" class="form-label">Language</label>
+      <select id="ocrLang" class="form-select">
+        <option value="eng" selected>English</option>
+        <option value="deu">German</option>
+        <option value="fra">French</option>
+        <option value="spa">Spanish</option>
+        <option value="ita">Italian</option>
+        <option value="por">Portuguese</option>
+        <option value="nld">Dutch</option>
+        <option value="pol">Polish</option>
+        <option value="ces">Czech</option>
+        <option value="slv">Slovenian</option>
+        <option value="hrv">Croatian</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="ocrLang2" class="form-label">Second language <span class="text-secondary fw-normal">(optional)</span></label>
+      <select id="ocrLang2" class="form-select">
+        <option value="" selected>None</option>
+        <option value="eng">English</option>
+        <option value="deu">German</option>
+        <option value="fra">French</option>
+        <option value="spa">Spanish</option>
+        <option value="ita">Italian</option>
+        <option value="por">Portuguese</option>
+        <option value="nld">Dutch</option>
+        <option value="pol">Polish</option>
+        <option value="ces">Czech</option>
+        <option value="slv">Slovenian</option>
+        <option value="hrv">Croatian</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="ocrOutput" class="form-label">Output</label>
+      <select id="ocrOutput" class="form-select">
+        <option value="pdf" selected>Searchable PDF</option>
+        <option value="txt">Plain text (.txt)</option>
+      </select>
+    </div>
+    <div class="col-12">
+      <label for="pages" class="form-label">Pages to recognize</label>
+      <input type="text" id="pages" class="form-control" placeholder="All pages, or e.g. 1-3,5" autocomplete="off" inputmode="numeric">
+      <div class="form-text">About 2 to 5 seconds per page. The OCR engine (4 MB) and language data (1 to 3 MB) load from this site the first time.</div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block results %}
+  <div id="textResult" class="card tool-panel mt-4 d-none">
+    <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
+      <label for="textPreview" class="form-label mb-0">Recognized text</label>
+      <button type="button" id="copyTextBtn" class="btn btn-sm btn-outline-secondary"><i class="bi bi-clipboard me-1" aria-hidden="true"></i>Copy</button>
+    </div>
+    <textarea id="textPreview" class="form-control font-monospace small" rows="12" readonly></textarea>
+  </div>
+{% endblock %}
+
+{% block process_label %}Recognize Text{% endblock %}
+{% block download_label %}Save Result{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+  <script src="{% get_static_prefix %}vendor/tesseract-7.0.0/tesseract.min.js"></script>
+{% endblock %}

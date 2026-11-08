@@ -72,6 +72,7 @@ async function run(name, fn) {
 
   await run("keyboard: drop zone focus + enter", async () => {
     await open("merge-pdf");
+    await page.waitForFunction(() => window.TrustPDF && TrustPDF.fileHandler);
     await page.focus("#dropZone");
     const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.keyboard.press("Enter")]);
     return chooser.isMultiple() ? "file chooser opened (multiple)" : "opened";
@@ -305,6 +306,161 @@ async function run(name, fn) {
     const text = d.buf.toString();
     if (!text.includes("Page 3") || !text.includes("--- Page 2 ---")) throw new Error(text.slice(0, 100));
     return `${d.name} ${text.length} chars`;
+  });
+
+  await run("protect: encrypt + unlock round trip", async () => {
+    await open("protect-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.fill("#userPassword", "secret1");
+    await page.fill("#userPassword2", "secret1");
+    await page.uncheck("#allowPrint");
+    await page.click("#processBtn");
+    const d = await download();
+    if (!d.buf.includes("/Encrypt")) throw new Error("not encrypted");
+    // unlock with wrong password, then right one
+    await open("unlock-pdf");
+    await page.setInputFiles("#fileInput", d.file);
+    await waitIdle();
+    const info = await page.locator("#fileInfo").innerText();
+    if (!/needs a password/.test(info)) throw new Error("password not detected: " + info);
+    await page.fill("#pdfPassword", "nope");
+    await page.click("#processBtn");
+    await page.locator("#toolMessage .alert-danger").waitFor();
+    const err = await page.locator("#toolMessage").innerText();
+    await page.fill("#pdfPassword", "secret1");
+    await page.click("#processBtn");
+    const u = await download();
+    if (u.buf.includes("/Encrypt")) throw new Error("still encrypted");
+    const i = await inspect(); if (i.pages !== 3) throw new Error("pages " + i.pages);
+    return `${d.name} -> ${u.name}; wrong pw: ${err.slice(0, 40)}`;
+  });
+
+  await run("crop: margins typed", async () => {
+    await open("crop-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.locator("#cropBox").waitFor({ state: "visible" });
+    await page.fill("#marginTop", "20");
+    await page.fill("#marginLeft", "10");
+    await page.click("#processBtn");
+    const d = await download();
+    const box = await page.evaluate(async () => {
+      const doc = await PDFLib.PDFDocument.load(TrustPDF.download.bytes, { updateMetadata: false });
+      const b = doc.getPage(0).getCropBox(); return [b.x, b.y, b.width, b.height].map((v) => Math.round(v));
+    });
+    // page is 595x842 pt; left 10mm = 28pt, top 20mm = 57pt
+    if (Math.abs(box[0] - 28) > 2 || Math.abs(box[3] - (842 - 57)) > 2) throw new Error("cropbox " + box);
+    return `${d.name} cropbox=${box}`;
+  });
+
+  await run("crop: auto-trim + drag", async () => {
+    await page.click("#startAgainBtn");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.locator("#cropBox").waitFor({ state: "visible" });
+    await page.click("#autoTrimBtn");
+    const after = await page.inputValue("#marginBottom");
+    if (!(Number(after) > 5)) throw new Error("auto-trim did nothing: " + after);
+    await page.click("#resetCropBtn");
+    await page.locator("#previewCanvas").scrollIntoViewIfNeeded();
+    const canvas = await page.locator("#previewCanvas").boundingBox();
+    await page.mouse.move(canvas.x + 50, canvas.y + 50);
+    await page.mouse.down();
+    await page.mouse.move(canvas.x + 250, canvas.y + 300, { steps: 5 });
+    await page.mouse.up();
+    const w = await page.locator("#cropBox").boundingBox();
+    if (Math.abs(w.width - 200) > 3) throw new Error("drag width " + w.width);
+    return `auto-trim bottom=${after}mm, drag ok`;
+  });
+
+  await run("sign: typed signature on last page + date", async () => {
+    await open("sign-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.click('label[for="sigModeType"]');
+    await page.fill("#typedName", "Martin Test");
+    await page.locator("#signatureOverlay").waitFor({ state: "visible" });
+    await page.locator("#previewCanvas").scrollIntoViewIfNeeded();
+    const canvas = await page.locator("#previewCanvas").boundingBox();
+    await page.mouse.move(canvas.x + 150, canvas.y + 400);
+    await page.mouse.down();
+    await page.mouse.move(canvas.x + 300, canvas.y + 500, { steps: 5 });
+    await page.mouse.up();
+    await page.check("#addDate");
+    await page.click("#processBtn");
+    const d = await download();
+    const info = await page.evaluate(async () => {
+      const doc = await PDFLib.PDFDocument.load(TrustPDF.download.bytes, { updateMetadata: false });
+      const p = doc.getPage(2);
+      return { pages: doc.getPageCount(), hasXObject: p.node.Resources().has(PDFLib.PDFName.of("XObject")), p1: doc.getPage(0).node.Resources().has(PDFLib.PDFName.of("XObject")) };
+    });
+    if (info.pages !== 3 || !info.hasXObject || info.p1) throw new Error(JSON.stringify(info));
+    const text = await pageText(d.file);
+    if (!/\d{4}/.test(text[2])) throw new Error("date missing: " + text[2]);
+    return `${d.name} date='${text[2].slice(0, 30)}'`;
+  });
+
+  await run("sign: drawn signature on every page", async () => {
+    await page.click("#startAgainBtn");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.click('label[for="sigModeDraw"]');
+    await page.locator("#signaturePad").scrollIntoViewIfNeeded();
+    const pad = await page.locator("#signaturePad").boundingBox();
+    await page.mouse.move(pad.x + 30, pad.y + 90);
+    await page.mouse.down();
+    await page.mouse.move(pad.x + 200, pad.y + 40, { steps: 8 });
+    await page.mouse.move(pad.x + 300, pad.y + 120, { steps: 8 });
+    await page.mouse.up();
+    await page.locator("#signatureOverlay").waitFor({ state: "visible" });
+    await page.check("#allPages");
+    await page.click("#processBtn");
+    const d = await download();
+    const n = await page.evaluate(async () => {
+      const doc = await PDFLib.PDFDocument.load(TrustPDF.download.bytes, { updateMetadata: false });
+      return doc.getPages().filter((p) => p.node.Resources().has(PDFLib.PDFName.of("XObject"))).length;
+    });
+    if (n !== 3) throw new Error("signed pages " + n);
+    return d.name;
+  });
+
+  await run("ocr: scan -> searchable pdf", async () => {
+    await open("ocr-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "scan.pdf"));
+    await waitIdle();
+    await page.click("#processBtn");
+    await page.locator("#downloadArea").waitFor({ state: "visible", timeout: 180000 });
+    const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#downloadBtn")]);
+    const file = path.join(OUT, dl.suggestedFilename());
+    await dl.saveAs(file);
+    const preview = await page.inputValue("#textPreview");
+    if (!/quick\s+brown\s+fox/i.test(preview)) throw new Error("preview: " + preview.slice(0, 80));
+    const text = await pageText(file);
+    if (!/quick\s+brown\s+fox/i.test(text[0])) throw new Error("no text layer: " + text[0].slice(0, 80));
+    return `${dl.suggestedFilename()} text layer ok`;
+  });
+
+  await run("pdf to word: editable text", async () => {
+    await open("pdf-to-word");
+    await page.setInputFiles("#fileInput", path.join(FIX, "five pages.pdf"));
+    await page.click("#processBtn");
+    const d = await download();
+    if (d.buf.slice(0, 2).toString() !== "PK") throw new Error("not a zip/docx");
+    const unz = require("child_process").execSync(`python3 -c "import zipfile,sys; z=zipfile.ZipFile(sys.argv[1]); z.testzip(); print(z.read('word/document.xml').decode()[:4000])" "${d.file}"`).toString();
+    if (!unz.includes("Page 1") || !unz.includes("Page 5") || (unz.match(/w:type="page"/g) || []).length !== 4) throw new Error("docx content: " + unz.slice(0, 200));
+    return `${d.name} ${d.buf.length}B`;
+  });
+
+  await run("pdf to word: page images", async () => {
+    await page.click("#startAgainBtn");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await page.selectOption("#wordMode", "images");
+    await page.click("#processBtn");
+    const d = await download();
+    const names = require("child_process").execSync(`python3 -c "import zipfile,sys; print(' '.join(zipfile.ZipFile(sys.argv[1]).namelist()))" "${d.file}"`).toString();
+    if (!names.includes("word/media/page3.jpg")) throw new Error(names);
+    return d.name;
   });
 
   await run("crawler files", async () => {

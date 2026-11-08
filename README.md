@@ -24,11 +24,18 @@ Every tool runs entirely in your browser: **no uploads, no accounts, no cookies*
 | **Watermark PDF** | Diagonal or horizontal text watermark with colour and opacity |
 | **PDF to JPG** | Render pages to JPG or PNG at 72/150/300 DPI; several pages download as a ZIP |
 | **PDF to Text** | Extract text to a `.txt` file, with a preview and copy button |
+| **Sign PDF** | Draw, type or upload a signature, drag it into place, optional date, optional on every page |
+| **Crop PDF** | Drag an area on a preview, type margins in mm, or auto-trim white margins |
+| **Protect PDF** | AES-256 encryption with open/owner passwords and print/copy/edit permissions (qpdf in WebAssembly) |
+| **Unlock PDF** | Remove a known password and permission restrictions (qpdf) |
+| **OCR PDF** | Tesseract.js in the browser; adds an invisible text layer to scans, 11 languages, or plain text |
+| **PDF to Word** | Writes a `.docx` with paragraphs, headings, bold/italic, or page images |
 
 Features:
 
-- 🔒 100% **client-side** processing with [pdf-lib](https://github.com/Hopding/pdf-lib) and [PDF.js](https://mozilla.github.io/pdf.js/); files never leave your device
-- 🛡️ A strict `Content-Security-Policy` on every page makes that promise enforceable: scripts can only talk to the site itself and the analytics endpoint
+- 🔒 100% **client-side** processing with [pdf-lib](https://github.com/Hopding/pdf-lib), [PDF.js](https://mozilla.github.io/pdf.js/),
+  [qpdf](https://github.com/qpdf/qpdf) (WebAssembly) and [Tesseract.js](https://github.com/naptha/tesseract.js); files never leave your device
+- 🛡️ A strict `Content-Security-Policy` on every page makes that promise enforceable: scripts can only talk to the site itself and the analytics endpoint (`'wasm-unsafe-eval'` is allowed so qpdf and Tesseract can run; it does not allow `eval` or inline scripts)
 - 🧭 No login, no storage, no cookies, no third-party CDNs; all CSS, fonts and JS are self-hosted
 - 📱 Works on mobile and desktop, keyboard accessible
 - 🧩 Built with Django, Bootstrap 5, pdf-lib, PDF.js and SortableJS
@@ -46,6 +53,7 @@ trustpdf/                  Django project (manage.py lives here)
   static/js/trustpdf-core.js   shared behaviour: file handling, errors, page ranges, download
   static/js/trustpdf-pages.js  thumbnail page picker (PDF.js)
   static/js/tools/<tool>.js    the logic of each tool
+  static/vendor/               qpdf (wasm), Tesseract.js and its language data, served from this origin
 deploy/trustpdf.sh         production deploy script (copy to ~ on the server)
 tests/e2e/                 browser smoke test (Playwright)
 ```

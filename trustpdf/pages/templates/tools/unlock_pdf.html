@@ -1,0 +1,25 @@
+{% extends 'tools/tool_base.html' %}
+
+{% block heading %}Unlock PDF{% endblock %}
+{% block lead %}Remove the password and restrictions from a PDF you have the password for, so it opens without asking.{% endblock %}
+
+{% block options %}
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-md-6">
+      <label for="pdfPassword" class="form-label">Current password</label>
+      <input type="password" id="pdfPassword" class="form-control" autocomplete="off">
+      <div class="form-text">Leave empty if the PDF opens without one but is restricted (no printing or copying).</div>
+    </div>
+    <div class="col-md-6 d-flex align-items-end">
+      <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="showPassword"><label class="form-check-label" for="showPassword">Show password</label></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Unlock PDF{% endblock %}
+{% block download_label %}Save Unlocked PDF{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+  {% include 'snippets/qpdf_libs.html' %}
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'tools/tool_base.html' %}
+{% load static %}
+
+{% block heading %}Crop PDF{% endblock %}
+{% block lead %}Trim white margins or crop every page to the part you need. Draw the area on the preview or type margins.{% endblock %}
+
+{% block options %}
+  {% include 'snippets/preview_stage.html' with preview_label="Drag on the page to choose the area, or move the corners" overlay_html='<div id="cropBox" class="crop-box d-none"><span class="crop-handle" data-handle="nw"></span><span class="crop-handle" data-handle="ne"></span><span class="crop-handle" data-handle="sw"></span><span class="crop-handle" data-handle="se"></span></div>' %}
+
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+      <button type="button" class="btn btn-sm btn-outline-primary" id="autoTrimBtn"><i class="bi bi-magic me-1" aria-hidden="true"></i>Auto-trim white margins</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="resetCropBtn">Reset</button>
+      <span id="cropInfo" class="small text-secondary"></span>
+    </div>
+    <div class="col-6 col-md-3">
+      <label for="marginTop" class="form-label">Top (mm)</label>
+      <input type="number" id="marginTop" class="form-control" value="0" min="0" step="1" inputmode="decimal">
+    </div>
+    <div class="col-6 col-md-3">
+      <label for="marginRight" class="form-label">Right (mm)</label>
+      <input type="number" id="marginRight" class="form-control" value="0" min="0" step="1" inputmode="decimal">
+    </div>
+    <div class="col-6 col-md-3">
+      <label for="marginBottom" class="form-label">Bottom (mm)</label>
+      <input type="number" id="marginBottom" class="form-control" value="0" min="0" step="1" inputmode="decimal">
+    </div>
+    <div class="col-6 col-md-3">
+      <label for="marginLeft" class="form-label">Left (mm)</label>
+      <input type="number" id="marginLeft" class="form-control" value="0" min="0" step="1" inputmode="decimal">
+    </div>
+    <div class="col-12">
+      <label for="pages" class="form-label">Pages to crop</label>
+      <input type="text" id="pages" class="form-control" placeholder="All pages, or e.g. 1-3,5" autocomplete="off" inputmode="numeric">
+      <div class="form-text">The same crop is applied to every chosen page, scaled if pages differ in size.</div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Crop PDF{% endblock %}
+{% block download_label %}Save Cropped PDF{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+  <script src="{% static 'js/trustpdf-preview.js' %}"></script>
+{% endblock %}

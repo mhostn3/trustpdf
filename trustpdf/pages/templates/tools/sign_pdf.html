@@ -1,0 +1,88 @@
+{% extends 'tools/tool_base.html' %}
+{% load static %}
+
+{% block heading %}Sign PDF{% endblock %}
+{% block lead %}Draw, type or upload your signature, drag it where it belongs, and save the signed PDF.{% endblock %}
+
+{% block options %}
+  <div class="mt-3" data-tool-options>
+    <span class="form-label d-block">Your signature</span>
+    <div class="btn-group mb-2" role="group" aria-label="Signature source">
+      <input type="radio" class="btn-check" name="sigMode" id="sigModeDraw" value="draw" checked>
+      <label class="btn btn-outline-primary btn-sm" for="sigModeDraw"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Draw</label>
+      <input type="radio" class="btn-check" name="sigMode" id="sigModeType" value="type">
+      <label class="btn btn-outline-primary btn-sm" for="sigModeType"><i class="bi bi-fonts me-1" aria-hidden="true"></i>Type</label>
+      <input type="radio" class="btn-check" name="sigMode" id="sigModeUpload" value="upload">
+      <label class="btn btn-outline-primary btn-sm" for="sigModeUpload"><i class="bi bi-image me-1" aria-hidden="true"></i>Upload image</label>
+    </div>
+
+    <div data-sig-panel="draw">
+      <div class="signature-pad-wrapper">
+        <canvas id="signaturePad" class="signature-pad" aria-label="Draw your signature here with the mouse or your finger"></canvas>
+      </div>
+      <div class="d-flex gap-2 align-items-center mt-2">
+        <label for="penColor" class="small mb-0">Pen</label>
+        <select id="penColor" class="form-select form-select-sm w-auto">
+          <option value="#1a1a1a">Black</option>
+          <option value="#1d3fa8">Blue</option>
+        </select>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="clearPadBtn">Clear</button>
+        <span class="small text-secondary">Draw with the mouse, a pen or your finger.</span>
+      </div>
+    </div>
+
+    <div data-sig-panel="type" class="d-none">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label for="typedName" class="form-label">Name</label>
+          <input type="text" id="typedName" class="form-control" placeholder="Your name" autocomplete="name" maxlength="60">
+        </div>
+        <div class="col-6 col-md-3">
+          <label for="typedFont" class="form-label">Style</label>
+          <select id="typedFont" class="form-select">
+            <option value="script">Script</option>
+            <option value="hand">Handwritten</option>
+            <option value="serif">Serif</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label for="typedColor" class="form-label">Colour</label>
+          <select id="typedColor" class="form-select">
+            <option value="#1a1a1a">Black</option>
+            <option value="#1d3fa8">Blue</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div data-sig-panel="upload" class="d-none">
+      <label for="signatureImage" class="form-label">Image of your signature (PNG or JPG)</label>
+      <input type="file" id="signatureImage" class="form-control" accept="image/png,image/jpeg,.png,.jpg,.jpeg">
+      <div class="form-check mt-2">
+        <input class="form-check-input" type="checkbox" id="removeBackground" checked>
+        <label class="form-check-label" for="removeBackground">Make the white background transparent</label>
+      </div>
+    </div>
+  </div>
+
+  {% include 'snippets/preview_stage.html' with preview_label="Drag the signature where it should go" overlay_html='<img id="signatureOverlay" class="signature-overlay d-none" alt="Signature preview" draggable="false">' %}
+
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-md-6">
+      <label for="sigWidth" class="form-label">Signature width: <span id="sigWidthValue">50 mm</span></label>
+      <input type="range" id="sigWidth" class="form-range" min="15" max="150" step="1" value="50">
+    </div>
+    <div class="col-md-6">
+      <div class="form-check"><input class="form-check-input" type="checkbox" id="addDate"><label class="form-check-label" for="addDate">Add today's date under the signature</label></div>
+      <div class="form-check"><input class="form-check-input" type="checkbox" id="allPages"><label class="form-check-label" for="allPages">Put it on every page (initials)</label></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Sign PDF{% endblock %}
+{% block download_label %}Save Signed PDF{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+  <script src="{% static 'js/trustpdf-preview.js' %}"></script>
+{% endblock %}

@@ -254,12 +254,10 @@
   }
 
   /**
-   * Draw text in visual coordinates: origin at the bottom-left of the page
-   * as displayed, (x, y) is the start of the baseline and `angle` turns the
-   * text counter-clockwise. Pages with /Rotate 90, 180 or 270 get their text
-   * upright anyway.
+   * Map a point from visual coordinates (origin bottom-left of the page as
+   * displayed, after /Rotate) to the page's own coordinate space.
    */
-  function drawTextVisual(page, text, { x, y, angle = 0, ...options }) {
+  function visualToPage(page, x, y) {
     const rotation = pageRotation(page);
     const box = page.getCropBox();
     let px = x;
@@ -267,12 +265,29 @@
     if (rotation === 90) { px = box.width - y; py = x; }
     else if (rotation === 180) { px = box.width - x; py = box.height - y; }
     else if (rotation === 270) { px = y; py = box.height - x; }
-    page.drawText(text, {
-      ...options,
-      x: box.x + px,
-      y: box.y + py,
-      rotate: PDFLib.degrees((angle + rotation) % 360),
-    });
+    return { x: box.x + px, y: box.y + py, rotation };
+  }
+
+  /**
+   * Draw text in visual coordinates: (x, y) is the start of the baseline and
+   * `angle` turns the text counter-clockwise. Pages with /Rotate 90, 180 or
+   * 270 get their text upright anyway.
+   */
+  function drawTextVisual(page, text, { x, y, angle = 0, ...options }) {
+    const p = visualToPage(page, x, y);
+    page.drawText(text, { ...options, x: p.x, y: p.y, rotate: PDFLib.degrees((angle + p.rotation) % 360) });
+  }
+
+  /** Draw an embedded image with its bottom-left corner at visual (x, y). */
+  function drawImageVisual(page, image, { x, y, width, height, ...options }) {
+    const p = visualToPage(page, x, y);
+    page.drawImage(image, { ...options, x: p.x, y: p.y, width, height, rotate: PDFLib.degrees(p.rotation) });
+  }
+
+  /** Draw an embedded page (PDFEmbeddedPage) with its bottom-left corner at visual (x, y). */
+  function drawPageVisual(page, embedded, { x, y, width, height, ...options }) {
+    const p = visualToPage(page, x, y);
+    page.drawPage(embedded, { ...options, x: p.x, y: p.y, width, height, rotate: PDFLib.degrees(p.rotation) });
   }
 
   /** Standard PDF fonts only cover Latin text; say which character is the problem. */
@@ -728,7 +743,10 @@
     createPdf,
     copyMetadata,
     visualSize,
+    visualToPage,
     drawTextVisual,
+    drawImageVisual,
+    drawPageVisual,
     assertEncodable,
     download,
     FileHandler,

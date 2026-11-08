@@ -359,6 +359,7 @@
   }
 
   window.TrustPDF.PagePicker = PagePicker;
+  window.TrustPDF.loadPdfjs = loadPdfjs;
   window.TrustPDF.openWithPdfjs = openWithPdfjs;
   window.TrustPDF.renderPage = renderPage;
   window.TrustPDF.canvasToBytes = canvasToBytes;

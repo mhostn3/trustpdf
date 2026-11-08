@@ -150,7 +150,9 @@ CSRF_COOKIE_SECURE = True
 # scripts may only talk to this origin and the analytics endpoint.
 CSP_DIRECTIVES = {
     "default-src": ["'self'"],
-    "script-src": ["'self'", "https://cloud.umami.is"],
+    # 'wasm-unsafe-eval' lets qpdf (passwords) and Tesseract (OCR), compiled to
+    # WebAssembly, run. It does not allow eval() or inline scripts.
+    "script-src": ["'self'", "'wasm-unsafe-eval'", "https://cloud.umami.is"],
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": ["'self'", "data:", "blob:"],
     "font-src": ["'self'"],

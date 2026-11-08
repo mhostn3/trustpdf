@@ -66,4 +66,15 @@ for shade in (180, 120):
     overlay = Image.new("RGB", im.size, (shade, 150, 220 - shade))
     pages.append(Image.blend(im, overlay, 0.5))
 pages[0].save(OUT / "photo-heavy.pdf", "PDF", resolution=200, quality=95, save_all=True, append_images=pages[1:])
+# A one-page "scan": rendered text as an image, for OCR.
+from PIL import ImageFont
+scan = Image.new("RGB", (1240, 1754), "white")
+d = ImageDraw.Draw(scan)
+try:
+    f = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 44)
+except OSError:
+    f = ImageFont.load_default()
+for i, line in enumerate(["TrustPDF OCR fixture", "The quick brown fox jumps", "over the lazy dog 12345"]):
+    d.text((120, 200 + i * 90), line, fill="black", font=f)
+scan.save(OUT / "scan.pdf", "PDF", resolution=150)
 print("fixtures written to", OUT)
