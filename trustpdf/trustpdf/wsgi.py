@@ -1,5 +1,5 @@
 """
-WSGI config for pdftrust project.
+WSGI config for the TrustPDF project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

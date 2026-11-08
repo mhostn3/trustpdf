@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-7 mx-auto">
+
+    <div class="text-center mb-4">
+      <h1 class="display-5">Terms of Use</h1>
+      <p class="lead">TrustPDF is free, open-source software offered as is. Here is what that means.</p>
+      <p class="text-body-secondary small">Last updated: 8 November 2026</p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">1. The service</h2>
+      <p class="mb-0">
+        TrustPDF (www.trustpdf.net) provides tools for working with PDF files that run entirely in your web
+        browser. The service is operated by Martin Hostnik (see <a href="{% url 'pages:about' %}" class="link-secondary">About</a>)
+        and is provided free of charge. By using the site you agree to these terms.
+      </p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">2. Your files</h2>
+      <p class="mb-0">
+        Your files are processed on your own device and are never sent to us. You remain the sole owner of
+        your files and of anything you create with the tools. You are responsible for having the right to
+        use and modify the files you process, and for checking the output before relying on it.
+      </p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">3. No warranty</h2>
+      <p>
+        The service is provided <strong>"as is" and "as available"</strong>, without warranties of any kind,
+        express or implied, including warranties of merchantability, fitness for a particular purpose, or
+        non-infringement. We do not guarantee that:
+      </p>
+      <ul class="mb-0">
+        <li>the tools will work with every PDF (for example, password-protected, damaged, or very large files);</li>
+        <li>the output will be free of errors or suitable for any specific use;</li>
+        <li>the site will be available at all times or free of interruptions.</li>
+      </ul>
+      <p class="mt-3 mb-0"><strong>Keep a copy of your original files.</strong> The tools create new files and never modify the originals, but you should verify every result.</p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">4. Limitation of liability</h2>
+      <p class="mb-0">
+        To the fullest extent permitted by law, the operator of TrustPDF is not liable for any direct, indirect,
+        incidental, or consequential damages, including loss of data, arising from your use of, or inability to
+        use, the service. Nothing in these terms limits liability that cannot be limited by applicable law.
+      </p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">5. Acceptable use</h2>
+      <p>You agree not to:</p>
+      <ul class="mb-0">
+        <li>use the service for anything unlawful, including processing documents you have no right to use;</li>
+        <li>attempt to disrupt, overload, or gain unauthorised access to the site or its server;</li>
+        <li>scrape, mirror, or frame the site in a way that misrepresents its origin.</li>
+      </ul>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">6. Open source licence</h2>
+      <p class="mb-0">
+        The TrustPDF source code is published under the
+        <a href="https://www.gnu.org/licenses/agpl-3.0.html" class="link-secondary" rel="noopener">GNU Affero General Public License v3.0</a>
+        at <a href="https://github.com/mhostn3/trustpdf" class="link-secondary" rel="noopener">github.com/mhostn3/trustpdf</a>.
+        You may use, study, modify, and self-host it under the terms of that licence. The TrustPDF name and logo
+        are not covered by the licence; please do not present a modified copy as the official site.
+        Third-party libraries (pdf-lib, PDF.js, Bootstrap, SortableJS) are included under their own licences.
+      </p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">7. Third-party links</h2>
+      <p class="mb-0">
+        The site contains links to other websites, including affiliate links to Proton and a donation link to
+        Buy Me a Coffee. We are not responsible for the content, products, or privacy practices of other sites.
+        If you purchase a Proton plan through our links we receive a commission at no extra cost to you.
+      </p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">8. Changes and termination</h2>
+      <p class="mb-0">
+        We may change, suspend, or discontinue any part of the service at any time, and may update these terms
+        by publishing a new version on this page. Continued use of the site after a change means you accept the
+        updated terms.
+      </p>
+    </div>
+
+    <div class="card shadow-sm p-4 my-2">
+      <h2 class="h5">9. Contact</h2>
+      <p class="mb-0">
+        Questions about these terms: <a href="mailto:{{ contact_email }}" class="link-secondary">{{ contact_email }}</a>.
+        See also the <a href="{% url 'pages:privacy' %}" class="link-secondary">Privacy Policy</a> and
+        <a href="{% url 'pages:cookies' %}" class="link-secondary">Cookie Policy</a>.
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

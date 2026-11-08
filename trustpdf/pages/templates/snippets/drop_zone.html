@@ -1,0 +1,33 @@
+{% if accept == "image" %}
+  {% with label="Select or drop JPG or PNG images" accept_attr="image/jpeg,image/png,.jpg,.jpeg,.png" %}
+    <label for="fileInput" class="form-label" id="fileInputLabel">{{ label }}{% if multiple %} (in order){% endif %}</label>
+    <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="{{ label }}. Press Enter to choose files.">
+      <input class="d-none" type="file" id="fileInput" accept="{{ accept_attr }}" {% if multiple %}multiple{% endif %}>
+      <div class="drop-zone-content">
+        <div class="drop-zone-icon"><i class="bi bi-file-earmark-image" aria-hidden="true"></i></div>
+        <div class="drop-zone-title">Drop images here</div>
+        <div class="drop-zone-subtitle">or click to select files from your device</div>
+        <div class="drop-zone-note">JPG and PNG · Multiple files supported · Files stay in your browser</div>
+      </div>
+    </div>
+  {% endwith %}
+{% else %}
+  {% with accept_attr="application/pdf,.pdf" %}
+    <label for="fileInput" class="form-label" id="fileInputLabel">
+      {% if multiple %}Select or drop PDF files (in order){% else %}Select or drop a PDF file{% endif %}
+    </label>
+    <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="{% if multiple %}Select or drop PDF files{% else %}Select or drop a PDF file{% endif %}. Press Enter to choose.">
+      <input class="d-none" type="file" id="fileInput" accept="{{ accept_attr }}" {% if multiple %}multiple{% endif %}>
+      <div class="drop-zone-content">
+        <div class="drop-zone-icon"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i></div>
+        <div class="drop-zone-title">{% if multiple %}Drop PDF files here{% else %}Drop a PDF file here{% endif %}</div>
+        <div class="drop-zone-subtitle">or click to select from your device</div>
+        <div class="drop-zone-note">{% if multiple %}Multiple files supported{% else %}One file at a time{% endif %} · Files stay in your browser</div>
+      </div>
+    </div>
+  {% endwith %}
+{% endif %}
+{% if multiple %}
+  <div id="totalSize" class="mt-2" aria-live="polite"></div>
+  <ul class="list-group mt-3" id="fileList" aria-label="Selected files, drag to reorder"></ul>
+{% endif %}
