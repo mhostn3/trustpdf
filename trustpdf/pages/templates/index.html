@@ -6,8 +6,8 @@
   <img src="{% static 'img/brand/trustpdf-icon-black.webp' %}" alt="" width="120" height="120" class="hero-logo">
   <h1>PDF tools that <span class="highlight">never upload</span> your files</h1>
   <p class="lead">
-    Merge, split, rotate, reorder and clean up PDFs right in your browser.
-    Nothing is sent to a server, so your documents stay yours.
+    Merge, split, compress, rotate, number, watermark and convert PDFs right in your browser.
+    Free, no sign-up, and nothing is sent to a server, so your documents stay yours.
   </p>
   <div class="trust-badges" aria-label="Privacy guarantees">
     <span class="trust-badge"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i>No uploads</span>
@@ -18,12 +18,22 @@
 </section>
 
 <section aria-labelledby="tools-heading">
-  <h2 id="tools-heading" class="section-title">Choose a tool</h2>
-  <div class="row g-4 justify-content-center">
-    {% for tool in tools %}
-      {% include 'snippets/tool_card.html' with tool=tool %}
+  <h2 id="tools-heading" class="visually-hidden">All PDF tools</h2>
+  <nav class="group-nav" aria-label="Tool categories">
+    {% for group, group_tools in tool_groups %}
+      <a href="#{{ group.key }}">{{ group.heading }}</a>
     {% endfor %}
-  </div>
+  </nav>
+  {% for group, group_tools in tool_groups %}
+    <div class="tool-group-section" id="{{ group.key }}">
+      <h2 class="section-title">{{ group.heading }}</h2>
+      <div class="row g-3 g-lg-4 justify-content-center">
+        {% for tool in group_tools %}
+          {% if group_tools|length == 5 %}{% include 'snippets/tool_card.html' with tool=tool col_class='col-lg' %}{% else %}{% include 'snippets/tool_card.html' with tool=tool %}{% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
 </section>
 
 <section class="mt-5 pt-3" aria-labelledby="why-heading">
@@ -70,6 +80,27 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="mt-5 pt-3" aria-labelledby="how-heading">
+  <h2 id="how-heading" class="section-title">How it works</h2>
+  <ol class="how-it-works">
+    <li><strong>Open a tool.</strong> The page loads open-source PDF libraries into your browser.</li>
+    <li><strong>Add your file.</strong> It is read straight from your disk into the page's memory, never sent over the internet.</li>
+    <li><strong>Save the result.</strong> Your browser builds the new file and saves it to your device. Close the tab and nothing is left behind.</li>
+  </ol>
+</section>
+
+<section class="mt-5 pt-3" aria-labelledby="faq-heading">
+  <h2 id="faq-heading" class="section-title">Frequently asked questions</h2>
+  <div class="faq faq-home mx-auto">
+    {% for item in home_faq %}
+      <details{% if forloop.first %} open{% endif %}>
+        <summary>{{ item.q }}</summary>
+        <p>{{ item.a }}</p>
+      </details>
+    {% endfor %}
   </div>
 </section>
 {% endblock %}

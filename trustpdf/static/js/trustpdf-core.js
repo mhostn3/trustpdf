@@ -239,6 +239,54 @@
   }
 
   /* ----------------------------------------------------------------- */
+  /*  Drawing on pages (page numbers, watermarks)                       */
+  /* ----------------------------------------------------------------- */
+
+  function pageRotation(page) {
+    return ((page.getRotation().angle % 360) + 360) % 360;
+  }
+
+  /** The page size the reader sees, after the page's /Rotate is applied. */
+  function visualSize(page) {
+    const box = page.getCropBox();
+    const turned = pageRotation(page) % 180 !== 0;
+    return turned ? { width: box.height, height: box.width } : { width: box.width, height: box.height };
+  }
+
+  /**
+   * Draw text in visual coordinates: origin at the bottom-left of the page
+   * as displayed, (x, y) is the start of the baseline and `angle` turns the
+   * text counter-clockwise. Pages with /Rotate 90, 180 or 270 get their text
+   * upright anyway.
+   */
+  function drawTextVisual(page, text, { x, y, angle = 0, ...options }) {
+    const rotation = pageRotation(page);
+    const box = page.getCropBox();
+    let px = x;
+    let py = y;
+    if (rotation === 90) { px = box.width - y; py = x; }
+    else if (rotation === 180) { px = box.width - x; py = box.height - y; }
+    else if (rotation === 270) { px = y; py = box.height - x; }
+    page.drawText(text, {
+      ...options,
+      x: box.x + px,
+      y: box.y + py,
+      rotate: PDFLib.degrees((angle + rotation) % 360),
+    });
+  }
+
+  /** Standard PDF fonts only cover Latin text; say which character is the problem. */
+  function assertEncodable(font, text) {
+    for (const ch of text) {
+      try {
+        font.encodeText(ch);
+      } catch (_) {
+        throw new ToolError(`The character "${ch}" is not supported. The built-in PDF fonts cover Latin letters (including most accented ones), digits and common punctuation.`);
+      }
+    }
+  }
+
+  /* ----------------------------------------------------------------- */
   /*  Download manager                                                  */
   /* ----------------------------------------------------------------- */
 
@@ -679,6 +727,9 @@
     loadPdf,
     createPdf,
     copyMetadata,
+    visualSize,
+    drawTextVisual,
+    assertEncodable,
     download,
     FileHandler,
     initTool,

@@ -5,16 +5,23 @@
 <div class="row">
   <div class="col col-lg-8 mx-auto">
 
-    <a href="{% url 'pages:index' %}" class="back-link"><i class="bi bi-arrow-left" aria-hidden="true"></i> All tools</a>
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb tp-breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pages:index' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'pages:index' %}#{{ tool.group }}">{{ tool.group_label }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ tool.title }}</li>
+      </ol>
+    </nav>
 
     <div class="tool-header">
       <img src="{% static tool.icon %}" alt="" width="84" height="84" class="tool-icon-lg">
       <h1>{% block heading %}{{ tool.title }}{% endblock %}</h1>
       <p class="lead">{% block lead %}{{ tool.description }}{% endblock %}</p>
-      <p class="tool-note">
-        <i class="bi bi-shield-lock" aria-hidden="true"></i>
-        Everything happens in your browser; nothing is uploaded. Very large files (over ~100 MB) can be slow on phones.
-      </p>
+      <div class="trust-badges trust-badges-sm" aria-label="Privacy guarantees">
+        <span class="trust-badge"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i>Never uploaded</span>
+        <span class="trust-badge"><i class="bi bi-gift" aria-hidden="true"></i>Free, no sign-up</span>
+        <span class="trust-badge"><i class="bi bi-droplet" aria-hidden="true"></i>No watermark</span>
+      </div>
     </div>
 
     <div class="card tool-panel">
@@ -68,6 +75,42 @@
         </a>
       </div>
     </div>
+
+    {% block about_tool %}
+    <section class="tool-info mt-5" aria-labelledby="about-heading">
+      <h2 id="about-heading">About {{ tool.title }}</h2>
+      <p>{{ tool.intro }}</p>
+
+      <h2 id="how-to">{{ tool.how_to_title }}</h2>
+      <ol class="steps">
+        {% for step in tool.steps %}<li>{{ step }}</li>{% endfor %}
+      </ol>
+      <p class="small text-secondary mb-0">
+        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+        Everything happens in your browser; nothing is uploaded. Very large files (over ~100 MB) can be slow on phones.
+      </p>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq">
+        {% for item in tool.faq_items %}
+          <details{% if forloop.first %} open{% endif %}>
+            <summary>{{ item.q }}</summary>
+            <p>{{ item.a }}</p>
+          </details>
+        {% endfor %}
+      </div>
+
+      <h2 id="related">Related tools</h2>
+      <div class="related-tools">
+        {% for item in tool.related_tools %}
+          <a href="{% url item.url_name %}" class="related-tool">
+            <img src="{% static item.icon %}" alt="" width="44" height="44" loading="lazy">
+            <span><strong>{{ item.title }}</strong><span>{{ item.description }}</span></span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endblock %}
 
   </div>
 </div>

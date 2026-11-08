@@ -36,7 +36,7 @@ MANAGE_DIR="${REPO_DIR}/trustpdf"
 SERVICE="trustpdf"
 BRANCH="main"
 SITE_URL="https://www.trustpdf.net"
-CHECK_PATHS="/ /tools/merge-pdf/ /tools/split-pdf/ /privacy/ /sitemap.xml /static/css/custom.css"
+CHECK_PATHS="/ /tools/merge-pdf/ /tools/split-pdf/ /tools/compress-pdf/ /privacy/ /sitemap.xml /robots.txt /llms.txt /static/css/custom.css"
 
 PULL=1
 [[ "${1:-}" == "--no-pull" ]] && PULL=0
@@ -136,6 +136,8 @@ STATIC_ROOT=$(as_app "DJANGO_SETTINGS_MODULE=trustpdf.settings python -c 'import
 ok "static files collected to $STATIC_ROOT"
 
 if restart_and_check; then
+  step "Notifying search engines (IndexNow; skipped when INDEXNOW_KEY is not set)"
+  if out=$(as_app "python manage.py indexnow" 2>&1); then ok "$out"; else printf '\033[1;33m    WARN (deploy is fine): %s\033[0m\n' "$out"; fi
   printf '\n\033[1;32mDeploy finished: %s is live.\033[0m\n' "$NEW_COMMIT"
   exit 0
 fi

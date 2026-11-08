@@ -300,5 +300,66 @@
     }
   }
 
+  /**
+   * Open a file with PDF.js (for rendering or reading text).
+   * Returns the PDFDocumentProxy; call `pdf.release()` when done to free
+   * the worker's memory.
+   */
+  async function openWithPdfjs(file) {
+    const pdfjsLib = await loadPdfjs();
+    const data = file instanceof Uint8Array ? file : new Uint8Array(await file.arrayBuffer());
+    const task = pdfjsLib.getDocument({ data, isEvalSupported: false });
+    try {
+      const pdf = await task.promise;
+      pdf.release = () => task.destroy();
+      return pdf;
+    } catch (error) {
+      task.destroy();
+      if (error && error.name === "PasswordException") {
+        throw new TrustPDF.ToolError("This PDF is password-protected. Remove the password in your PDF reader and try again.");
+      }
+      if (error && error.name === "InvalidPDFException") {
+        throw new TrustPDF.ToolError("This file could not be read as a PDF. It may be damaged, or it may not be a PDF at all.");
+      }
+      throw error;
+    }
+  }
+
+  /** Render one page (1-based) to a canvas at `dpi` (72 = the page's own size). */
+  async function renderPage(pdf, pageNumber, dpi, { background = "#ffffff" } = {}) {
+    const page = await pdf.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: dpi / 72 });
+    // Browsers cap canvas size; stay well below the limits (about 16k px a side, 268M px total).
+    const maxSide = 10000;
+    const factor = Math.min(1, maxSide / Math.max(viewport.width, viewport.height), Math.sqrt(64e6 / (viewport.width * viewport.height)));
+    const vp = factor < 1 ? page.getViewport({ scale: (dpi / 72) * factor }) : viewport;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(vp.width);
+    canvas.height = Math.ceil(vp.height);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    const size = page.getViewport({ scale: 1 });
+    page.cleanup();
+    return { canvas, width: size.width, height: size.height };
+  }
+
+  function canvasToBytes(canvas, type, quality) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          reject(new TrustPDF.ToolError("The browser could not create the image. Try a lower resolution."));
+          return;
+        }
+        resolve(new Uint8Array(await blob.arrayBuffer()));
+      }, type, quality);
+    });
+  }
+
   window.TrustPDF.PagePicker = PagePicker;
+  window.TrustPDF.openWithPdfjs = openWithPdfjs;
+  window.TrustPDF.renderPage = renderPage;
+  window.TrustPDF.canvasToBytes = canvasToBytes;
 })();

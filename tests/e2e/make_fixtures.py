@@ -59,4 +59,11 @@ for name, fmt, size in [("photo.jpg", "JPEG", (640, 480)), ("tall.png", "PNG", (
     im = Image.new("RGB", size, (200, 80, 80))
     ImageDraw.Draw(im).rectangle([20, 20, size[0] - 20, size[1] - 20], outline=(0, 0, 0), width=10)
     im.save(OUT / name, fmt)
+# A "scanned" PDF made of two high-resolution photos, for Compress PDF.
+pages = []
+for shade in (180, 120):
+    im = Image.effect_noise((1700, 2200), 40).convert("RGB")
+    overlay = Image.new("RGB", im.size, (shade, 150, 220 - shade))
+    pages.append(Image.blend(im, overlay, 0.5))
+pages[0].save(OUT / "photo-heavy.pdf", "PDF", resolution=200, quality=95, save_all=True, append_images=pages[1:])
 print("fixtures written to", OUT)

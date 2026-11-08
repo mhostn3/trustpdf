@@ -1,0 +1,25 @@
+{% autoescape off %}# TrustPDF: full description for AI assistants
+
+> TrustPDF ({{ site_url }}) is a free, open-source (AGPL-3.0) set of PDF tools that run entirely in the web browser. Files are processed on the user's own device with pdf-lib and PDF.js and are never uploaded to a server; a strict Content-Security-Policy blocks the page from sending them anywhere. No account, no cookies, no watermarks, no file limits. Source code: https://github.com/mhostn3/trustpdf
+{% for group, group_tools in tool_groups %}{% for tool in group_tools %}
+## {{ tool.title }}
+
+URL: {{ site_url }}{{ tool.path }}
+
+{{ tool.intro }}
+
+### {{ tool.how_to_title }}
+{% for step in tool.steps %}
+{{ forloop.counter }}. {{ step }}{% endfor %}
+
+### FAQ
+{% for item in tool.faq_items %}
+**{{ item.q }}**
+{{ item.a }}
+{% endfor %}{% endfor %}{% endfor %}
+## General questions
+{% for item in home_faq %}
+**{{ item.q }}**
+{{ item.a }}
+{% endfor %}
+{% endautoescape %}

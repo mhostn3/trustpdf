@@ -1,0 +1,51 @@
+{% extends 'tools/tool_base.html' %}
+
+{% block heading %}Add Page Numbers to PDF{% endblock %}
+{% block lead %}Number the pages of a PDF: choose where the numbers go, how they look and where counting starts.{% endblock %}
+
+{% block options %}
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-md-6">
+      <label for="numberPosition" class="form-label">Position</label>
+      <select id="numberPosition" class="form-select">
+        <option value="bottom-center">Bottom centre</option>
+        <option value="bottom-right">Bottom right</option>
+        <option value="bottom-left">Bottom left</option>
+        <option value="top-center">Top centre</option>
+        <option value="top-right">Top right</option>
+        <option value="top-left">Top left</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label for="numberFormat" class="form-label">Format</label>
+      <select id="numberFormat" class="form-select" aria-describedby="formatPreview">
+        <option value="n">1</option>
+        <option value="page">Page 1</option>
+        <option value="pageOf">Page 1 of 10</option>
+        <option value="slash">1 / 10</option>
+        <option value="dash">- 1 -</option>
+      </select>
+      <div class="form-text" id="formatPreview"></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <label for="startNumber" class="form-label">Start at</label>
+      <input type="number" id="startNumber" class="form-control" value="1" min="1" max="99999" inputmode="numeric">
+    </div>
+    <div class="col-6 col-md-3">
+      <label for="fontSize" class="form-label">Size</label>
+      <select id="fontSize" class="form-select">
+        <option value="9">Small</option>
+        <option value="11" selected>Normal</option>
+        <option value="14">Large</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label for="pages" class="form-label">Pages to number</label>
+      <input type="text" id="pages" class="form-control" placeholder="All pages, or e.g. 2-20" autocomplete="off" inputmode="numeric">
+      <div class="form-text">Leave empty for every page. To skip a cover page, type a range such as <code>2-20</code>.</div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Add Page Numbers{% endblock %}
+{% block download_label %}Save Numbered PDF{% endblock %}

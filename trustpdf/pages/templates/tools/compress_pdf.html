@@ -1,0 +1,23 @@
+{% extends 'tools/tool_base.html' %}
+
+{% block heading %}Compress PDF{% endblock %}
+{% block lead %}Make a PDF smaller for email and uploads. You see the new size before you save.{% endblock %}
+
+{% block options %}
+  <div class="mt-3" data-tool-options>
+    <label for="compressLevel" class="form-label">Compression</label>
+    <select id="compressLevel" class="form-select" aria-describedby="levelHelp">
+      <option value="lossless">Lossless (same quality, keeps text)</option>
+      <option value="strong">Strong (150 DPI images, for scans)</option>
+      <option value="extreme">Maximum (100 DPI images, smallest file)</option>
+    </select>
+    <div class="form-text" id="levelHelp"></div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Compress PDF{% endblock %}
+{% block download_label %}Save Compressed PDF{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+{% endblock %}

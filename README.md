@@ -19,6 +19,11 @@ Every tool runs entirely in your browser: **no uploads, no accounts, no cookies*
 | **PDF Metadata Viewer** | See title, author, producer, dates, and whether a hidden XMP stream exists |
 | **PDF Metadata Editor** | Edit the fields, or strip all metadata (including XMP) before sharing |
 | **Images to PDF** | Turn JPG/PNG images into a PDF (original size, A4 or Letter, optional margins) |
+| **Compress PDF** | Lossless restructuring, or strong/maximum compression that turns pages into JPEGs (for scans) |
+| **Add Page Numbers** | Six positions, formats like `Page 1 of 10`, start number, page range; upright on rotated pages |
+| **Watermark PDF** | Diagonal or horizontal text watermark with colour and opacity |
+| **PDF to JPG** | Render pages to JPG or PNG at 72/150/300 DPI; several pages download as a ZIP |
+| **PDF to Text** | Extract text to a `.txt` file, with a preview and copy button |
 
 Features:
 
@@ -45,8 +50,30 @@ deploy/trustpdf.sh         production deploy script (copy to ~ on the server)
 tests/e2e/                 browser smoke test (Playwright)
 ```
 
-Adding a tool means: an entry in `pages/tools.py`, a template in `pages/templates/tools/`, a script in
-`static/js/tools/`, an icon and an OG image.
+Adding a tool means: an entry in `pages/tools.py` (including its how-to steps and FAQ), a template in
+`pages/templates/tools/`, a script in `static/js/tools/`, and an icon and OG image
+(`python scripts/make_tool_art.py <slug> "<Title>" "<subtitle>" <bootstrap-icon-codepoint>` draws both).
+
+---
+
+## 🔎 SEO and AI visibility
+
+Every tool page carries a keyword-focused title and description, Open Graph/Twitter tags, visible
+"How to" steps, an FAQ and related-tool links, plus matching JSON-LD (`WebApplication`, `HowTo`,
+`FAQPage`, `BreadcrumbList`, `Organization`, `WebSite`), generated in `pages/seo.py`.
+
+| URL | Purpose |
+| --- | --- |
+| `/sitemap.xml` | All pages, with their share images |
+| `/robots.txt` | Allows everything; names the search and AI crawlers (GPTBot, ClaudeBot, PerplexityBot, …) explicitly |
+| `/llms.txt`, `/llms-full.txt` | Plain-text site map and full how-to/FAQ text for AI assistants ([llmstxt.org](https://llmstxt.org)) |
+| `/manifest.webmanifest` | Installable web app |
+| `/.well-known/security.txt` | Security contact |
+| `/<INDEXNOW_KEY>.txt` | IndexNow ownership key (only when `INDEXNOW_KEY` is set) |
+
+Optional `.env` settings: `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION` (meta tags for Search
+Console / Bing Webmaster Tools) and `INDEXNOW_KEY` (the deploy script then pings Bing, Yandex and others
+with every URL after each deploy via `manage.py indexnow`).
 
 ---
 

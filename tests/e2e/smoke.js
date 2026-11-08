@@ -17,6 +17,25 @@ const inspect = () => page.evaluate(async () => {
            rotations: d.getPages().map((p) => p.getRotation().angle) };
 });
 
+// Text of each page of a produced PDF, read with PDF.js in a page that has it loaded.
+async function pageText(file) {
+  const b64 = fs.readFileSync(file).toString("base64");
+  const p = await page.context().newPage();
+  await p.goto(`${BASE}/tools/pdf-to-text/`);
+  const result = await p.evaluate(async (data) => {
+    const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
+    const pdf = await TrustPDF.openWithPdfjs(bytes);
+    const out = [];
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const c = await (await pdf.getPage(n)).getTextContent();
+      out.push(c.items.map((i) => i.str).join(" "));
+    }
+    return out;
+  }, b64);
+  await p.close();
+  return result;
+}
+
 async function run(name, fn) {
   process.stdout.write(`${name.padEnd(40)}`);
   try {
@@ -204,16 +223,102 @@ async function run(name, fn) {
     return d.name;
   });
 
-  await run("static pages + dark mode", async () => {
+  await run("compress: lossless or 'already small' warning", async () => {
+    await open("compress-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "five pages.pdf"));
+    await page.click("#processBtn");
+    await Promise.race([
+      page.locator("#downloadArea").waitFor({ state: "visible" }),
+      page.locator("#toolMessage .alert-warning").waitFor(),
+    ]);
+    return (await page.locator("#toolMessage").innerText()).slice(0, 70);
+  });
+
+  await run("compress: strong (rasterize)", async () => {
+    await open("compress-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "photo-heavy.pdf"));
+    await page.selectOption("#compressLevel", "strong");
+    await page.click("#processBtn");
+    const d = await download();
+    const i = await inspect(); if (i.pages !== 2) throw new Error(`expected 2 pages, got ${i.pages}`);
+    const before = fs.statSync(path.join(FIX, "photo-heavy.pdf")).size;
+    if (d.buf.length >= before) throw new Error(`not smaller: ${d.buf.length} >= ${before}`);
+    return `${before}B -> ${d.buf.length}B`;
+  });
+
+  await run("pdf to jpg: two pages -> zip", async () => {
+    await open("pdf-to-jpg");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.fill("#pages", "1,3");
+    await page.click("#processBtn");
+    const d = await download();
+    if (d.buf.slice(0, 2).toString() !== "PK") throw new Error("not a zip");
+    return `${d.name} ${d.buf.length}B`;
+  });
+
+  await run("pdf to png: one page -> png", async () => {
+    await page.click("#startAgainBtn");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.selectOption("#imgFormat", "png");
+    await page.fill("#pages", "2");
+    await page.click("#processBtn");
+    const d = await download();
+    if (d.buf.slice(1, 4).toString() !== "PNG") throw new Error("not a png");
+    return d.name;
+  });
+
+  await run("page numbers: page x of y, skip cover", async () => {
+    await open("add-page-numbers");
+    await page.setInputFiles("#fileInput", path.join(FIX, "five pages.pdf"));
+    await page.selectOption("#numberFormat", "pageOf");
+    await page.fill("#pages", "2-5");
+    await page.click("#processBtn");
+    const d = await download();
+    const text = await pageText(d.file);
+    if (!text[1].includes("Page 1 of 4") || !text[4].includes("Page 4 of 4") || text[0].includes(" of ")) {
+      throw new Error("numbers wrong: " + JSON.stringify(text));
+    }
+    return d.name;
+  });
+
+  await run("watermark: diagonal, unsupported char refused", async () => {
+    await open("watermark-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await page.fill("#wmText", "Тест");
+    await page.click("#processBtn");
+    await page.locator("#toolMessage .alert-danger").waitFor();
+    await page.fill("#wmText", "DRAFT copy");
+    await page.click("#processBtn");
+    const d = await download();
+    const text = await pageText(d.file);
+    if (!text.every((t) => t.includes("DRAFT copy"))) throw new Error("watermark missing");
+    return d.name;
+  });
+
+  await run("pdf to text", async () => {
+    await open("pdf-to-text");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await page.click("#processBtn");
+    const d = await download();
+    const text = d.buf.toString();
+    if (!text.includes("Page 3") || !text.includes("--- Page 2 ---")) throw new Error(text.slice(0, 100));
+    return `${d.name} ${text.length} chars`;
+  });
+
+  await run("crawler files", async () => {
+    for (const p of ["/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/manifest.webmanifest", "/.well-known/security.txt"]) {
+      const r = await page.goto(BASE + p);
+      if (r.status() !== 200) throw new Error(`${p} -> ${r.status()}`);
+    }
+  });
+
+  await run("static pages", async () => {
     for (const p of ["/", "/about/", "/privacy/", "/cookies/", "/terms/", "/privacy-tools/"]) {
       const r = await page.goto(BASE + p);
       if (r.status() !== 200) throw new Error(`${p} -> ${r.status()}`);
     }
-    
-    await page.goto(BASE + "/tools/split-pdf/");
-    
-    
-    await page.screenshot({ path: path.join(OUT, "split-dark.png") });
     
     await page.goto(BASE + "/");
     await page.screenshot({ path: path.join(OUT, "home-light.png"), fullPage: true });

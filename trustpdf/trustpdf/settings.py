@@ -25,6 +25,9 @@ env = environ.Env(
     SECURE_HSTS_SECONDS=(int, 31536000),
     UMAMI_WEBSITE_ID=(str, "9ad1d916-d376-4371-b1b1-fafdf77ddaf4"),
     UMAMI_SCRIPT_URL=(str, "https://cloud.umami.is/script.js"),
+    GOOGLE_SITE_VERIFICATION=(str, ""),
+    BING_SITE_VERIFICATION=(str, ""),
+    INDEXNOW_KEY=(str, ""),
 )
 environ.Env.read_env(os.path.join(PRE_BASE_DIR, ".env"))
 
@@ -43,6 +46,15 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 UMAMI_WEBSITE_ID = env("UMAMI_WEBSITE_ID")
 UMAMI_SCRIPT_URL = env("UMAMI_SCRIPT_URL")
 CONTACT_EMAIL = "info@koplemo.com"
+
+# Search engine ownership checks (Google Search Console, Bing Webmaster Tools).
+# Paste only the content="..." value of the meta tag they give you.
+GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION")
+BING_SITE_VERIFICATION = env("BING_SITE_VERIFICATION")
+
+# IndexNow (Bing, Yandex, Seznam, Naver): a random hex key, served at /<key>.txt.
+# `manage.py indexnow` then tells those engines about every page; the deploy script runs it.
+INDEXNOW_KEY = env("INDEXNOW_KEY")
 
 
 # Application definition

@@ -1,0 +1,44 @@
+{% extends 'tools/tool_base.html' %}
+
+{% block heading %}PDF to JPG{% endblock %}
+{% block lead %}Turn every page of a PDF, or just the ones you pick, into JPG or PNG images.{% endblock %}
+
+{% block options %}
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-md-4">
+      <label for="imgFormat" class="form-label">Image format</label>
+      <select id="imgFormat" class="form-select">
+        <option value="jpg">JPG (smaller files)</option>
+        <option value="png">PNG (lossless)</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="imgDpi" class="form-label">Resolution</label>
+      <select id="imgDpi" class="form-select">
+        <option value="72">72 DPI (screen)</option>
+        <option value="150" selected>150 DPI (good)</option>
+        <option value="300">300 DPI (print)</option>
+      </select>
+    </div>
+    <div class="col-md-4" id="qualityGroup">
+      <label for="imgQuality" class="form-label">JPG quality</label>
+      <select id="imgQuality" class="form-select">
+        <option value="0.75">Medium</option>
+        <option value="0.9" selected>High</option>
+        <option value="0.98">Maximum</option>
+      </select>
+    </div>
+    <div class="col-12">
+      <label for="pages" class="form-label">Pages to convert</label>
+      <input type="text" id="pages" class="form-control" placeholder="All pages, or e.g. 1-3,5" autocomplete="off" inputmode="numeric">
+      <div class="form-text">One page gives a single image; several pages download as a ZIP file.</div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Convert to Images{% endblock %}
+{% block download_label %}Save Images{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+{% endblock %}

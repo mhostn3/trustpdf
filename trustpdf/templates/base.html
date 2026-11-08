@@ -17,7 +17,10 @@
   {% endif %}
 
   <meta name="author" content="Martin Hostnik">
-  <meta name="robots" content="{% if robots %}{{ robots }}{% else %}index, follow{% endif %}">
+  <meta name="application-name" content="TrustPDF">
+  {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
+  {% if bing_site_verification %}<meta name="msvalidate.01" content="{{ bing_site_verification }}">{% endif %}
+  <meta name="robots" content="{% if robots %}{{ robots }}{% else %}index, follow, max-image-preview:large, max-snippet:-1{% endif %}">
 
   {# Canonical URL #}
   {% if canonical_url %}
@@ -27,6 +30,7 @@
   {# Open Graph #}
   <meta property="og:site_name" content="TrustPDF">
   <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
   <meta property="og:title" content="{% if og_title %}{{ og_title }}{% elif seo_title %}{{ seo_title }}{% else %}TrustPDF - Private Client-Side PDF Tools{% endif %}">
   <meta property="og:description" content="{% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}Private, client-side PDF tools with no uploads, no accounts, and no cookies.{% endif %}">
   {% if canonical_url %}
@@ -45,7 +49,13 @@
 
   {# Favicons #}
   <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
+  <link rel="icon" href="{% static 'img/icon-192.png' %}" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+  <link rel="manifest" href="{% url 'pages:manifest' %}">
+
+  {# For AI assistants: a plain-text map of the site (https://llmstxt.org) #}
+  <link rel="alternate" type="text/markdown" title="llms.txt" href="{% url 'pages:llms_txt' %}">
+  <link rel="sitemap" type="application/xml" href="{% url 'pages:sitemap_xml' %}">
 
   {# CSS: everything is self-hosted so no third party sees your visit #}
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
@@ -55,6 +65,11 @@
   {% if umami_website_id %}
     {# Umami: anonymous, cookie-free page statistics. See /cookies/ #}
     <script defer src="{{ umami_script_url }}" data-website-id="{{ umami_website_id }}"></script>
+  {% endif %}
+
+  {% if json_ld %}
+    {# Structured data for search engines. A data block, not a script: the CSP does not apply to it. #}
+    <script type="application/ld+json">{{ json_ld }}</script>
   {% endif %}
 
   {% block head_extra %}{% endblock %}
@@ -79,15 +94,20 @@
               <a class="nav-link dropdown-toggle {% if tool %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Tools
               </a>
-              <ul class="dropdown-menu dropdown-menu-lg-end tools-menu">
-                {% for item in tools %}
-                  <li>
-                    <a class="dropdown-item d-flex align-items-center {% if tool.name == item.name %}active{% endif %}" href="{% url item.url_name %}">
-                      <img src="{% static item.icon %}" alt="" width="28" height="28" class="me-2 rounded-circle">{{ item.title }}
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
+              <div class="dropdown-menu dropdown-menu-lg-end tools-menu">
+                <div class="tools-menu-grid">
+                  {% for group, group_tools in nav_tool_groups %}
+                    <div class="tools-menu-group">
+                      <div class="dropdown-header">{{ group.heading }}</div>
+                      {% for item in group_tools %}
+                        <a class="dropdown-item d-flex align-items-center {% if tool.name == item.name %}active{% endif %}" href="{% url item.url_name %}"{% if tool.name == item.name %} aria-current="page"{% endif %}>
+                          <img src="{% static item.icon %}" alt="" width="28" height="28" class="me-2 rounded-circle" loading="lazy">{{ item.title }}
+                        </a>
+                      {% endfor %}
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
             </li>
             <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'privacy_tools' %}active{% endif %}" href="{% url 'pages:privacy_tools' %}">Privacy Tools</a>
@@ -113,7 +133,7 @@
   <footer class="site-footer mt-auto">
     <div class="container">
       <div class="row gy-4 align-items-start">
-        <div class="col-lg-5">
+        <div class="col-lg-4">
           <div class="d-flex align-items-center mb-2">
             <img src="{% static 'img/brand/trustpdf-icon-black.webp' %}" alt="" width="28" height="28" class="brand-icon me-2">
             <span class="fw-bold">TrustPDF</span>
@@ -123,15 +143,15 @@
           </p>
           <p class="text-secondary small mb-0">&copy; {{ current_year }} TrustPDF · Made by Martin Hostnik</p>
         </div>
-        <div class="col-6 col-lg-3">
+        <div class="col-12 col-md-7 col-lg-5">
           <h2 class="footer-heading">Tools</h2>
-          <ul class="list-unstyled small mb-0">
+          <ul class="list-unstyled small mb-0 footer-tools">
             {% for item in tools %}
               <li><a href="{% url item.url_name %}" class="footer-link">{{ item.title }}</a></li>
             {% endfor %}
           </ul>
         </div>
-        <div class="col-6 col-lg-4">
+        <div class="col-12 col-md-5 col-lg-3">
           <h2 class="footer-heading">Site</h2>
           <ul class="list-unstyled small mb-0">
             <li><a href="{% url 'pages:about' %}" class="footer-link">About</a></li>
