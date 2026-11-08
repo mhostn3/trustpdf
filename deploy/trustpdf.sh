@@ -10,6 +10,9 @@
 # If the site does not answer 200 after the restart, the previous commit
 # is restored and the service restarted again.
 #
+# Install once on the server (the repo copy is then always the latest after a pull):
+#   sudo ln -sf /home/trustpdf/project/trustpdf/deploy/trustpdf.sh ~/trustpdf.sh
+#
 # Layout (same as the original trustpdf.sh):
 #   app user  : trustpdf
 #   project   : /home/trustpdf/project
@@ -19,6 +22,11 @@
 #   service   : trustpdf (systemd, gunicorn)
 
 set -u
+
+# The whole script is wrapped in a block so bash parses it completely before
+# running anything. Without this, `git pull` replacing this very file mid-run
+# (it lives in the repo) could make bash execute a mix of old and new lines.
+{
 
 APP_USER="trustpdf"
 PROJECT_DIR="/home/${APP_USER}/project"
@@ -144,3 +152,6 @@ if restart_and_check; then
   exit 1
 fi
 fail "rollback did not bring the site back either. Check: journalctl -u $SERVICE -n 100 and the nginx error log"
+
+exit 1
+}
