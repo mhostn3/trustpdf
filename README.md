@@ -42,7 +42,7 @@ trustpdf/                  Django project (manage.py lives here)
   static/js/trustpdf-core.js   shared behaviour: file handling, errors, page ranges, download
   static/js/trustpdf-pages.js  thumbnail page picker (PDF.js)
   static/js/tools/<tool>.js    the logic of each tool
-deploy/deploy.sh           production deploy script
+deploy/trustpdf.sh         production deploy script (copy to ~ on the server)
 tests/e2e/                 browser smoke test (Playwright)
 ```
 
@@ -86,12 +86,12 @@ The site runs under gunicorn behind a TLS-terminating proxy, with static files s
 Configuration comes from a `.env` file in the repository root; see [`.env.example`](.env.example) for
 every variable. `check --deploy` should pass with no warnings.
 
-[`deploy/deploy.sh`](deploy/deploy.sh) does a full deploy: pull, upgrade packages, run checks and tests,
+[`deploy/trustpdf.sh`](deploy/trustpdf.sh) does a full deploy: pull, upgrade packages, run checks and tests,
 collect static files, restart the systemd service, and verify the site answers 200. If the health check
 fails it rolls back to the previous commit.
 
 ```bash
-sudo ./deploy/deploy.sh
+cp deploy/trustpdf.sh ~/trustpdf.sh && sudo ~/trustpdf.sh
 ```
 
 ---
