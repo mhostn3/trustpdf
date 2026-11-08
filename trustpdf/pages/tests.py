@@ -7,7 +7,11 @@ from django.urls import reverse
 from .tools import TOOLS, STATIC_PAGES
 
 
-@override_settings(SECURE_SSL_REDIRECT=False)
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    # Tests must not depend on `collectstatic` having been run.
+    STORAGES={"staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}},
+)
 class PageTests(SimpleTestCase):
     """Every public page renders, and the SEO tags point to pages that exist."""
 
