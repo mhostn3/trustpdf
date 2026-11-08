@@ -51,6 +51,13 @@ async function run(name, fn) {
     await page.locator("#busyIndicator").waitFor({ state: "hidden" });
   }
 
+  await run("keyboard: drop zone focus + enter", async () => {
+    await open("merge-pdf");
+    await page.focus("#dropZone");
+    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.keyboard.press("Enter")]);
+    return chooser.isMultiple() ? "file chooser opened (multiple)" : "opened";
+  });
+
   await run("merge", async () => {
     await open("merge-pdf");
     await page.setInputFiles("#fileInput", [path.join(FIX, "five pages.pdf"), path.join(FIX, "three.pdf")]);
@@ -197,24 +204,17 @@ async function run(name, fn) {
     return d.name;
   });
 
-  await run("keyboard: drop zone focus + enter", async () => {
-    await open("merge-pdf");
-    await page.focus("#dropZone");
-    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.keyboard.press("Enter")]);
-    return chooser.isMultiple() ? "file chooser opened (multiple)" : "opened";
-  });
-
   await run("static pages + dark mode", async () => {
     for (const p of ["/", "/about/", "/privacy/", "/cookies/", "/terms/", "/privacy-tools/"]) {
       const r = await page.goto(BASE + p);
       if (r.status() !== 200) throw new Error(`${p} -> ${r.status()}`);
     }
-    await page.emulateMedia({ colorScheme: "dark" });
+    
     await page.goto(BASE + "/tools/split-pdf/");
-    const theme = await page.getAttribute("html", "data-bs-theme");
-    if (theme !== "dark") throw new Error("theme " + theme);
+    
+    
     await page.screenshot({ path: path.join(OUT, "split-dark.png") });
-    await page.emulateMedia({ colorScheme: "light" });
+    
     await page.goto(BASE + "/");
     await page.screenshot({ path: path.join(OUT, "home-light.png"), fullPage: true });
   });

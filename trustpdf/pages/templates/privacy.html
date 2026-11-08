@@ -4,19 +4,19 @@
 <div class="row">
   <div class="col col-lg-7 mx-auto">
 
-    <div class="text-center mb-4">
-      <h1 class="display-5">Privacy Policy</h1>
+    <div class="page-header">
+      <h1>Privacy Policy</h1>
       <p class="lead">What TrustPDF does, and does not do, with your files and your visit.</p>
-      <p class="text-body-secondary small">Last updated: 8 November 2026</p>
+      <p class="text-secondary small">Last updated: 8 November 2026</p>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">🔐 Your files never leave your device</h2>
+    <div class="content-card">
+      <h2>🔐 Your files never leave your device</h2>
       <p>
         Every tool on this site (merge, split, rotate, reorder, remove pages, metadata viewer and editor,
         images to PDF) runs entirely inside your browser using open-source JavaScript libraries
-        (<a href="https://github.com/Hopding/pdf-lib" class="link-secondary" rel="noopener">pdf-lib</a> and
-        <a href="https://mozilla.github.io/pdf.js/" class="link-secondary" rel="noopener">PDF.js</a>).
+        (<a href="https://github.com/Hopding/pdf-lib" class="fw-medium" rel="noopener">pdf-lib</a> and
+        <a href="https://mozilla.github.io/pdf.js/" class="fw-medium" rel="noopener">PDF.js</a>).
       </p>
       <ul class="mb-0">
         <li>No file is uploaded, transmitted, or stored on our servers.</li>
@@ -26,20 +26,20 @@
       </ul>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">✅ No accounts, no personal data</h2>
+    <div class="content-card">
+      <h2>✅ No accounts, no personal data</h2>
       <ul class="mb-0">
         <li>There are no user accounts, logins, or registration forms.</li>
         <li>We do not collect, store, sell, or share any personal information.</li>
-        <li>We do not set cookies and do not use local storage. See the <a href="{% url 'pages:cookies' %}" class="link-secondary">Cookie Policy</a>.</li>
+        <li>We do not set cookies and do not use local storage. See the <a href="{% url 'pages:cookies' %}" class="fw-medium">Cookie Policy</a>.</li>
         <li>All CSS, fonts, and JavaScript are hosted on our own server, so no content delivery network or other third party sees your visit.</li>
       </ul>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">📊 Anonymous page statistics</h2>
+    <div class="content-card">
+      <h2>📊 Anonymous page statistics</h2>
       <p>
-        We use <a href="https://umami.is" class="link-secondary" rel="noopener">Umami Cloud</a>, a privacy-focused
+        We use <a href="https://umami.is" class="fw-medium" rel="noopener">Umami Cloud</a>, a privacy-focused
         analytics service, to count page views and which tools are used (for example, how many times the
         "Merge PDFs" button is clicked). This helps us decide what to improve.
       </p>
@@ -53,12 +53,12 @@
       <p class="mb-0">
         To load the analytics script, your browser connects to <code>cloud.umami.is</code>, and the statistics are
         sent to <code>api-gateway.umami.dev</code>. These are the only third-party connections the site makes.
-        Umami's own privacy policy is at <a href="https://umami.is/privacy" class="link-secondary" rel="noopener">umami.is/privacy</a>.
+        Umami's own privacy policy is at <a href="https://umami.is/privacy" class="fw-medium" rel="noopener">umami.is/privacy</a>.
       </p>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">🖥️ Server logs</h2>
+    <div class="content-card">
+      <h2>🖥️ Server logs</h2>
       <p class="mb-0">
         Like almost every website, our web server keeps short-lived technical logs (requested page, time, IP
         address, browser type) for security and troubleshooting. They are not used to identify or profile
@@ -66,10 +66,10 @@
       </p>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">🔗 Affiliate links and donations</h2>
+    <div class="content-card">
+      <h2>🔗 Affiliate links and donations</h2>
       <p class="mb-0">
-        The <a href="{% url 'pages:privacy_tools' %}" class="link-secondary">Privacy Tools</a> page and the small tip
+        The <a href="{% url 'pages:privacy_tools' %}" class="fw-medium">Privacy Tools</a> page and the small tip
         shown after each tool contain affiliate links to Proton. If you buy a Proton plan through one of them,
         TrustPDF receives a commission at no extra cost to you. Following a link takes you to Proton's site, which
         has its own privacy policy. The "Buy me a coffee" buttons lead to buymeacoffee.com, which is also
@@ -77,26 +77,26 @@
       </p>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">🧒 Children</h2>
+    <div class="content-card">
+      <h2>🧒 Children</h2>
       <p class="mb-0">TrustPDF collects no personal data from anyone, including children.</p>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">📝 Changes to this policy</h2>
+    <div class="content-card">
+      <h2>📝 Changes to this policy</h2>
       <p class="mb-0">
         If we change how the site works, we will update this page and the date at the top. The full history
         is public in the
-        <a href="https://github.com/mhostn3/trustpdf" class="link-secondary" rel="noopener">source code repository</a>.
+        <a href="https://github.com/mhostn3/trustpdf" class="fw-medium" rel="noopener">source code repository</a>.
       </p>
     </div>
 
-    <div class="card shadow-sm p-4 my-2">
-      <h2 class="h5">❓ Questions</h2>
+    <div class="content-card">
+      <h2>❓ Questions</h2>
       <p class="mb-0">
         If you have any questions about privacy, contact us at
-        <a href="mailto:{{ contact_email }}" class="link-secondary">{{ contact_email }}</a>.
-        See also the <a href="{% url 'pages:terms' %}" class="link-secondary">Terms of Use</a>.
+        <a href="mailto:{{ contact_email }}" class="fw-medium">{{ contact_email }}</a>.
+        See also the <a href="{% url 'pages:terms' %}" class="fw-medium">Terms of Use</a>.
       </p>
     </div>
 

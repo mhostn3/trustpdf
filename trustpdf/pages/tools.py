@@ -2,7 +2,7 @@ TOOLS = [
     {
         "title": "Merge PDF",
         "short_title": "Merge PDF",
-        "description": "Merge multiple PDF files into one directly in your browser. No uploads, no accounts, no cookies.",
+        "description": "Combine several PDF files into one, in the order you choose, directly in your browser.",
         "meta_description": "Merge PDF files online privately. Combine multiple PDFs directly in your browser with no uploads, no accounts, and no cookies.",
         "og_title": "Merge PDF Online Privately - TrustPDF",
         "og_description": "Combine multiple PDF files directly in your browser. Private, client-side PDF merging with no uploads.",

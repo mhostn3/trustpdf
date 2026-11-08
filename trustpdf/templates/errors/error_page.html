@@ -1,39 +1,27 @@
 <div class="row">
   <div class="col col-lg-7 mx-auto">
 
-    <div class="text-center mb-4">
-      <h1 class="display-1 fw-bold">{{ error_code }}</h1>
-      <h2 class="display-6">{{ error_title }}</h2>
-
-      <p class="lead text-body-secondary">
-        {{ error_message }}
-      </p>
+    <div class="page-header">
+      <div class="error-code">{{ error_code }}</div>
+      <h1 class="h2 mt-2">{{ error_title }}</h1>
+      <p class="lead">{{ error_message }}</p>
     </div>
 
-    <div class="card shadow-sm p-4 my-1 text-center">
-
+    <div class="content-card text-center">
       {% if error_privacy_note %}
-        <p class="text-body-secondary">
-          {{ error_privacy_note }}
-        </p>
+        <p class="text-secondary">{{ error_privacy_note }}</p>
       {% endif %}
 
       <div class="d-flex justify-content-center gap-2 flex-wrap mt-3">
-        <a href="{% url 'pages:index' %}" class="btn btn-dark">
-          Go to homepage
-        </a>
+        <a href="{% url 'pages:index' %}" class="btn btn-primary">Go to homepage</a>
       </div>
 
       <hr class="my-4">
 
-      <p class="text-body-secondary small mb-0">
+      <p class="text-secondary small mb-0">
         If you think this is a mistake or the problem continues, please contact us at
-        <a href="mailto:{{ contact_email }}?subject=TrustPDF%20-%20{{ error_code }}%20Error"
-           class="text-decoration-none link-secondary fw-semibold">
-          {{ contact_email }}
-        </a>.
+        <a href="mailto:{{ contact_email }}?subject=TrustPDF%20-%20{{ error_code }}%20Error" class="fw-semibold">{{ contact_email }}</a>.
       </p>
-
     </div>
 
   </div>

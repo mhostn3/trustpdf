@@ -2,23 +2,74 @@
 {% load static %}
 
 {% block content %}
-<div class="row">
-  <div class="col col-lg-7 mx-auto text-center mb-4">
-    <h1 class="visually-hidden">TrustPDF: private client-side PDF tools</h1>
-    <img src="{% static 'img/brand/trustpdf-logo.webp' %}" alt="TrustPDF" width="350" height="316" class="img-fluid bg-white rounded-4 p-2">
-    <p class="lead mb-1">Private, secure PDF tools that run entirely in your browser. No uploads, no accounts, no cookies.</p>
-    <p class="text-body-secondary small">
-      Open source under the
-      <a class="link-secondary" href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener" data-umami-event="AGPL v3 license">AGPL v3 license</a>.
-      View on
-      <a class="link-secondary" href="https://github.com/mhostn3/trustpdf" target="_blank" rel="noopener" data-umami-event="GitHub">GitHub</a>.
-    </p>
+<section class="hero">
+  <img src="{% static 'img/brand/trustpdf-icon-black.webp' %}" alt="" width="120" height="120" class="hero-logo">
+  <h1>PDF tools that <span class="highlight">never upload</span> your files</h1>
+  <p class="lead">
+    Merge, split, rotate, reorder and clean up PDFs right in your browser.
+    Nothing is sent to a server, so your documents stay yours.
+  </p>
+  <div class="trust-badges" aria-label="Privacy guarantees">
+    <span class="trust-badge"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i>No uploads</span>
+    <span class="trust-badge"><i class="bi bi-person-x-fill" aria-hidden="true"></i>No accounts</span>
+    <span class="trust-badge"><i class="bi bi-cookie" aria-hidden="true"></i>No cookies</span>
+    <span class="trust-badge"><i class="bi bi-code-slash" aria-hidden="true"></i>Open source</span>
   </div>
-</div>
+</section>
 
-<div class="row justify-content-center">
-  {% for tool in tools %}
-    {% include 'snippets/tool_card.html' with tool=tool %}
-  {% endfor %}
-</div>
+<section aria-labelledby="tools-heading">
+  <h2 id="tools-heading" class="section-title">Choose a tool</h2>
+  <div class="row g-4 justify-content-center">
+    {% for tool in tools %}
+      {% include 'snippets/tool_card.html' with tool=tool %}
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-5 pt-3" aria-labelledby="why-heading">
+  <h2 id="why-heading" class="section-title">Why TrustPDF</h2>
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-3">
+      <div class="feature">
+        <div class="feature-icon"><i class="bi bi-laptop" aria-hidden="true"></i></div>
+        <div>
+          <h3>Runs on your device</h3>
+          <p>Processing happens in your browser with open-source libraries. Close the tab and nothing remains.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="feature">
+        <div class="feature-icon"><i class="bi bi-eye-slash" aria-hidden="true"></i></div>
+        <div>
+          <h3>Nothing to sign up for</h3>
+          <p>No account, no email, no cookies. Not even a cookie banner, because there is nothing to accept.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="feature">
+        <div class="feature-icon"><i class="bi bi-lightning-charge" aria-hidden="true"></i></div>
+        <div>
+          <h3>Fast and free</h3>
+          <p>No queues, no limits, no watermarks. Files are ready the moment the work is done.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="feature">
+        <div class="feature-icon"><i class="bi bi-github" aria-hidden="true"></i></div>
+        <div>
+          <h3>Verifiable</h3>
+          <p>
+            The code is public under the
+            <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener" data-umami-event="AGPL v3 license">AGPL v3</a>.
+            Read it, run it yourself, or
+            <a href="https://github.com/mhostn3/trustpdf" target="_blank" rel="noopener" data-umami-event="GitHub">check it on GitHub</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

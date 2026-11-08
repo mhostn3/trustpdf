@@ -5,14 +5,14 @@
 {% block content %}
 <div class="row">
       <div class="col col-lg-7 mx-auto">
-<div class="text-center mb-4">
-  <h1 class="display-5">About</h1>
+<div class="page-header">
+  <h1>About</h1>
   <p class="lead"><strong>TrustPDF</strong> is a privacy-first, client-side PDF tool, released as open source under the <strong>AGPLv3 license</strong>.</p>
-  <p class="text-body-secondary small">It lets you merge, split, rotate, reorder, and clean up PDF documents directly in your browser<br>with <strong>no uploads, no accounts, no cookies</strong>.</p>
+  <p class="text-secondary small">It lets you merge, split, rotate, reorder, and clean up PDF documents directly in your browser<br>with <strong>no uploads, no accounts, no cookies</strong>.</p>
 </div>
 
-<div class="card shadow-sm p-4 my-1">
-  <h2 class="h6 form-label">🙋‍♂️ Author</h2>
+<div class="content-card">
+  <h2>🙋‍♂️ Author</h2>
 
   <div class="row align-items-center">
     <div class="col-md-auto text-center mb-3 mb-md-0">
@@ -44,7 +44,7 @@
       <p class="mb-2">
         You can also find my engineering tools project here:
         <a href="https://www.koplemo.com"
-           class="text-decoration-none link-secondary"
+           class="fw-medium"
            target="_blank"
            rel="noopener noreferrer">
           www.koplemo.com
@@ -78,8 +78,8 @@
   </div>
 </div>
 
-<div class="card shadow-sm p-4 my-1">
-  <h2 class="h6 form-label">🚀 Features</h2>
+<div class="content-card">
+  <h2>🚀 Features</h2>
   <ul>
     <li>🔒 100% <strong>client-side</strong> PDF processing — your files never leave your device</li>
     <li>📎 Merge multiple PDFs into one</li>
@@ -93,47 +93,47 @@
   </ul>
 </div>
 
-<div class="card shadow-sm p-4 my-1">
-  <h2 class="h6 form-label">🛠 Tech Stack</h2>
+<div class="content-card">
+  <h2>🛠 Tech Stack</h2>
   <ul>
-    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML" class="text-decoration-none link-secondary">HTML5</a></li>
-    <li><a href="https://getbootstrap.com/" class="text-decoration-none link-secondary">Bootstrap 5</a></li>
-    <li><a href="https://github.com/Hopding/pdf-lib" class="text-decoration-none link-secondary">pdf-lib</a> (PDF processing)</li>
-    <li><a href="https://mozilla.github.io/pdf.js/" class="text-decoration-none link-secondary">PDF.js</a> (page previews)</li>
-    <li><a href="https://github.com/SortableJS/Sortable" class="text-decoration-none link-secondary">SortableJS</a></li>
-    <li><a href="https://www.djangoproject.com/" class="text-decoration-none link-secondary">Django</a> (for static file delivery and routing)</li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML" class="fw-medium">HTML5</a></li>
+    <li><a href="https://getbootstrap.com/" class="fw-medium">Bootstrap 5</a></li>
+    <li><a href="https://github.com/Hopding/pdf-lib" class="fw-medium">pdf-lib</a> (PDF processing)</li>
+    <li><a href="https://mozilla.github.io/pdf.js/" class="fw-medium">PDF.js</a> (page previews)</li>
+    <li><a href="https://github.com/SortableJS/Sortable" class="fw-medium">SortableJS</a></li>
+    <li><a href="https://www.djangoproject.com/" class="fw-medium">Django</a> (for static file delivery and routing)</li>
   </ul>
 </div>
 
-<div class="card shadow-sm p-4 my-1">
-  <h2 class="h6 form-label">📜 License</h2>
+<div class="content-card">
+  <h2>📜 License</h2>
   <p>
     This project is licensed under the <strong>GNU Affero General Public License v3.0 (AGPL-3.0)</strong>.<br>
     You may: use, modify, and share the code; run the software publicly (e.g., host it yourself).<br>
     You must: publish the source code of any running version (e.g., on a website or SaaS).
   </p>
   <p>📄 See <code>LICENSE</code> for details<br>
-  🔗 <a href="https://www.gnu.org/licenses/agpl-3.0.html" class="text-decoration-none link-secondary">Full AGPLv3 License Text</a></p>
+  🔗 <a href="https://www.gnu.org/licenses/agpl-3.0.html" class="fw-medium">Full AGPLv3 License Text</a></p>
 </div>
 
-<div class="card shadow-sm p-4 my-1">
-  <h2 class="h6 form-label">📈 Analytics</h2>
+<div class="content-card">
+  <h2>📈 Analytics</h2>
   <p>
-    We use <a href="https://umami.is" class="text-decoration-none link-secondary">Umami Cloud</a> for anonymous, cookie-free page statistics.<br>
-    No personal data is collected and nothing about your files is recorded. Details in the <a href="{% url 'pages:privacy' %}" class="text-decoration-none link-secondary">Privacy Policy</a>.
+    We use <a href="https://umami.is" class="fw-medium">Umami Cloud</a> for anonymous, cookie-free page statistics.<br>
+    No personal data is collected and nothing about your files is recorded. Details in the <a href="{% url 'pages:privacy' %}" class="fw-medium">Privacy Policy</a>.
   </p>
 </div>
 
-<div class="card shadow-sm p-4 my-1">
-  <h2 class="h6 form-label">Pull requests are not accepted right now, but you are welcome to:</h2>
+<div class="content-card">
+  <h2>Pull requests are not accepted right now, but you are welcome to:</h2>
   <ul>
-    <li><a href="https://github.com/mhostn3/trustpdf/issues" class="text-decoration-none link-secondary">Open an issue</a> for bugs or suggestions</li>
+    <li><a href="https://github.com/mhostn3/trustpdf/issues" class="fw-medium">Open an issue</a> for bugs or suggestions</li>
     <li>Fork the repo for learning, self-hosting, or private use</li>
   </ul>
 </div>
 
-<div class="card shadow-sm p-4 my-1">
-  <h2 class="h6 form-label">Thanks for respecting the values of TrustPDF: <strong>privacy, simplicity, and transparency</strong>.</h2>
+<div class="content-card">
+  <h2>Thanks for respecting the values of TrustPDF: <strong>privacy, simplicity, and transparency</strong>.</h2>
   <div class="text-center mt-3">
     <a href="https://www.buymeacoffee.com/mhostn3" target="_blank" rel="noopener" class="btn btn-outline-secondary" data-umami-event="Buy me a coffee (About footer)">☕ Buy me a coffee</a>
   </div>

@@ -25,7 +25,6 @@ Features:
 - 🔒 100% **client-side** processing with [pdf-lib](https://github.com/Hopding/pdf-lib) and [PDF.js](https://mozilla.github.io/pdf.js/); files never leave your device
 - 🛡️ A strict `Content-Security-Policy` on every page makes that promise enforceable: scripts can only talk to the site itself and the analytics endpoint
 - 🧭 No login, no storage, no cookies, no third-party CDNs; all CSS, fonts and JS are self-hosted
-- 🌗 Light and dark mode following the OS setting (not stored)
 - 📱 Works on mobile and desktop, keyboard accessible
 - 🧩 Built with Django, Bootstrap 5, pdf-lib, PDF.js and SortableJS
 
