@@ -123,8 +123,7 @@ ok "all tests passed"
 
 step "Collecting static files"
 as_app "python manage.py collectstatic --noinput --clear -v 0" || fail "collectstatic failed"
-STATIC_ROOT=$(as_app "python -c 'from django.conf import settings; import django; django.setup(); print(settings.STATIC_ROOT)'" 2>/dev/null \
-  || as_app "DJANGO_SETTINGS_MODULE=trustpdf.settings python -c 'import django; django.setup(); from django.conf import settings; print(settings.STATIC_ROOT)'")
+STATIC_ROOT=$(as_app "python manage.py shell -c 'from django.conf import settings; print(settings.STATIC_ROOT)'") || fail "could not read STATIC_ROOT"
 [[ -f "$STATIC_ROOT/staticfiles.json" ]] || fail "static manifest not found in $STATIC_ROOT"
 ok "static files collected to $STATIC_ROOT"
 
