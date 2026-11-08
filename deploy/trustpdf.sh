@@ -111,7 +111,7 @@ step "Installing / upgrading Python packages"
 as_app "pip install --quiet --upgrade pip" || fail "pip self-upgrade failed"
 as_app "pip install --quiet --upgrade -r '$REPO_DIR/requirements.txt'" || fail "pip install -r requirements.txt failed"
 as_app "python -c 'import django, whitenoise, environ, gunicorn'" || fail "a required package does not import after install"
-ok "$(as_app "python -c 'import django, whitenoise; print(\"Django\", django.get_version(), \"/ WhiteNoise\", whitenoise.__version__)'")"
+ok "$(as_app "python -c 'import django, importlib.metadata as m; print(\"Django\", django.get_version(), \"/ WhiteNoise\", m.version(\"whitenoise\"))'")"
 
 step "Django configuration check (manage.py check --deploy)"
 as_app "python manage.py check --deploy --fail-level ERROR" || fail "Django check failed; fix .env or settings before deploying"
