@@ -199,3 +199,6 @@ staticfiles/
 # Playwright
 tests/e2e/output/
 node_modules/
+
+# GeoIP database for the analytics (manage.py update_geoip)
+.geoip/

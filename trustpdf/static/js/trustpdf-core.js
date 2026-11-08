@@ -501,6 +501,7 @@
       removeBtn.className = "btn btn-sm btn-outline-danger flex-shrink-0";
       removeBtn.textContent = "Remove";
       removeBtn.setAttribute("aria-label", `Remove ${file.name}`);
+      removeBtn.dataset.tpEvent = "Remove file";  // fixed analytics name, never the file name
       removeBtn.addEventListener("click", (event) => {
         event.stopPropagation();
         this.fileMap.delete(key);

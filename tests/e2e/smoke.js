@@ -51,7 +51,6 @@ async function run(name, fn) {
   const browser = await chromium.launch();
   const context = await browser.newContext({ acceptDownloads: true, viewport: { width: 1100, height: 900 } });
   page = await context.newPage();
-  await context.route(/umami/, (r) => r.abort());
   const problems = [];
   page.on("console", (m) => { if (m.type() === "error") problems.push(`console: ${m.text()}`); });
   page.on("pageerror", (e) => problems.push(`pageerror: ${e.message}`));
@@ -480,7 +479,7 @@ async function run(name, fn) {
     await page.screenshot({ path: path.join(OUT, "home-light.png"), fullPage: true });
   });
 
-  const real = problems.filter((p) => !/favicon|umami|cloud\.umami|api-gateway|net::ERR/.test(p));
+  const real = problems.filter((p) => !/favicon|net::ERR/.test(p));
   console.log(`\nConsole problems: ${real.length}`);
   real.slice(0, 10).forEach((p) => console.log("  " + p));
   if (real.length) process.exitCode = 1;

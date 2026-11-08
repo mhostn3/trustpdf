@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static analytics_extras humanize %}
+{% block main_class %}container-xl py-4{% endblock %}
+{% block head_extra %}
+<style>
+  .an-kpi { border: 1px solid var(--bs-border-color); border-radius: .5rem; padding: .75rem 1rem; background: var(--bs-body-bg); height: 100%; }
+  .an-kpi .lbl { font-size: .8rem; color: var(--bs-secondary-color); }
+  .an-kpi .val { font-size: 1.6rem; font-weight: 600; line-height: 1.2; }
+  .an-kpi .chg { font-size: .8rem; color: var(--bs-secondary-color); }
+  .an-card { border: 1px solid var(--bs-border-color); border-radius: .5rem; background: var(--bs-body-bg); padding: 1rem; height: 100%; }
+  .an-card h2 { font-size: 1rem; font-weight: 600; margin-bottom: .75rem; }
+  .an-table { font-size: .85rem; margin: 0; }
+  .an-table td, .an-table th { padding: .25rem .4rem; vertical-align: middle; }
+  .an-table th { font-weight: 600; color: var(--bs-secondary-color); white-space: nowrap; }
+  .an-bar-cell { position: relative; }
+  .an-bar { position: absolute; left: 0; top: 3px; bottom: 3px; background: rgba(13,110,253,.12); border-radius: 0 4px 4px 0; z-index: 0; pointer-events: none; }
+  .an-bar-cell span { position: relative; z-index: 1; }
+  .an-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .an-zero td { color: var(--bs-secondary-color); }
+  .an-detail summary { cursor: pointer; }
+  .an-detail summary::marker { color: var(--bs-secondary-color); }
+  .an-up { color: #1a7f37; } .an-down { color: #c62828; }
+  .an-chart { height: 220px; }
+</style>
+{% endblock %}
+{% block content %}
+<div>
+  <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+    <div>
+      <h1 class="h3 mb-1"><i class="bi bi-graph-up"></i>&nbsp;Site analytics</h1>
+      <div class="text-secondary small">
+        {{ period.start|date:"D j M Y" }} – {{ period.end|date:"D j M Y" }}
+        · compared with {{ prev.start|date:"j M" }} – {{ prev.end|date:"j M Y" }}
+        {% if first_event %}· data since {{ first_event|date:"j M Y" }}{% endif %}
+      </div>
+    </div>
+    <form class="d-flex flex-wrap gap-2 align-items-center" method="get">
+      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}&end={{ prev.end|date:'Y-m-d' }}{% if not period.humans %}&traffic=all{% endif %}" title="Previous period"><i class="bi bi-chevron-left"></i></a>
+      <select name="days" class="form-select form-select-sm w-auto" data-autosubmit>
+        {% for d, label in periods %}<option value="{{ d }}" {% if d == period.days %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <select name="traffic" class="form-select form-select-sm w-auto" data-autosubmit title="Real browsers = sessions where the page's script ran; bots and scripts are left out">
+        <option value="" {% if period.humans %}selected{% endif %}>Real browsers</option>
+        <option value="all" {% if not period.humans %}selected{% endif %}>All traffic (incl. bots)</option>
+      </select>
+      <input type="date" name="end" class="form-control form-control-sm w-auto" value="{{ period.end|date:'Y-m-d' }}" data-autosubmit>
+      {% if next %}<a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}&end={{ next.end|date:'Y-m-d' }}{% if not period.humans %}&traffic=all{% endif %}" title="Next period"><i class="bi bi-chevron-right"></i></a>{% endif %}
+      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}{% if not period.humans %}&traffic=all{% endif %}">Today</a>
+      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}&end={{ period.end|date:'Y-m-d' }}&format=csv"><i class="bi bi-download"></i>&nbsp;CSV (period)</a>
+      <a class="btn btn-dark btn-sm" href="?format=csv&all=1" title="Every recorded event, for analysis elsewhere"><i class="bi bi-download"></i>&nbsp;Export all (CSV)</a>
+    </form>
+  </div>
+
+  {# ------------------------------------------------------------ KPIs #}
+  <div class="row g-2 mb-3">
+    {% for k in kpis %}
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="an-kpi">
+        <div class="lbl">{{ k.label }}</div>
+        <div class="val">
+          {% if k.value is None %}–{% elif k.fmt == "dur" %}{{ k.value|dur }}{% elif k.fmt == "pct" %}{{ k.value }}%{% else %}{{ k.value|intcomma }}{% endif %}
+        </div>
+        <div class="chg">
+          {% if k.change is not None %}<span class="{% if k.change > 0 %}an-up{% elif k.change < 0 %}an-down{% endif %}">{{ k.change|change }}</span> vs previous
+          {% elif k.fmt == "pct" and k.prev is not None %}previous {{ k.prev }}%
+          {% else %}no earlier data{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="small text-secondary mb-3">
+    {{ summary.new|intcomma }} new and {{ summary.returning|intcomma }} returning visitors.
+    {{ summary.inputs|intcomma }} option changes (dropdowns, checkboxes) and {{ summary.calls|intcomma }} server calculations/exports.
+    Returning visitors are recognised within the current quarter only.
+    {% if period.humans and filtered.visitors %}
+      <br><i class="bi bi-funnel"></i> Left out as bots or script-less clients: {{ filtered.visitors|intcomma }} visitors, {{ filtered.pageviews|intcomma }} page views
+      (<a href="?days={{ period.days }}&end={{ period.end|date:'Y-m-d' }}&traffic=all">show all traffic</a>).
+    {% endif %}
+  </p>
+
+  {# ------------------------------------------------------------ daily charts #}
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6"><div class="an-card"><h2>Visitors per day</h2><div id="ch-visitors" class="an-chart"></div></div></div>
+    <div class="col-lg-6"><div class="an-card"><h2>Clicks in tools per day</h2><div id="ch-actions" class="an-chart"></div></div></div>
+  </div>
+
+  {# ------------------------------------------------------------ tools #}
+  <div class="an-card mb-3">
+    <h2>Tools <span class="fw-normal text-secondary small">· click a tool to see what people did in it; tools nobody opened are greyed</span></h2>
+    <div class="table-responsive">
+    <table class="table an-table">
+      <thead><tr>
+        <th>Tool</th><th class="an-num">Views</th><th class="an-num">vs prev.</th><th class="an-num">Visitors</th>
+        <th class="an-num">Sessions</th><th class="an-num">Clicks</th><th class="an-num">Option changes</th><th class="an-num">Server calls</th><th class="an-num">Time / view</th>
+      </tr></thead>
+      <tbody>
+      {% for t in tool_rows %}
+        <tr class="{% if not t.pageviews and not t.actions %}an-zero{% endif %}">
+          <td class="an-bar-cell" style="min-width:16rem">
+            <div class="an-bar" style="width:{{ t.bar }}%"></div>
+            {% if t.detail %}
+            <details class="an-detail"><summary><span>{{ t.title }}</span>{% if t.flag %} <span class="badge text-bg-light">{{ t.flag }}</span>{% endif %}</summary>
+              <table class="table table-sm an-table mt-1 mb-2">
+                <thead><tr><th>Type</th><th>What</th><th class="an-num">Times</th><th class="an-num">Visitors</th></tr></thead>
+                {% for d in t.detail %}<tr><td class="text-secondary">{% if d.kind == "action" %}server{% elif d.kind == "input" %}option{% else %}{{ d.kind }}{% endif %}</td><td>{{ d.name }}</td><td class="an-num">{{ d.n|intcomma }}</td><td class="an-num">{{ d.v|intcomma }}</td></tr>{% endfor %}
+              </table>
+            </details>
+            {% else %}<span>{{ t.title }}</span>{% if t.flag %} <span class="badge text-bg-light">{{ t.flag }}</span>{% endif %}{% endif %}
+          </td>
+          <td class="an-num">{{ t.pageviews|intcomma }}</td>
+          <td class="an-num">{% if t.change is not None %}<span class="{% if t.change > 0 %}an-up{% elif t.change < 0 %}an-down{% endif %}">{{ t.change|change }}</span>{% elif t.pageviews %}new{% endif %}</td>
+          <td class="an-num">{{ t.visitors|intcomma }}</td>
+          <td class="an-num">{{ t.sessions|intcomma }}</td>
+          <td class="an-num">{{ t.actions|intcomma }}</td>
+          <td class="an-num">{{ t.inputs|intcomma }}</td>
+          <td class="an-num">{{ t.calls|intcomma }}</td>
+          <td class="an-num">{{ t.engaged|dur }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <div class="small text-secondary">Clicks = buttons, tabs, copy and export buttons, downloads. Option changes = dropdowns, checkboxes and radio buttons (typed values are never recorded). Server calls = calculations, uploads and file exports done on the server (some run automatically when a page loads). Time / view = time the page was visible.</div>
+  </div>
+
+  {# ------------------------------------------------------------ location #}
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6"><div class="an-card"><h2>Countries</h2>
+      {% include "analytics/_top.html" with rows=countries empty="No visits yet." %}
+    </div></div>
+    <div class="col-lg-6"><div class="an-card"><h2>Cities</h2>
+      {% include "analytics/_top.html" with rows=cities empty="No cities yet (GeoIP database missing or no visits)." %}
+    </div></div>
+  </div>
+
+  {# ------------------------------------------------------------ journeys #}
+  <div class="row g-3 mb-3">
+    <div class="col-lg-4"><div class="an-card"><h2>Where visitors come from</h2>
+      {% include "analytics/_top.html" with rows=referrers empty="No visits yet." %}
+    </div></div>
+    <div class="col-lg-4"><div class="an-card"><h2>Entry page / tool <span class="fw-normal text-secondary small">· sessions</span></h2>
+      <table class="table an-table"><tbody>
+        {% for r in journeys.entries %}<tr><td>{{ r.label }}</td><td class="an-num">{{ r.n|intcomma }}</td></tr>
+        {% empty %}<tr><td class="text-secondary">No sessions yet.</td></tr>{% endfor %}
+      </tbody></table>
+    </div></div>
+    <div class="col-lg-4"><div class="an-card"><h2>Tools used together <span class="fw-normal text-secondary small">· sessions</span></h2>
+      <table class="table an-table"><tbody>
+        {% for r in journeys.pairs %}<tr><td>{{ r.a }} <span class="text-secondary">+</span> {{ r.b }}</td><td class="an-num">{{ r.n|intcomma }}</td></tr>
+        {% empty %}<tr><td class="text-secondary">No session used two tools yet.</td></tr>{% endfor %}
+      </tbody></table>
+    </div></div>
+  </div>
+
+  {# ------------------------------------------------------------ pages and tech #}
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6"><div class="an-card"><h2>Pages</h2>
+      {% include "analytics/_top.html" with rows=pages empty="No visits yet." %}
+    </div></div>
+    <div class="col-lg-6"><div class="an-card"><h2>Devices, browsers, systems</h2>
+      {% include "analytics/_top.html" with rows=devices empty="–" %}
+      <div class="mt-2">{% include "analytics/_top.html" with rows=browsers empty="–" %}</div>
+      <div class="mt-2">{% include "analytics/_top.html" with rows=oses empty="–" %}</div>
+    </div></div>
+  </div>
+
+  {# ------------------------------------------------------------ diagnostics #}
+  <div class="an-card mb-3">
+    <h2>Setup check</h2>
+    <table class="table an-table"><tbody>
+      <tr><td>Your own visits</td><td>
+        {% if ignored %}<i class="bi bi-check-circle text-success"></i> This browser is not counted.
+        {% else %}<i class="bi bi-exclamation-triangle text-warning"></i> This browser is counted. Open <a href="{% url 'analytics:ignore' %}">{{ request.get_host }}{% url 'analytics:ignore' %}</a> once on each of your devices (PC, phone) to leave yourself out.{% endif %}
+      </td></tr>
+      <tr><td>Client address seen by Django</td><td>
+        {% if diag.ip_public %}<i class="bi bi-check-circle text-success"></i> public address (proxy passes it on)
+        {% else %}<i class="bi bi-x-circle text-danger"></i> {{ diag.ip_kind }}. In nginx add <code>proxy_set_header X-Real-IP $remote_addr;</code> (or <code>include proxy_params;</code>) to the location that proxies to the app.{% endif %}
+        <span class="text-secondary">· REMOTE_ADDR {{ diag.remote_addr }}, X-Real-IP {{ diag.x_real_ip|yesno:"sent,missing" }}, X-Forwarded-For {{ diag.x_forwarded_for|yesno:"sent,missing" }}</span>
+      </td></tr>
+      <tr><td>GeoIP database</td><td>
+        {% if diag.geoip_error %}<i class="bi bi-x-circle text-danger"></i> cannot be read: {{ diag.geoip_error }}
+        {% elif diag.geoip_exists %}<i class="bi bi-check-circle text-success"></i> {{ diag.geoip_type }}, {{ diag.geoip_age_days }} days old.
+          Test 8.8.8.8 → {{ diag.test_lookup.1|default:"(no result)" }} {{ diag.test_lookup.2 }}.
+          {% if diag.your_location %}You → {{ diag.your_location.1|default:"(no result)" }} {{ diag.your_location.2 }}.{% endif %}
+        {% else %}<i class="bi bi-x-circle text-danger"></i> missing at <code>{{ diag.geoip_path }}</code>. Run <code>python manage.py update_geoip</code> on the server.{% endif %}
+      </td></tr>
+    </tbody></table>
+  </div>
+
+  <p class="small text-secondary">
+    Cookie-free, first-party analytics. Staff users and bots are not counted. IP addresses are never stored;
+    visitors are an anonymous hash that changes every quarter. Raw events are kept for 13 months.
+    <a href="https://db-ip.com" target="_blank" rel="noopener">IP Geolocation by DB-IP</a>.
+  </p>
+</div>
+{{ daily|json_script:"an-daily" }}
+{% endblock %}
+{% block script %}
+{# No inline scripts: the site's CSP forbids them. #}
+<script src="{% static 'vendor/plotly-2.35.2/plotly.min.js' %}"></script>
+<script src="{% static 'js/trustpdf-analytics-dashboard.js' %}"></script>
+{% endblock %}

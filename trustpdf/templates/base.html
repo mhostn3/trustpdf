@@ -62,9 +62,9 @@
   <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
-  {% if umami_website_id %}
-    {# Umami: anonymous, cookie-free page statistics. See /cookies/ #}
-    <script defer src="{{ umami_script_url }}" data-website-id="{{ umami_website_id }}"></script>
+  {% if analytics_enabled %}
+    {# First-party, cookie-free usage statistics; sends only to this site. See /privacy/ #}
+    <script defer src="{% static 'js/trustpdf-analytics.js' %}"></script>
   {% endif %}
 
   {% if json_ld %}
@@ -116,7 +116,7 @@
               <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'pages:about' %}">About</a>
             </li>
             <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-              <a class="btn btn-outline-dark btn-sm rounded-pill px-3" href="https://github.com/mhostn3/trustpdf" target="_blank" rel="noopener" data-umami-event="GitHub (nav)">
+              <a class="btn btn-outline-dark btn-sm rounded-pill px-3" href="https://github.com/mhostn3/trustpdf" target="_blank" rel="noopener" data-tp-event="GitHub (nav)">
                 <i class="bi bi-github me-1" aria-hidden="true"></i>Source
               </a>
             </li>

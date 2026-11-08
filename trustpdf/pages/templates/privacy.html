@@ -25,7 +25,7 @@
       <ul class="mb-0">
         <li>No file is uploaded, transmitted, or stored on our servers.</li>
         <li>We never see your files, their contents, or their names.</li>
-        <li>Our server sends every page with a <em>Content-Security-Policy</em> header that forbids scripts from sending data anywhere other than this site and the analytics endpoint described below. You can verify this in your browser's developer tools.</li>
+        <li>Our server sends every page with a <em>Content-Security-Policy</em> header that forbids scripts from sending data anywhere other than this site. You can verify this in your browser's developer tools.</li>
         <li>When you close the page, nothing remains: files are held only in your browser's memory.</li>
       </ul>
     </div>
@@ -35,29 +35,32 @@
       <ul class="mb-0">
         <li>There are no user accounts, logins, or registration forms.</li>
         <li>We do not collect, store, sell, or share any personal information.</li>
-        <li>We do not set cookies and do not use local storage. See the <a href="{% url 'pages:cookies' %}" class="fw-medium">Cookie Policy</a>.</li>
-        <li>All CSS, fonts, and JavaScript are hosted on our own server, so no content delivery network or other third party sees your visit.</li>
+        <li>We do not set cookies on your visit and do not use local storage. See the <a href="{% url 'pages:cookies' %}" class="fw-medium">Cookie Policy</a>.</li>
+        <li>All CSS, fonts, and JavaScript are hosted on our own server, and the site makes no third-party connections, so no content delivery network, analytics company or other third party sees your visit.</li>
       </ul>
     </div>
 
     <div class="content-card">
       <h2>📊 Anonymous page statistics</h2>
       <p>
-        We use <a href="https://umami.is" class="fw-medium" rel="noopener">Umami Cloud</a>, a privacy-focused
-        analytics service, to count page views and which tools are used (for example, how many times the
-        "Merge PDFs" button is clicked). This helps us decide what to improve.
+        TrustPDF keeps its own small, first-party usage statistics to see which pages and tools are used
+        (for example, how many times the "Merge PDFs" button is clicked). This helps us decide what to improve.
+        No analytics company is involved: the statistics are sent only to this site and stored on our own server.
       </p>
       <ul>
-        <li>Umami uses no cookies and no local storage.</li>
-        <li>It records the page URL, referrer, browser type, device type, and country, derived from your IP address, which is not stored.</li>
-        <li>It does not record anything about your files, not even their names or sizes.</li>
-        <li>It cannot track you across other websites or over time.</li>
-        <li>Umami respects the browser "Do Not Track" setting and is blocked by most content blockers; the site works exactly the same without it.</li>
+        <li>No cookies and no local storage are used for it.</li>
+        <li>Recorded: the page, the website you came from, browser, operating system and device type, country and city
+          (looked up from your IP address with the <a href="https://db-ip.com" class="fw-medium" rel="noopener">DB-IP</a> database on our server),
+          the buttons and options you use in a tool (for example "Merge PDFs" or a chosen page size), and how long the page was visible.</li>
+        <li>Never recorded: your files, their names, sizes or contents, and anything you type. Your IP address is not stored.</li>
+        <li>Repeat visits are recognised by an anonymous code calculated from your IP address and browser with a random key.
+          The key is replaced every three months and the old one deleted, so the code cannot be traced back to you or linked across quarters.</li>
+        <li>The statistics are kept for 13 months and then deleted.</li>
+        <li>The site works exactly the same if the statistics script is blocked.</li>
       </ul>
       <p class="mb-0">
-        To load the analytics script, your browser connects to <code>cloud.umami.is</code>, and the statistics are
-        sent to <code>api-gateway.umami.dev</code>. These are the only third-party connections the site makes.
-        Umami's own privacy policy is at <a href="https://umami.is/privacy" class="fw-medium" rel="noopener">umami.is/privacy</a>.
+        If you prefer not to be counted at all, open <a href="{% url 'analytics:ignore' %}" class="fw-medium">this page</a>
+        once on each device: a small cookie then tells the site to leave that browser out.
       </p>
     </div>
 

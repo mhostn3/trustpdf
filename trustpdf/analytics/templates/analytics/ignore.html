@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mx-auto" style="max-width:40rem">
+  <h1 class="h4 mb-3"><i class="bi bi-eye-slash"></i>&nbsp;Usage statistics for this browser</h1>
+  {% if ignored %}
+    <p class="alert alert-success"><i class="bi bi-check-circle"></i>&nbsp;This browser is <b>not counted</b> in the site's usage statistics.</p>
+    <p>A small cookie (<code>tp_ignore</code>) remembers this choice on this device. Clearing cookies counts the browser again.</p>
+    <a class="btn btn-outline-secondary btn-sm" href="?set=off">Count this browser again</a>
+  {% else %}
+    <p>This browser is counted in the site's anonymous usage statistics (no cookies; see the <a href="{% url 'pages:privacy' %}">privacy policy</a>).</p>
+    <p>If you prefer not to be counted, a small cookie can remember that on this device.</p>
+    <a class="btn btn-dark btn-sm" href="?set=on">Don't count this browser</a>
+  {% endif %}
+</div>
+{% endblock %}

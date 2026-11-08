@@ -37,7 +37,7 @@
       <div id="toolMessage" class="mt-3" aria-live="polite"></div>
 
       <div class="mt-3 d-flex align-items-center gap-3 flex-wrap">
-        <button id="processBtn" type="button" class="btn btn-primary btn-lg" data-umami-event="{{ tool.title }}">
+        <button id="processBtn" type="button" class="btn btn-primary btn-lg" data-tp-event="{{ tool.title }}">
           {% block process_label %}Process{% endblock %}
         </button>
         <span id="busyIndicator" class="d-none text-secondary" role="status">
@@ -53,7 +53,7 @@
       <h2 class="h5 mb-3">Your file is ready</h2>
       <div class="d-flex justify-content-center gap-2 flex-wrap">
         {% block download %}
-          <button id="downloadBtn" type="button" class="btn btn-success btn-lg" data-umami-event="Save {{ tool.short_title }}">
+          <button id="downloadBtn" type="button" class="btn btn-success btn-lg" data-tp-event="Save {{ tool.short_title }}">
             <i class="bi bi-download me-1" aria-hidden="true"></i> {% block download_label %}Save PDF{% endblock %}
           </button>
         {% endblock %}
@@ -70,7 +70,7 @@
            target="_blank"
            rel="noopener"
            class="btn btn-outline-secondary btn-sm"
-           data-umami-event="Buy me a coffee ({{ tool.short_title }})">
+           data-tp-event="Buy me a coffee ({{ tool.short_title }})">
           ☕ Buy me a coffee
         </a>
       </div>

@@ -2,7 +2,7 @@
 #
 # TrustPDF deploy script. Copy to ~/trustpdf.sh on the server and run:
 #
-#   sudo ~/trustpdf.sh            # pull main, install packages, test, collectstatic, restart, verify
+#   sudo ~/trustpdf.sh            # pull main, install packages, test, migrate, collectstatic, restart, verify
 #   sudo ~/trustpdf.sh --no-pull  # redeploy what is already checked out
 #
 # Every step is checked. On the first failure the script prints what went
@@ -36,7 +36,7 @@ MANAGE_DIR="${REPO_DIR}/trustpdf"
 SERVICE="trustpdf"
 BRANCH="main"
 SITE_URL="https://www.trustpdf.net"
-CHECK_PATHS="/ /tools/merge-pdf/ /tools/split-pdf/ /tools/compress-pdf/ /privacy/ /sitemap.xml /robots.txt /llms.txt /static/css/custom.css"
+CHECK_PATHS="/ /tools/merge-pdf/ /tools/split-pdf/ /tools/compress-pdf/ /privacy/ /sitemap.xml /robots.txt /llms.txt /static/css/custom.css /analytics/ignore/"
 
 PULL=1
 [[ "${1:-}" == "--no-pull" ]] && PULL=0
@@ -102,6 +102,9 @@ id "$APP_USER" >/dev/null 2>&1 || fail "user $APP_USER does not exist"
 systemctl cat "$SERVICE" >/dev/null 2>&1 || fail "systemd service '$SERVICE' not found"
 command -v curl >/dev/null || fail "curl is not installed (apt install curl)"
 ok "paths, user, venv, .env and service are in place"
+if ! grep -Eq '^ADMIN_PATH=.+' "$REPO_DIR/.env" || grep -Eq '^ADMIN_PATH=(admin|change-me.*)$' "$REPO_DIR/.env"; then
+  printf '\033[1;33m    WARN: ADMIN_PATH is not set to a secret value in .env; the admin and analytics dashboard are at /admin/\033[0m\n'
+fi
 
 PREVIOUS_COMMIT=$(as_app "git rev-parse HEAD") || fail "could not read current commit"
 ok "current commit $PREVIOUS_COMMIT"
@@ -118,7 +121,7 @@ ok "deploying commit $NEW_COMMIT ($(as_app "git log -1 --format=%s"))"
 step "Installing / upgrading Python packages"
 as_app "pip install --quiet --upgrade pip" || fail "pip self-upgrade failed"
 as_app "pip install --quiet --upgrade -r '$REPO_DIR/requirements.txt'" || fail "pip install -r requirements.txt failed"
-as_app "python -c 'import django, whitenoise, environ, gunicorn'" || fail "a required package does not import after install"
+as_app "python -c 'import django, whitenoise, environ, gunicorn, axes, maxminddb, requests'" || fail "a required package does not import after install"
 ok "$(as_app "python -c 'import django, importlib.metadata as m; print(\"Django\", django.get_version(), \"/ WhiteNoise\", m.version(\"whitenoise\"))'")"
 
 step "Django configuration check (manage.py check --deploy)"
@@ -128,6 +131,14 @@ ok "settings load and pass the deployment checks"
 step "Running the test suite"
 as_app "python manage.py test --noinput -v 1" || fail "tests failed; nothing was deployed"
 ok "all tests passed"
+
+step "Applying database migrations (analytics, staff login)"
+as_app "python manage.py migrate --noinput -v 1" || fail "migrate failed; check the database file and its permissions"
+ok "database is up to date"
+
+step "Analytics: GeoIP database (monthly) and events older than 13 months"
+if out=$(as_app "python manage.py update_geoip --if-older 30" 2>&1); then ok "$out"; else printf '\033[1;33m    WARN (deploy continues, locations stay empty or use the old file): %s\033[0m\n' "$out"; fi
+if out=$(as_app "python manage.py analytics_prune" 2>&1); then ok "$out"; else printf '\033[1;33m    WARN: %s\033[0m\n' "$out"; fi
 
 step "Collecting static files"
 as_app "python manage.py collectstatic --noinput --clear -v 0" || fail "collectstatic failed"

@@ -18,6 +18,11 @@ from .tools import TOOLS, STATIC_PAGES
 class PageTests(SimpleTestCase):
     """Every public page renders, and the SEO tags point to pages that exist."""
 
+    def test_public_pages_set_no_cookies(self):
+        for path in ["/", reverse("pages:merge_pdf"), reverse("pages:privacy")]:
+            with self.subTest(path=path):
+                self.assertEqual(dict(self.client.get(path).cookies), {})
+
     def test_static_pages_render(self):
         for name in ["index", "about", "privacy", "cookies", "terms", "privacy_tools"]:
             with self.subTest(page=name):
@@ -82,7 +87,8 @@ class PageTests(SimpleTestCase):
         response = self.client.get(reverse("pages:index"))
         csp = response["Content-Security-Policy"]
         self.assertIn("default-src 'self'", csp)
-        self.assertIn("connect-src 'self' https://cloud.umami.is", csp)
+        self.assertIn("connect-src 'self';", csp)  # scripts may talk to this site only
+        self.assertNotIn("http", csp)  # no third-party origin anywhere
         self.assertNotIn("unsafe-inline", csp.split("style-src")[0])
         self.assertEqual(response["X-Frame-Options"], "DENY")
         self.assertEqual(response["X-Content-Type-Options"], "nosniff")
@@ -96,9 +102,8 @@ class PageTests(SimpleTestCase):
 
     def test_no_third_party_assets(self):
         html = self.client.get(reverse("pages:merge_pdf")).content.decode()
+        self.assertIn("js/trustpdf-analytics", html)  # first-party statistics script
         for match in re.findall(r'(?:src|href)="(https?://[^"]+)"', html):
-            if match.startswith(settings.UMAMI_SCRIPT_URL):
-                continue  # the one documented third-party script
             self.assertFalse(re.search(r"\.(css|js|woff2?)(\?|$)", match), match)
 
 

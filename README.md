@@ -92,6 +92,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # then set SECRET_KEY, DEBUG=True, ALLOWED_HOSTS=localhost,127.0.0.1
 cd trustpdf
+python manage.py migrate        # small SQLite database for the usage statistics and staff login
 python manage.py runserver
 ```
 
@@ -121,7 +122,8 @@ Configuration comes from a `.env` file in the repository root; see [`.env.exampl
 every variable. `check --deploy` should pass with no warnings.
 
 [`deploy/trustpdf.sh`](deploy/trustpdf.sh) does a full deploy: pull, upgrade packages, run checks and tests,
-collect static files, restart the systemd service, and verify the site answers 200. If the health check
+apply database migrations, collect static files, refresh the GeoIP database (monthly) and prune old
+statistics, restart the systemd service, and verify the site answers 200. If the health check
 fails it rolls back to the previous commit.
 
 ```bash
@@ -142,9 +144,17 @@ publish its source. See [`LICENSE`](LICENSE) and the
 
 ## 📈 Analytics
 
-[Umami Cloud](https://umami.is) counts page views and tool usage anonymously, without cookies.
+First-party, cookie-free statistics (the `analytics` app): page views are counted on the server, and
+`static/js/trustpdf-analytics.js` sends button clicks, option changes and visible time to `/analytics/e/`
+on the same site. No third party is involved. IP addresses are never stored (visitors are a hash with a salt
+that is replaced every quarter), bots and staff are left out, and events are kept for 13 months.
+The script only reports names from the page as served, so file names and file contents can never be sent.
 Nothing about your files is recorded. Details: [Privacy Policy](https://www.trustpdf.net/privacy/).
-Set `UMAMI_WEBSITE_ID=` (empty) in `.env` to disable it on a self-hosted copy.
+
+- Dashboard: `https://<site>/<ADMIN_PATH>/analytics/` (staff login; create one with `manage.py createsuperuser`).
+- Leave your own browsers out: open `/analytics/ignore/` once on each device.
+- Locations come from the free [DB-IP](https://db-ip.com) City Lite database (`manage.py update_geoip`).
+- Set `ANALYTICS_ENABLED=False` in `.env` to disable it on a self-hosted copy.
 
 ---
 

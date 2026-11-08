@@ -1,0 +1,9 @@
+{% load humanize %}<table class="table an-table">
+  <thead><tr><th></th><th class="an-num">Visitors</th><th class="an-num">Views</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td class="an-bar-cell"><div class="an-bar" style="width:{{ r.bar }}%"></div><span>{% if r.flag %}{{ r.flag }}&nbsp;{% endif %}{{ r.label }}</span></td>
+      <td class="an-num">{{ r.v|intcomma }}</td><td class="an-num">{{ r.n|intcomma }}</td></tr>
+  {% empty %}<tr><td colspan="3" class="text-secondary">{{ empty }}</td></tr>{% endfor %}
+  </tbody>
+</table>
