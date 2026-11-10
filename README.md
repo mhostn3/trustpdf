@@ -33,12 +33,15 @@ Every tool runs entirely in your browser: **no uploads, no accounts, no cookies*
 
 Features:
 
-- 🔒 100% **client-side** processing with [pdf-lib](https://github.com/Hopding/pdf-lib), [PDF.js](https://mozilla.github.io/pdf.js/),
+- 🔒 100% **client-side** processing with [pdf-lib](https://github.com/cantoo-scribe/pdf-lib), [PDF.js](https://mozilla.github.io/pdf.js/),
   [qpdf](https://github.com/qpdf/qpdf) (WebAssembly) and [Tesseract.js](https://github.com/naptha/tesseract.js); files never leave your device
 - 🛡️ A strict `Content-Security-Policy` on every page makes that promise enforceable: scripts can only talk to the site itself and the analytics endpoint (`'wasm-unsafe-eval'` is allowed so qpdf and Tesseract can run; it does not allow `eval` or inline scripts)
 - 🧭 No login, no storage, no cookies, no third-party CDNs; all CSS, fonts and JS are self-hosted
 - 📱 Works on mobile and desktop, keyboard accessible
 - 🧩 Built with Django, Bootstrap 5, pdf-lib, PDF.js and SortableJS
+- 📴 Works offline after the first visit (a service worker caches the site's own files, never yours), and can be installed as an app
+- 🔤 Watermarks in any Latin, Greek or Cyrillic text (č, š, ž included), with Noto Sans embedded when needed
+- 🧵 Merge, Split and lossless Compress run in a Web Worker, so large files do not freeze the page
 
 ---
 
@@ -89,7 +92,7 @@ with every URL after each deploy via `manage.py indexnow`).
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt  # exact, checksummed versions (generated from requirements.in)
 cp .env.example .env            # then set SECRET_KEY, DEBUG=True, ALLOWED_HOSTS=localhost,127.0.0.1
 cd trustpdf
 python manage.py migrate        # small SQLite database for the usage statistics and staff login
@@ -121,14 +124,30 @@ The site runs under gunicorn behind a TLS-terminating proxy, with static files s
 Configuration comes from a `.env` file in the repository root; see [`.env.example`](.env.example) for
 every variable. `check --deploy` should pass with no warnings.
 
-[`deploy/trustpdf.sh`](deploy/trustpdf.sh) does a full deploy: pull, upgrade packages, run checks and tests,
-apply database migrations, collect static files, refresh the GeoIP database (monthly) and prune old
-statistics, restart the systemd service, and verify the site answers 200. If the health check
-fails it rolls back to the previous commit.
+[`deploy/trustpdf.sh`](deploy/trustpdf.sh) does a full deploy: pull, install the pinned packages, run checks
+and tests, apply database migrations, collect static files, refresh the GeoIP database (monthly) and prune
+old statistics, restart the systemd service, and verify the site answers 200 and sends its security
+headers. If the health check fails it rolls back to the previous commit.
 
 ```bash
 cp deploy/trustpdf.sh ~/trustpdf.sh && sudo ~/trustpdf.sh
 ```
+
+### Updating Python packages
+
+`requirements.in` lists the packages the site needs, with version ranges. `requirements.txt` is generated
+from it and pins every package and dependency to an exact version with checksums, so the server installs
+exactly what was tested. To take newer releases, regenerate it, run the tests, and commit both files:
+
+```bash
+pip install uv
+uv pip compile --universal --python-version 3.10 --generate-hashes --upgrade requirements.in -o requirements.txt
+```
+
+### Checks on every push
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the Django tests, `check --deploy` and the
+browser smoke test on every push to `main`.
 
 ---
 
@@ -152,7 +171,7 @@ The script only reports names from the page as served, so file names and file co
 Nothing about your files is recorded. Details: [Privacy Policy](https://www.trustpdf.net/privacy/).
 
 - Dashboard: `https://<site>/<ADMIN_PATH>/analytics/` (staff login; create one with `manage.py createsuperuser`).
-- Leave your own browsers out: open `/analytics/ignore/` once on each device.
+- Leave your own browsers out: open `/analytics/ignore/` once on each device. Browsers that send Global Privacy Control are left out automatically.
 - Locations come from the free [DB-IP](https://db-ip.com) City Lite database (`manage.py update_geoip`).
 - Set `ANALYTICS_ENABLED=False` in `.env` to disable it on a self-hosted copy.
 

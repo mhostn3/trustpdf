@@ -51,7 +51,7 @@
     <div id="downloadArea" class="result-panel mt-4 d-none">
       <div class="result-icon"><i class="bi bi-check-lg" aria-hidden="true"></i></div>
       <h2 class="h5 mb-3">Your file is ready</h2>
-      <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <div class="result-actions d-flex justify-content-center gap-2 flex-wrap">
         {% block download %}
           <button id="downloadBtn" type="button" class="btn btn-success btn-lg" data-tp-event="Save {{ tool.short_title }}">
             <i class="bi bi-download me-1" aria-hidden="true"></i> {% block download_label %}Save PDF{% endblock %}
@@ -117,10 +117,16 @@
 {% endblock %}
 
 {% block script %}
-<script src="{% static 'js/pdf-lib.min.js' %}"></script>
-<script src="{% static 'js/Sortable.min.js' %}"></script>
-<script src="{% static 'js/trustpdf-core.js' %}"></script>
+{# Each tool page loads only the libraries its tool uses (tool.libs in pages/tools.py). #}
+{% if "pdflib" in tool.libs %}<script src="{% static 'js/pdf-lib.min.js' %}"></script>{% endif %}
+{% if "sortable" in tool.libs %}<script src="{% static 'js/Sortable.min.js' %}"></script>{% endif %}
+<script src="{% static 'js/trustpdf-core.js' %}"
+        data-pdflib-src="{% static 'js/pdf-lib.min.js' %}"
+        data-worker-src="{% static 'js/trustpdf-worker.js' %}"
+        data-fontkit-src="{% get_static_prefix %}vendor/fontkit-2.0.12/fontkit.umd.min.js"
+        data-font-regular="{% get_static_prefix %}vendor/noto-sans/NotoSans-Regular.ttf"
+        data-font-bold="{% get_static_prefix %}vendor/noto-sans/NotoSans-Bold.ttf"></script>
 {% block tool_libs %}{% endblock %}
-<script src="{% static 'js/trustpdf-zip.js' %}"></script>
+{% if "zip" in tool.libs %}<script src="{% static 'js/trustpdf-zip.js' %}"></script>{% endif %}
 <script src="{% static tool_script %}"></script>
 {% endblock %}

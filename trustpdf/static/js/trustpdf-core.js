@@ -2,7 +2,7 @@
   TrustPDF core: shared behaviour for every tool page.
 
   Everything here runs in the browser. No file is ever sent anywhere; the
-  Content-Security-Policy sent by the server does not even allow it.
+  Content-Security-Policy sent by the server lets scripts talk to this site only.
 
   Exposes a single global, `TrustPDF`, with:
     - messages        inline status / error messages
@@ -19,12 +19,15 @@
 
   const $ = (id) => document.getElementById(id);
 
+  // URLs of files that are loaded on demand, from data-* attributes of this <script> tag.
+  const ASSETS = (document.currentScript && document.currentScript.dataset) || {};
+
   /* ----------------------------------------------------------------- */
   /*  Messages                                                          */
   /* ----------------------------------------------------------------- */
 
   const messages = {
-    show(type, text, { html = false } = {}) {
+    show(type, text) {
       const box = $("toolMessage");
       if (!box) {
         window.alert(text);
@@ -33,11 +36,7 @@
       const alert = document.createElement("div");
       alert.className = `alert alert-${type} mb-0`;
       alert.setAttribute("role", type === "danger" ? "alert" : "status");
-      if (html) {
-        alert.innerHTML = text;
-      } else {
-        alert.textContent = text;
-      }
+      alert.textContent = text;
       box.replaceChildren(alert);
       alert.scrollIntoView({ block: "nearest", behavior: "smooth" });
     },
@@ -76,6 +75,12 @@
     if (btn) btn.disabled = false;
     if (indicator) indicator.classList.add("d-none");
     document.querySelectorAll("[data-tool-options]").forEach((el) => el.classList.remove("is-busy"));
+  }
+
+  /** Change the text next to the spinner without touching the busy state. */
+  function progress(text) {
+    const busyText = $("busyText");
+    if (busyText) busyText.textContent = text;
   }
 
   /* Let the browser paint the spinner before heavy synchronous work. */
@@ -292,15 +297,102 @@
     page.drawPage(embedded, { ...options, x: p.x, y: p.y, width, height, rotate: PDFLib.degrees(p.rotation) });
   }
 
-  /** Standard PDF fonts only cover Latin text; say which character is the problem. */
-  function assertEncodable(font, text) {
+  /** True when every character of `text` has a glyph in `font`. */
+  function canEncode(font, text) {
+    const known = new Set(font.getCharacterSet());
     for (const ch of text) {
-      try {
-        font.encodeText(ch);
-      } catch (_) {
-        throw new ToolError(`The character "${ch}" is not supported. The built-in PDF fonts cover Latin letters (including most accented ones), digits and common punctuation.`);
+      if (!known.has(ch.codePointAt(0))) return false;
+    }
+    return true;
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const el = document.createElement("script");
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = () => reject(new ToolError("A part of the tool could not be loaded. Please check your connection and refresh the page."));
+      document.head.appendChild(el);
+    });
+  }
+
+  let fontkitPromise = null;
+  const fontBytes = {};
+
+  /**
+   * A font for `text` in `doc`. Plain Western text uses the standard PDF font
+   * (nothing to download, nothing added to the file). Anything else, such as
+   * č, ž, Greek or Cyrillic, gets Noto Sans, loaded on demand from this site
+   * and embedded as a subset. Throws ToolError for characters Noto Sans lacks.
+   */
+  async function textFont(doc, text, { bold = false } = {}) {
+    const standard = await doc.embedFont(PDFLib.StandardFonts[bold ? "HelveticaBold" : "Helvetica"]);
+    if (canEncode(standard, text)) return standard;
+
+    const url = bold ? ASSETS.fontBold : ASSETS.fontRegular;
+    if (!ASSETS.fontkitSrc || !url) throw new ToolError("This text needs a font that is not available on this page.");
+    busy("Loading a font for these characters (0.8 MB, once)…");
+    try {
+      if (!fontkitPromise) {
+        fontkitPromise = loadScript(ASSETS.fontkitSrc).catch((error) => { fontkitPromise = null; throw error; });
+      }
+      await fontkitPromise;
+      if (!fontBytes[url]) {
+        const response = await fetch(url);
+        if (!response.ok) throw new ToolError("The font could not be loaded. Please check your connection and try again.");
+        fontBytes[url] = new Uint8Array(await response.arrayBuffer());
+      }
+    } finally {
+      idle();
+    }
+    doc.registerFontkit(window.fontkit);
+    const font = await doc.embedFont(fontBytes[url], { subset: true });
+    const known = new Set(font.getCharacterSet());
+    for (const ch of text) {
+      if (ch !== " " && !known.has(ch.codePointAt(0))) {
+        throw new ToolError(`The character "${ch}" is not supported. Latin (including č, š, ž), Greek and Cyrillic letters, digits and common punctuation are.`);
       }
     }
+    return font;
+  }
+
+  /* ----------------------------------------------------------------- */
+  /*  Worker                                                            */
+  /* ----------------------------------------------------------------- */
+
+  /**
+   * Run one operation of trustpdf-worker.js off the main thread and return
+   * its result. `transfer` lists ArrayBuffers to hand over without copying.
+   * The worker lives for this one call, so its memory is freed afterwards.
+   */
+  function runInWorker(op, payload, { transfer = [], onProgress } = {}) {
+    return new Promise((resolve, reject) => {
+      let worker;
+      try {
+        worker = new Worker(ASSETS.workerSrc);
+      } catch (_) {
+        reject(new ToolError("This browser could not start the PDF engine. Please update your browser and try again."));
+        return;
+      }
+      const done = (fn, value) => { worker.terminate(); fn(value); };
+      worker.onmessage = ({ data }) => {
+        if (data.progress) {
+          if (onProgress) onProgress(data.progress);
+        } else if (data.error) {
+          const error = new Error(data.error.message);
+          error.name = data.error.name;
+          error.index = data.error.index;
+          done(reject, error);
+        } else {
+          done(resolve, data.result);
+        }
+      };
+      worker.onerror = (event) => {
+        event.preventDefault();
+        done(reject, new Error(event.message || "The PDF engine stopped unexpectedly."));
+      };
+      worker.postMessage({ op, pdflib: new URL(ASSETS.pdflibSrc, location.href).href, ...payload }, transfer);
+    });
   }
 
   /* ----------------------------------------------------------------- */
@@ -769,7 +861,9 @@
     drawTextVisual,
     drawImageVisual,
     drawPageVisual,
-    assertEncodable,
+    textFont,
+    runInWorker,
+    progress,
     download,
     FileHandler,
     initTool,

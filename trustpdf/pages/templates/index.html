@@ -19,11 +19,18 @@
 
 <section aria-labelledby="tools-heading">
   <h2 id="tools-heading" class="visually-hidden">All PDF tools</h2>
+  <div class="tool-search">
+    <label for="toolSearch" class="visually-hidden">Find a tool</label>
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <input type="search" id="toolSearch" class="form-control" placeholder="Find a tool: merge, sign, word…" autocomplete="off" aria-controls="toolList" aria-describedby="toolSearchStatus">
+    <div id="toolSearchStatus" class="visually-hidden" aria-live="polite"></div>
+  </div>
   <nav class="group-nav" aria-label="Tool categories">
     {% for group, group_tools in tool_groups %}
       <a href="#{{ group.key }}">{{ group.heading }}</a>
     {% endfor %}
   </nav>
+  <div id="toolList">
   {% for group, group_tools in tool_groups %}
     <div class="tool-group-section" id="{{ group.key }}">
       <h2 class="section-title">{{ group.heading }}</h2>
@@ -34,6 +41,8 @@
       </div>
     </div>
   {% endfor %}
+  </div>
+  <p id="toolSearchEmpty" class="text-center text-secondary d-none">No tool matches. Try a different word, such as “merge”, “image” or “password”.</p>
 </section>
 
 <section class="mt-5 pt-3" aria-labelledby="why-heading">
@@ -103,4 +112,8 @@
     {% endfor %}
   </div>
 </section>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/trustpdf-home.js' %}"></script>
 {% endblock %}

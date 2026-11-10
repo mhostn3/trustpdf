@@ -1,5 +1,6 @@
 import csv
 import json
+from urllib.parse import urlsplit
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import cache
@@ -54,11 +55,24 @@ def collect(request):
     return HttpResponse(status=204)
 
 
+def _same_origin(request):
+    """True when the browser says the POST comes from a page of this site (Origin header).
+    Stands in for the CSRF token, which would need a cookie on a public page."""
+    origin = request.headers.get("Origin", "")
+    return bool(origin) and urlsplit(origin).netloc == request.get_host()
+
+
+@csrf_exempt
 def ignore_me(request):
     """Public page: stop (or resume) counting this browser, e.g. the owner's phone and PC.
-    Sets a first-party cookie only when the visitor asks for it."""
+    Sets a first-party cookie only when the visitor asks for it, with the form on the page:
+    a link on another site cannot switch it."""
     state = request.COOKIES.get(tracking.IGNORE_COOKIE) == "1"
-    action = request.GET.get("set")
+    action = None
+    if request.method == "POST":
+        if not _same_origin(request):
+            return HttpResponseBadRequest()
+        action = request.POST.get("set")
     if action in ("on", "off"):
         state = action == "on"
     resp = render(request, "analytics/ignore.html", {

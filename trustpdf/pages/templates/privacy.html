@@ -7,7 +7,7 @@
     <div class="page-header">
       <h1>Privacy Policy</h1>
       <p class="lead">What TrustPDF does, and does not do, with your files and your visit.</p>
-      <p class="text-secondary small">Last updated: 8 November 2026</p>
+      <p class="text-secondary small">Last updated: 10 November 2026</p>
     </div>
 
     <div class="content-card">
@@ -16,7 +16,7 @@
         Every tool on this site (merge, split, compress, rotate, reorder, remove pages, page numbers,
         watermark, sign, crop, protect, unlock, OCR, PDF to JPG, images to PDF, PDF to text, PDF to Word,
         metadata viewer and editor) runs entirely inside your browser using open-source JavaScript libraries
-        (<a href="https://github.com/Hopding/pdf-lib" class="fw-medium" rel="noopener">pdf-lib</a> and
+        (<a href="https://github.com/cantoo-scribe/pdf-lib" class="fw-medium" rel="noopener">pdf-lib</a> and
         <a href="https://mozilla.github.io/pdf.js/" class="fw-medium" rel="noopener">PDF.js</a>,
         <a href="https://github.com/qpdf/qpdf" class="fw-medium" rel="noopener">qpdf</a> and
         <a href="https://github.com/naptha/tesseract.js" class="fw-medium" rel="noopener">Tesseract.js</a>, all served from this site).
@@ -35,7 +35,7 @@
       <ul class="mb-0">
         <li>There are no user accounts, logins, or registration forms.</li>
         <li>We do not collect, store, sell, or share any personal information.</li>
-        <li>We do not set cookies on your visit and do not use local storage. See the <a href="{% url 'pages:cookies' %}" class="fw-medium">Cookie Policy</a>.</li>
+        <li>We do not set cookies on your visit and do not use local storage. For offline use, your browser caches the site's own public files (never your documents). See the <a href="{% url 'pages:cookies' %}" class="fw-medium">Cookie Policy</a>.</li>
         <li>All CSS, fonts, and JavaScript are hosted on our own server, and the site makes no third-party connections, so no content delivery network, analytics company or other third party sees your visit.</li>
       </ul>
     </div>
@@ -61,6 +61,7 @@
       <p class="mb-0">
         If you prefer not to be counted at all, open <a href="{% url 'analytics:ignore' %}" class="fw-medium">this page</a>
         once on each device: a small cookie then tells the site to leave that browser out.
+        Browsers that send the <em>Global Privacy Control</em> signal are left out automatically.
       </p>
     </div>
 

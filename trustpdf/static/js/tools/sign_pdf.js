@@ -302,8 +302,17 @@
 
       handler.lock();
       const png = await doc.embedPng(signature.pngBytes);
-      const font = $("addDate").checked ? await doc.embedFont(PDFLib.StandardFonts.Helvetica) : null;
-      const date = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+      // The date is written in the visitor's language, which may not be plain Latin text.
+      let date = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+      let font = null;
+      if ($("addDate").checked) {
+        try {
+          font = await T.textFont(doc, date);
+        } catch (_) {
+          date = new Date().toISOString().slice(0, 10); // a script Noto Sans lacks: fall back to 2026-11-10
+          font = await T.textFont(doc, date);
+        }
+      }
       const ref = { w: preview.width, h: preview.height };
 
       for (const n of targets) {

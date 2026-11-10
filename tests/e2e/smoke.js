@@ -10,12 +10,16 @@ fs.mkdirSync(OUT, { recursive: true });
 
 // Inspect the produced PDF inside the page with pdf-lib (output uses compressed object streams).
 let page;
-const inspect = () => page.evaluate(async () => {
+// Merge and Split do their pdf-lib work in a worker, so those pages do not load pdf-lib themselves.
+const needPdfLib = async () => {
+  if (!(await page.evaluate(() => typeof PDFLib !== "undefined"))) await page.addScriptTag({ url: `${BASE}/static/js/pdf-lib.min.js` });
+};
+const inspect = async () => { await needPdfLib(); return page.evaluate(async () => {
   const d = await PDFLib.PDFDocument.load(TrustPDF.download.bytes, { updateMetadata: false });
   return { pages: d.getPageCount(), title: d.getTitle() || "", author: d.getAuthor() || "",
            producer: d.getProducer() || "", xmp: d.catalog.has(PDFLib.PDFName.of("Metadata")),
            rotations: d.getPages().map((p) => p.getRotation().angle) };
-});
+}); };
 
 // Text of each page of a produced PDF, read with PDF.js in a page that has it loaded.
 async function pageText(file) {
@@ -52,7 +56,7 @@ async function run(name, fn) {
   const context = await browser.newContext({ acceptDownloads: true, viewport: { width: 1100, height: 900 } });
   page = await context.newPage();
   const problems = [];
-  page.on("console", (m) => { if (m.type() === "error") problems.push(`console: ${m.text()}`); });
+  page.on("console", (m) => { if (m.type() === "error") problems.push(`console (${page.url()}): ${m.text()}`); });
   page.on("pageerror", (e) => problems.push(`pageerror: ${e.message}`));
 
   async function open(tool) {
@@ -72,8 +76,18 @@ async function run(name, fn) {
   await run("keyboard: drop zone focus + enter", async () => {
     await open("merge-pdf");
     await page.waitForFunction(() => window.TrustPDF && TrustPDF.fileHandler);
-    await page.focus("#dropZone");
-    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.keyboard.press("Enter")]);
+    await page.waitForLoadState("load");
+    await page.waitForTimeout(300);
+    // Headless Chromium sometimes drops the first synthetic key press on a fresh page; a person would just press again.
+    let chooser;
+    for (let attempt = 0; attempt < 4 && !chooser; attempt++) {
+      await page.focus("#dropZone");
+      [chooser] = await Promise.all([
+        page.waitForEvent("filechooser", { timeout: 5000 }).catch(() => null),
+        page.keyboard.press("Enter"),
+      ]);
+    }
+    if (!chooser) throw new Error("Enter on the drop zone did not open the file chooser");
     return chooser.isMultiple() ? "file chooser opened (multiple)" : "opened";
   });
 
@@ -294,7 +308,7 @@ async function run(name, fn) {
   await run("watermark: diagonal, unsupported char refused", async () => {
     await open("watermark-pdf");
     await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
-    await page.fill("#wmText", "Тест");
+    await page.fill("#wmText", "草稿");
     await page.click("#processBtn");
     await page.locator("#toolMessage .alert-danger").waitFor();
     await page.fill("#wmText", "DRAFT copy");
@@ -303,6 +317,17 @@ async function run(name, fn) {
     const text = await pageText(d.file);
     if (!text.every((t) => t.includes("DRAFT copy"))) throw new Error("watermark missing");
     return d.name;
+  });
+
+  await run("watermark: č, š, ž and Cyrillic use the embedded font", async () => {
+    await page.click("#startAgainBtn");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await page.fill("#wmText", "Osnutek čšž Тест");
+    await page.click("#processBtn");
+    const d = await download();
+    const text = await pageText(d.file);
+    if (!text.every((t) => t.includes("Osnutek čšž Тест"))) throw new Error("text missing: " + text[0].slice(0, 80));
+    return `${d.name} ${d.buf.length}B`;
   });
 
   await run("pdf to text", async () => {
@@ -371,10 +396,12 @@ async function run(name, fn) {
     if (!(Number(after) > 5)) throw new Error("auto-trim did nothing: " + after);
     await page.click("#resetCropBtn");
     await page.locator("#previewCanvas").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400); // let the scroll settle before reading positions
     const canvas = await page.locator("#previewCanvas").boundingBox();
-    await page.mouse.move(canvas.x + 50, canvas.y + 50);
+    // Start well below the top edge: after scrolling, the sticky site header can cover the first 70 px of the canvas.
+    await page.mouse.move(canvas.x + 50, canvas.y + 150);
     await page.mouse.down();
-    await page.mouse.move(canvas.x + 250, canvas.y + 300, { steps: 5 });
+    await page.mouse.move(canvas.x + 250, canvas.y + 400, { steps: 5 });
     await page.mouse.up();
     const w = await page.locator("#cropBox").boundingBox();
     if (Math.abs(w.width - 200) > 3) throw new Error("drag width " + w.width);
@@ -389,6 +416,7 @@ async function run(name, fn) {
     await page.fill("#typedName", "Martin Test");
     await page.locator("#signatureOverlay").waitFor({ state: "visible" });
     await page.locator("#previewCanvas").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400); // let the scroll settle before reading positions
     const canvas = await page.locator("#previewCanvas").boundingBox();
     await page.mouse.move(canvas.x + 150, canvas.y + 400);
     await page.mouse.down();
@@ -485,6 +513,25 @@ async function run(name, fn) {
     
     await page.goto(BASE + "/");
     await page.screenshot({ path: path.join(OUT, "home-light.png"), fullPage: true });
+  });
+
+  await run("home: search filters the tools, Enter opens the first match", async () => {
+    await page.goto(BASE + "/");
+    await page.fill("#toolSearch", "password");
+    const shown = await page.locator("[data-tool-search]:not(.d-none) h3").allInnerTexts();
+    if (!shown.includes("Protect PDF") || !shown.includes("Unlock PDF") || shown.includes("Merge PDF")) throw new Error(shown.join(", "));
+    await page.fill("#toolSearch", "zzzz");
+    if (!(await page.locator("#toolSearchEmpty").isVisible())) throw new Error("no 'no match' message");
+    await page.fill("#toolSearch", "merg");
+    await Promise.all([page.waitForURL("**/tools/merge-pdf/"), page.press("#toolSearch", "Enter")]);
+    return shown.join(", ");
+  });
+
+  await run("offline: the service worker registers and controls the site", async () => {
+    await page.goto(BASE + "/");
+    const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+    if (!scope.endsWith("/")) throw new Error("scope " + scope);
+    return scope;
   });
 
   const real = problems.filter((p) => !/favicon|net::ERR/.test(p));

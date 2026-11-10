@@ -67,6 +67,9 @@
     <script defer src="{% static 'js/trustpdf-analytics.js' %}"></script>
   {% endif %}
 
+  {# Offline mode: caches the site's own files in the browser, nothing else. See sw.js #}
+  <script defer src="{% static 'js/trustpdf-offline.js' %}" data-sw="{% url 'pages:service_worker' %}"></script>
+
   {% if json_ld %}
     {# Structured data for search engines. A data block, not a script: the CSP does not apply to it. #}
     <script type="application/ld+json">{{ json_ld }}</script>

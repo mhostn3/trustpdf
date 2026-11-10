@@ -66,8 +66,9 @@
       const file = handler.getSingleFile();
       if (!file) throw new T.ToolError("Please select a PDF file first.");
 
-      const source = await T.loadPdf(file);
-      const total = source.getPageCount();
+      // pageCount comes from the preview; ask the worker when the preview is not ready yet.
+      const buffer = await file.arrayBuffer();
+      const total = pageCount || (await T.runInWorker("count", { buffer: buffer.slice(0) })).pages;
 
       const wanted = T.parsePageRanges($("pages").value, total);
       if (!wanted.length) {
@@ -77,22 +78,16 @@
       handler.lock();
       picker.lock();
 
-      if ($("splitEach").checked && wanted.length > 1) {
+      // The copying runs in a worker, so the page stays responsive with big files.
+      const each = $("splitEach").checked && wanted.length > 1;
+      const { files } = await T.runInWorker("split", { buffer, pages: wanted, each }, {
+        transfer: [buffer],
+        onProgress: ({ index, total: count }) => T.progress(`Creating page ${wanted[index]} (${index + 1} of ${count})…`),
+      });
+
+      if (each) {
         const zip = new T.Zip();
-        for (let i = 0; i < wanted.length; i++) {
-          const n = wanted[i];
-          T.busy(`Creating page ${n} (${i + 1} of ${wanted.length})…`);
-          await T.nextFrame();
-          try {
-            const doc = await T.createPdf();
-            T.copyMetadata(source, doc);
-            const [page] = await doc.copyPages(source, [n - 1]);
-            doc.addPage(page);
-            zip.add(T.makeFilename(file.name, `page-${n}`), await doc.save());
-          } finally {
-            T.idle();
-          }
-        }
+        files.forEach((bytes, i) => zip.add(T.makeFilename(file.name, `page-${wanted[i]}`), bytes));
         T.finish(zip.build(), T.makeFilename(file.name, "pages", "zip"), {
           type: "application/zip",
           note: `Created ${wanted.length} separate PDFs, one per page, in a ZIP file.`,
@@ -100,13 +95,7 @@
         return;
       }
 
-      const doc = await T.createPdf();
-      T.copyMetadata(source, doc);
-      const pages = await doc.copyPages(source, wanted.map((n) => n - 1));
-      pages.forEach((page) => doc.addPage(page));
-
-      const bytes = await doc.save();
-      T.finish(bytes, T.makeFilename(file.name, `pages-${T.formatPageRanges(wanted)}`), {
+      T.finish(files[0], T.makeFilename(file.name, `pages-${T.formatPageRanges(wanted)}`), {
         note: `Extracted ${wanted.length} of ${total} pages.`,
       });
     },

@@ -108,14 +108,29 @@ class TrackingTests(TestCase):
         ])
 
     def test_ignore_cookie(self, _):
-        r = self.client.get("/analytics/ignore/?set=on", HTTP_USER_AGENT=UA, REMOTE_ADDR="193.2.1.10")
+        # A link (GET) or a form on another site must not be able to switch it.
+        r = self.client.get("/analytics/ignore/?set=on", HTTP_USER_AGENT=UA)
+        self.assertNotIn("tp_ignore", r.cookies)
+        r = self.client.post("/analytics/ignore/", {"set": "on"}, HTTP_USER_AGENT=UA, HTTP_ORIGIN="https://evil.example")
+        self.assertEqual(r.status_code, 400)
+        r = self.client.post("/analytics/ignore/", {"set": "on"}, HTTP_USER_AGENT=UA, HTTP_ORIGIN="http://testserver")
         self.assertEqual(r.cookies["tp_ignore"].value, "1")
         self.get("/")
         self.beacon({"k": "view", "p": "/"})
         self.assertEqual(Event.objects.count(), 0)
-        r = self.client.get("/analytics/ignore/?set=off", HTTP_USER_AGENT=UA)
+        r = self.client.post("/analytics/ignore/", {"set": "off"}, HTTP_USER_AGENT=UA, HTTP_ORIGIN="http://testserver")
         self.get("/")
         self.assertEqual(Event.objects.count(), 1)
+
+    def test_offline_precache_is_not_a_visit(self, _):
+        self.get("/tools/merge-pdf/", HTTP_X_TRUSTPDF_PRECACHE="1")
+        self.assertEqual(Event.objects.count(), 0)
+
+    def test_global_privacy_control_is_honoured(self, _):
+        self.client.get("/", HTTP_USER_AGENT=UA, HTTP_SEC_GPC="1")
+        self.client.post("/analytics/e/", json.dumps({"k": "view", "p": "/"}), content_type="text/plain",
+                         HTTP_USER_AGENT=UA, HTTP_SEC_GPC="1")
+        self.assertEqual(Event.objects.count(), 0)
 
     def test_ping(self, _):
         self.assertEqual(self.beacon({"k": "view", "p": "/tools/merge-pdf/", "v": 5}).status_code, 204)

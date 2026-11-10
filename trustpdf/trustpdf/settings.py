@@ -28,6 +28,7 @@ env = environ.Env(
     ANALYTICS_ENABLED=(bool, True),
     ANALYTICS_TRACK_STAFF=(bool, False),
     ADMIN_PATH=(str, "admin"),
+    CONTACT_EMAIL=(str, "info@koplemo.com"),
     GOOGLE_SITE_VERIFICATION=(str, ""),
     BING_SITE_VERIFICATION=(str, ""),
     INDEXNOW_KEY=(str, ""),
@@ -45,7 +46,7 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-CONTACT_EMAIL = "info@koplemo.com"
+CONTACT_EMAIL = env("CONTACT_EMAIL")
 
 # Search engine ownership checks (Google Search Console, Bing Webmaster Tools).
 # Paste only the content="..." value of the meta tag they give you.
@@ -115,6 +116,12 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": env("DATABASE_PATH", default=str(PRE_BASE_DIR / "db.sqlite3")),
+        "OPTIONS": {
+            # WAL: the dashboard's long reads do not block the page-view writes (and the
+            # other way round). Wait up to 20 s for a lock instead of failing at once.
+            "init_command": "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;",
+            "timeout": 20,
+        },
     }
 }
 
@@ -209,7 +216,7 @@ CSP_DIRECTIVES = {
     # 'wasm-unsafe-eval' lets qpdf (passwords) and Tesseract (OCR), compiled to
     # WebAssembly, run. It does not allow eval() or inline scripts.
     "script-src": ["'self'", "'wasm-unsafe-eval'"],
-    "style-src": ["'self'", "'unsafe-inline'"],
+    "style-src": ["'self'"],
     "img-src": ["'self'", "data:", "blob:"],
     "font-src": ["'self'"],
     "connect-src": ["'self'"],
@@ -219,6 +226,15 @@ CSP_DIRECTIVES = {
     "form-action": ["'self'"],
     "frame-ancestors": ["'none'"],
 }
+# The staff-only pages under /<ADMIN_PATH>/ (Django admin, the Plotly charts of the
+# analytics dashboard) need inline styles; the public pages do not get this exception.
+CSP_STAFF_OVERRIDES = {"style-src": ["'self'", "'unsafe-inline'"]}
+
+# Browser features no page of this site uses, switched off for the page and anything in it.
+PERMISSIONS_POLICY = (
+    "accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), "
+    "magnetometer=(), microphone=(), midi=(), payment=(), usb=(), browsing-topics=()"
+)
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

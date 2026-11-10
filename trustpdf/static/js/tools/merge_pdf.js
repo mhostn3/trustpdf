@@ -17,27 +17,21 @@
       }
 
       handler.lock();
-      const merged = await T.createPdf();
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        T.busy(`Merging file ${i + 1} of ${files.length}: ${file.name}`);
-        await T.nextFrame();
-        try {
-          const source = await T.loadPdf(file);
-          const pages = await merged.copyPages(source, source.getPageIndices());
-          pages.forEach((page) => merged.addPage(page));
-          if (i === 0) T.copyMetadata(source, merged);
-        } catch (error) {
-          throw new T.ToolError(`${file.name}: ${T.friendlyMessage(error)}`);
-        } finally {
-          T.idle();
-        }
+      // The merge itself runs in a worker, so the page stays responsive with big files.
+      const buffers = await Promise.all(files.map((file) => file.arrayBuffer()));
+      let result;
+      try {
+        result = await T.runInWorker("merge", { buffers }, {
+          transfer: buffers,
+          onProgress: ({ index, total }) => T.progress(`Merging file ${index + 1} of ${total}: ${files[index].name}`),
+        });
+      } catch (error) {
+        if (error.index === undefined) throw error;
+        throw new T.ToolError(`${files[error.index].name}: ${T.friendlyMessage(error)}`);
       }
 
-      const bytes = await merged.save();
-      T.finish(bytes, T.makeFilename(files[0].name, "merged"), {
-        note: `Merged ${files.length} file${files.length === 1 ? "" : "s"} into ${merged.getPageCount()} pages.`,
+      T.finish(result.bytes, T.makeFilename(files[0].name, "merged"), {
+        note: `Merged ${files.length} file${files.length === 1 ? "" : "s"} into ${result.pages} pages.`,
       });
     },
   });

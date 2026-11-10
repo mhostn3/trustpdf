@@ -21,6 +21,7 @@ urlpatterns = [
     path("llms.txt", views.llms_txt_view, name="llms_txt"),
     path("llms-full.txt", views.llms_full_txt_view, name="llms_full_txt"),
     path("manifest.webmanifest", views.manifest_view, name="manifest"),
+    path("sw.js", views.service_worker_view, name="service_worker"),
     path(".well-known/security.txt", views.security_txt_view, name="security_txt"),
     re_path(r"^(?P<key>[0-9a-fA-F-]{8,128})\.txt$", views.indexnow_key_view, name="indexnow_key"),
 ]

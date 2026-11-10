@@ -1,4 +1,6 @@
 import datetime
+import hashlib
+import json
 
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
@@ -8,7 +10,7 @@ from django.views.decorators.cache import cache_control
 from django.views.generic import TemplateView
 
 from . import seo
-from .seo import absolute_static, absolute_url  # noqa: F401  (re-exported for urls.py)
+from .seo import absolute_static, absolute_url
 from .tools import TOOLS, STATIC_PAGES, HOME_FAQ_ITEMS, tools_by_group
 
 
@@ -170,6 +172,40 @@ def manifest_view(request):
         ],
     }
     return JsonResponse(data, content_type="application/manifest+json", json_dumps_params={"ensure_ascii": False})
+
+
+# Files every page needs, and the libraries of the tools: stored by the service worker
+# on the first visit so the site works offline afterwards. The large on-demand libraries
+# (OCR engine and language data, qpdf, the Unicode font) are cached when first used.
+OFFLINE_STATIC = [
+    "css/bootstrap.min.css", "css/bootstrap-icons.min.css", "css/custom.css",
+    "fonts/bootstrap-icons.woff2",
+    "js/bootstrap.bundle.min.js", "js/trustpdf-analytics.js", "js/trustpdf-offline.js", "js/trustpdf-home.js",
+    "js/trustpdf-core.js", "js/trustpdf-pages.js", "js/trustpdf-preview.js", "js/trustpdf-zip.js",
+    "js/trustpdf-qpdf.js", "js/trustpdf-worker.js",
+    "js/pdf-lib.min.js", "js/pdf.min.js", "js/pdf.worker.min.js", "js/Sortable.min.js",
+    "img/brand/trustpdf-icon-black.webp", "img/favicon.ico", "img/icon-192.png", "img/icon-512.png",
+    "img/apple-touch-icon.png",
+]
+
+
+def service_worker_view(request):
+    """/sw.js: the offline cache. Served from the root so its scope is the whole site."""
+    from django.templatetags.static import static
+
+    files = OFFLINE_STATIC + [f"js/tools/{t['name']}.js" for t in TOOLS] + [t["icon"] for t in TOOLS]
+    precache = [static(path) for path in files]
+    pages = [reverse(name) for name, *_ in SITEMAP_PAGES] + [t["path"] for t in TOOLS]
+    body = render_to_string("sw.js", {
+        "static_prefix": json.dumps(settings.STATIC_URL),
+        "immutable": json.dumps(not settings.DEBUG),
+        "precache": json.dumps(precache, indent=1),
+        "pages": json.dumps(pages, indent=1),
+        "version": hashlib.sha256(json.dumps([precache, pages]).encode()).hexdigest()[:16],
+    })
+    response = HttpResponse(body, content_type="text/javascript; charset=utf-8")
+    response["Cache-Control"] = "no-cache"  # browsers must always check for a new version
+    return response
 
 
 def indexnow_key_view(request, key):

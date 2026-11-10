@@ -89,7 +89,8 @@ class PageTests(SimpleTestCase):
         self.assertIn("default-src 'self'", csp)
         self.assertIn("connect-src 'self';", csp)  # scripts may talk to this site only
         self.assertNotIn("http", csp)  # no third-party origin anywhere
-        self.assertNotIn("unsafe-inline", csp.split("style-src")[0])
+        self.assertNotIn("unsafe-inline", csp)  # no inline scripts and no inline styles
+        self.assertIn("camera=()", response["Permissions-Policy"])
         self.assertEqual(response["X-Frame-Options"], "DENY")
         self.assertEqual(response["X-Content-Type-Options"], "nosniff")
 
@@ -99,6 +100,15 @@ class PageTests(SimpleTestCase):
             html = self.client.get(reverse(f"pages:{tool['name']}")).content.decode()
             self.assertNotRegex(html, r'<script(?![^>]*\ssrc=)(?![^>]*type="application/ld\+json")[^>]*>', tool["name"])
             self.assertNotRegex(html, r"\son(click|change|load)=", tool["name"])
+
+    def test_no_inline_styles(self):
+        """Inline CSS would be blocked by the CSP too."""
+        paths = [reverse(f"pages:{t['name']}") for t in TOOLS]
+        paths += [reverse(f"pages:{n}") for n in ("index", "about", "privacy", "cookies", "terms", "privacy_tools")]
+        paths.append("/analytics/ignore/")
+        for path in paths:
+            html = self.client.get(path).content.decode()
+            self.assertNotRegex(html, r"<style|\sstyle=", path)
 
     def test_no_third_party_assets(self):
         html = self.client.get(reverse("pages:merge_pdf")).content.decode()
@@ -185,6 +195,30 @@ class SeoTests(SimpleTestCase):
         body = self.client.get("/.well-known/security.txt").content.decode()
         self.assertIn(f"Contact: mailto:{settings.CONTACT_EMAIL}", body)
         self.assertIn("Expires: ", body)
+
+    def test_service_worker_lists_every_page_and_tool_script(self):
+        response = self.client.get("/sw.js")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response["Content-Type"].startswith("text/javascript"))
+        self.assertEqual(response["Cache-Control"], "no-cache")
+        body = response.content.decode()
+        static = Path(settings.BASE_DIR) / "static"
+        for path in re.findall(r'"/static/([^"]+)"', body):
+            self.assertTrue((static / path).is_file(), path)
+        for tool in TOOLS:
+            self.assertIn(f'"{tool["path"]}"', body)
+            self.assertIn(f'js/tools/{tool["name"]}.js"', body)
+        self.assertNotIn(settings.ADMIN_PATH, body)  # the staff path is never mentioned
+        self.assertIn('data-sw="/sw.js"', self.client.get("/").content.decode())
+
+    def test_tool_pages_load_only_the_libraries_they_use(self):
+        merge = self.client.get(reverse("pages:merge_pdf")).content.decode()
+        self.assertNotIn('<script src="/static/js/pdf-lib.min.js"', merge)  # runs in the worker
+        self.assertIn("js/Sortable.min.js", merge)
+        text = self.client.get(reverse("pages:pdf_to_text")).content.decode()
+        self.assertNotIn('<script src="/static/js/pdf-lib.min.js"', text)
+        self.assertNotIn("Sortable", text)
+        self.assertIn('<script src="/static/js/pdf-lib.min.js"', self.client.get(reverse("pages:rotate_pdf_pages")).content.decode())
 
     def test_indexnow_key(self):
         self.assertEqual(self.client.get("/0123456789abcdef.txt").status_code, 404)

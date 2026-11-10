@@ -50,8 +50,7 @@
       if (text.length > 100) throw new T.ToolError("Please keep the watermark under 100 characters.");
 
       const doc = await T.loadPdf(file);
-      const font = await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-      T.assertEncodable(font, text);
+      const font = await T.textFont(doc, text, { bold: true });
 
       const pages = doc.getPages();
       const total = pages.length;

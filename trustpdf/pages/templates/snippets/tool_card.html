@@ -1,5 +1,5 @@
 {% load static %}
-<div class="col-12 col-sm-6 {{ col_class|default:'col-lg-3' }}">
+<div class="col-12 col-sm-6 {{ col_class|default:'col-lg-3' }}" data-tool-search="{{ tool.title }} {{ tool.description }} {{ tool.keywords }}">
   <a href="{% url tool.url_name %}" class="tool-card">
     <img src="{% static tool.icon %}" alt="" width="110" height="110" class="tool-icon" loading="lazy">
     <span class="tool-card-body">

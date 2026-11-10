@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SECRET_KEY: ci-only-not-a-real-key-0123456789-abcdefghijklmnopqrstuvwxyz-ABCDEFGH
+      ALLOWED_HOSTS: localhost,127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install the pinned Python packages
+        run: pip install --require-hashes -r requirements.txt
+
+      - name: Django deployment check
+        working-directory: trustpdf
+        run: python manage.py check --deploy --fail-level WARNING
+
+      - name: Django tests
+        working-directory: trustpdf
+        run: python manage.py test --noinput
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Playwright and the fixture tools
+        run: |
+          npm install --no-save playwright@1
+          npx playwright install --with-deps chromium
+          pip install pillow
+
+      - name: Browser smoke test (every tool, with real files)
+        env:
+          DEBUG: "True"
+          ANALYTICS_ENABLED: "False"
+        run: |
+          python tests/e2e/make_fixtures.py
+          (cd trustpdf && python manage.py migrate --noinput -v 0 && python manage.py runserver 127.0.0.1:8765 > /tmp/server.log 2>&1 &)
+          for i in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8765/ && break; sleep 1; done
+          BASE_URL=http://127.0.0.1:8765 node tests/e2e/smoke.js
+
+      - name: Server log
+        if: failure()
+        run: cat /tmp/server.log || true

@@ -10,8 +10,8 @@ and repeated word for word in the structured data.
 
 PRIVACY_ANSWER = (
     "No. TrustPDF runs entirely in your web browser using JavaScript. Your file is read and processed on your own "
-    "device and is never sent to a server. The site's Content-Security-Policy does not even allow the page to "
-    "upload it, and you can check the open-source code on GitHub."
+    "device and is never sent to a server. The site's Content-Security-Policy does not allow the page to send "
+    "anything to any other site, and you can check the open-source code on GitHub."
 )
 
 GROUPS = [
@@ -251,7 +251,7 @@ TOOLS = [
         "faq": [
             ("Is my PDF uploaded to add a watermark?", PRIVACY_ANSWER),
             ("Can the watermark be removed?", "The text is drawn onto the pages, so it cannot simply be switched off, but someone with PDF editing software could still delete it. A watermark discourages sharing; it is not a security lock."),
-            ("Which characters can I use?", "Latin letters, including most accented letters used in Western European languages, digits and common punctuation. Some characters (for example Cyrillic, Chinese, or č and ć) are not in the built-in PDF fonts yet."),
+            ("Which characters can I use?", "Latin letters with any accents (including č, š, ž, ć and đ), Greek and Cyrillic letters, digits and common punctuation. Plain Western text uses the standard PDF font; for other characters a font (Noto Sans) is loaded from this site and embedded in the PDF. Chinese, Japanese, Korean, Arabic and Hebrew are not supported yet."),
         ],
         "related": ["add_page_numbers", "pdf_metadata_editor", "compress_pdf"],
     },
@@ -308,7 +308,7 @@ TOOLS = [
             "Click “Create PDF”, then “Save PDF”.",
         ],
         "faq": [
-            ("Are my images uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your images are").replace("upload it", "upload them")),
+            ("Are my images uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your images are")),
             ("Which image formats are supported?", "JPG/JPEG and PNG. Photos from iPhones in HEIC format must be exported as JPG first."),
             ("Are the images compressed?", "No. Images are placed in the PDF as they are, so quality is unchanged. Use Compress PDF afterwards if you need a smaller file."),
         ],
@@ -483,7 +483,7 @@ TOOLS = [
             "Click “Protect PDF”, then save the encrypted file.",
         ],
         "faq": [
-            ("Is my PDF or my password uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your file and your password are").replace("upload it", "upload them")),
+            ("Is my PDF or my password uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your file and your password are")),
             ("How strong is the encryption?", "AES-256, the strongest encryption defined in the PDF standard, as used by Adobe Acrobat. A long password matters more than anything: a short or common one can be guessed."),
             ("What is the owner password for?", "The owner password unlocks the restrictions (printing, copying, editing). Readers who only have the open password are bound by them. If you leave it empty, a random owner password is set that nobody knows, so the restrictions cannot be switched off with the open password. Note that restrictions rely on the PDF reader honouring them; only the open password actually encrypts the content."),
             ("What if I forget the password?", "There is no way to recover it; the content is encrypted with it. Store the password somewhere safe, such as a password manager."),
@@ -513,7 +513,7 @@ TOOLS = [
             "Click “Unlock PDF”, then save the unlocked copy.",
         ],
         "faq": [
-            ("Is my PDF or my password uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your file and your password are").replace("upload it", "upload them")),
+            ("Is my PDF or my password uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your file and your password are")),
             ("Can it remove a password I don't know?", "No. The content is encrypted with that password, so without it the file cannot be read. TrustPDF does not try to guess or crack passwords."),
             ("My PDF opens without a password but I can't print or copy. Can I fix that?", "Yes. Those are permission restrictions. Add the file, leave the password field empty, and click Unlock PDF."),
             ("Is the original file changed?", "No. You save a new, unlocked copy; your original stays as it was."),
@@ -596,6 +596,18 @@ for _tool in TOOLS:
 for _tool in TOOLS:
     _tool["related_tools"] = [_BY_NAME[name] for name in _tool["related"]]
 
+# Shared scripts each tool page loads (tool_base.html); a page gets only what its tool uses.
+# Merge and Split run pdf-lib in a worker (static/js/trustpdf-worker.js), not on the page.
+_NO_PDFLIB = {"merge_pdf", "split_pdf", "pdf_to_jpg", "pdf_to_text", "pdf_to_word", "protect_pdf", "unlock_pdf"}
+_SORTABLE = {"merge_pdf", "images_to_pdf", "reorder_pdf_pages"}
+_ZIP = {"split_pdf", "pdf_to_jpg", "pdf_to_word"}
+for _tool in TOOLS:
+    _tool["libs"] = (
+        ([] if _tool["name"] in _NO_PDFLIB else ["pdflib"])
+        + (["sortable"] if _tool["name"] in _SORTABLE else [])
+        + (["zip"] if _tool["name"] in _ZIP else [])
+    )
+
 
 def tools_by_group():
     """[(group dict, [tools...]), ...] in GROUPS order, for the home page."""
@@ -604,8 +616,8 @@ def tools_by_group():
 
 HOME_FAQ = [
     ("Is TrustPDF really free?", "Yes. Every tool is free, with no sign-up, no watermarks, no daily limits and no premium tier. The project is open source and supported by donations and a few clearly marked affiliate links."),
-    ("Are my files uploaded to a server?", "No. All processing happens in your browser with open-source JavaScript libraries (pdf-lib and PDF.js). Your files never leave your device, and the site's Content-Security-Policy blocks pages from sending them anywhere."),
-    ("Does TrustPDF work offline?", "Once a tool page has loaded, the processing itself needs no internet connection, because it runs on your device."),
+    ("Are my files uploaded to a server?", "No. All processing happens in your browser with open-source JavaScript libraries (pdf-lib and PDF.js). Your files never leave your device, and the site's Content-Security-Policy stops pages from sending anything to any other site."),
+    ("Does TrustPDF work offline?", "Yes. After your first visit the browser keeps a copy of the site's pages and scripts, so the tools open and work with no internet connection at all; switch off your Wi-Fi and try it. OCR, password tools and non-Latin watermark fonts need one online use first, because their larger files are stored when first used. You can also install TrustPDF as an app from your browser's menu."),
     ("Does it work on phones and tablets?", "Yes. TrustPDF works in any modern browser on Windows, macOS, Linux, Android and iOS. Very large files can be slow on older phones."),
     ("Can I use TrustPDF for confidential documents?", "That is what it is built for. Since files are never uploaded, nobody else can see or keep them. You can verify this in the source code on GitHub, or watch your browser's network tab while you use a tool."),
     ("What can't TrustPDF do yet?", "It cannot crack a password you don't know, fill PDF forms, or convert PDFs to Excel. OCR, PDF to Word, signing, cropping and password protection are all here and run in your browser."),

@@ -22,7 +22,7 @@ IGNORE_COOKIE = "tp_ignore"  # set on request at /analytics/ignore/ so the owner
 # Paths that are never recorded.
 EXCLUDED_PREFIXES = ("/admin/", "/analytics/", "/static/", "/media/", "/test/",
                      "/favicon", "/robots.txt", "/sitemap.xml", "/.well-known/",
-                     "/llms.txt", "/llms-full.txt", "/manifest.webmanifest")
+                     "/llms.txt", "/llms-full.txt", "/manifest.webmanifest", "/sw.js")
 
 BOT_RE = re.compile(
     r"bot|crawl|spider|slurp|scrape|curl|wget|python-requests|httpx|aiohttp|go-http|java/|"
@@ -48,10 +48,14 @@ def skip_request(request):
 
 
 def skip_client(request):
-    """True when analytics is off, or the client is a bot or a staff user."""
+    """True when analytics is off, the visitor opted out, or the client is a bot or a staff user."""
     if not enabled():
         return True
     if request.COOKIES.get(IGNORE_COOKIE) == "1":  # the owner's own browsers
+        return True
+    if request.META.get("HTTP_X_TRUSTPDF_PRECACHE"):  # the service worker filling its offline cache
+        return True
+    if request.META.get("HTTP_SEC_GPC") == "1":  # Global Privacy Control: the visitor opted out
         return True
     ua = request.META.get("HTTP_USER_AGENT", "")
     if not ua or BOT_RE.search(ua):

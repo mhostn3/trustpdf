@@ -20,17 +20,23 @@
   $("compressLevel").addEventListener("change", describeLevel);
   describeLevel();
 
+  /** Runs in a worker, so the page stays responsive with big files. */
   async function lossless(file) {
-    const doc = await T.loadPdf(file);
-    return doc.save({ useObjectStreams: true });
+    const buffer = await file.arrayBuffer();
+    return (await T.runInWorker("compress", { buffer }, { transfer: [buffer] })).bytes;
   }
 
   async function rasterize(file, { dpi, quality }) {
-    const source = await T.loadPdf(file);
     const pdf = await T.openWithPdfjs(file);
     try {
       const out = await T.createPdf();
-      T.copyMetadata(source, out);
+      // Title, author, subject and keywords come from PDF.js, which has the file
+      // open anyway; parsing it a second time with pdf-lib would double the memory.
+      const { info = {} } = await pdf.getMetadata().catch(() => ({}));
+      if (info.Title) out.setTitle(info.Title);
+      if (info.Author) out.setAuthor(info.Author);
+      if (info.Subject) out.setSubject(info.Subject);
+      if (info.Keywords) out.setKeywords(String(info.Keywords).split(/[,;]\s*/).filter(Boolean));
       for (let n = 1; n <= pdf.numPages; n++) {
         T.busy(`Compressing page ${n} of ${pdf.numPages}…`);
         await T.nextFrame();
