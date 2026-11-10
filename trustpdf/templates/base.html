@@ -51,7 +51,7 @@
   <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
   <link rel="icon" href="{% static 'img/icon-192.png' %}" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
-  <link rel="manifest" href="{% url 'pages:manifest' %}">
+  {% block manifest %}<link rel="manifest" href="{% url 'pages:manifest' %}">{% endblock %}
 
   {# For AI assistants: a plain-text map of the site (https://llmstxt.org) #}
   <link rel="alternate" type="text/markdown" title="llms.txt" href="{% url 'pages:llms_txt' %}">

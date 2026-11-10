@@ -3,8 +3,10 @@ import json
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import cache
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
+from django.templatetags.static import static
+from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -96,3 +98,28 @@ def export_csv(period, everything=False):
     for row in qs.order_by("ts").values_list(*fields).iterator():
         w.writerow(row)
     return resp
+
+
+def manifest(request):
+    """Web app manifest for the dashboard, so "Add to Home screen" opens the dashboard, not the home page.
+    Served only under the secret admin path and linked only from the dashboard, so it never reveals the path.
+    Not staff-only: browsers fetch manifests without cookies."""
+    start = reverse("analytics:dashboard")
+    data = {
+        "id": start,
+        "name": "TrustPDF Analytics",
+        "short_name": "Analytics",
+        "start_url": start,
+        "scope": f"/{settings.ADMIN_PATH}/",  # login and admin pages stay inside the app window
+        "display": "standalone",
+        "background_color": "#f6f8fc",
+        "theme_color": "#ffffff",
+        "icons": [
+            {"src": static("img/icon-192.png"), "sizes": "192x192", "type": "image/png"},
+            {"src": static("img/icon-512.png"), "sizes": "512x512", "type": "image/png"},
+        ],
+    }
+    response = JsonResponse(data, content_type="application/manifest+json")
+    response["Cache-Control"] = "private, max-age=3600"
+    response["X-Robots-Tag"] = "noindex"
+    return response
