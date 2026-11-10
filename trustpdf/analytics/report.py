@@ -72,7 +72,7 @@ def _qs(period):
 def summary(period):
     qs = _qs(period)
     pv = qs.filter(kind=Event.PAGEVIEW)
-    visitors = set(qs.values_list("visitor", flat=True).distinct())
+    n_visitors = qs.values("visitor").distinct().count()
     sessions = list(qs.values("session").annotate(
         views=Count("id", filter=_kind(Event.PAGEVIEW)),
         acts=Count("id", filter=_kinds(ACTION_KINDS + (Event.INPUT,))),
@@ -80,13 +80,11 @@ def summary(period):
     n_sessions = len(sessions)
     bounces = sum(1 for s in sessions if s["views"] <= 1 and not s["acts"])
     engaged = sum(s["engaged"] or 0 for s in sessions)
-    returning = 0
-    if visitors:
-        first_seen = (Event.objects.filter(visitor__in=visitors, ts__lt=period.start_dt)
-                      .values_list("visitor", flat=True).distinct())
-        returning = len(set(first_seen))
+    # A subquery, not a Python list of ids: SQLite refuses more than ~32,000 bound variables.
+    returning = (Event.objects.filter(visitor__in=qs.values("visitor"), ts__lt=period.start_dt)
+                 .values("visitor").distinct().count())
     return dict(
-        visitors=len(visitors), returning=returning, new=len(visitors) - returning,
+        visitors=n_visitors, returning=returning, new=n_visitors - returning,
         sessions=n_sessions, pageviews=pv.count(),
         actions=qs.filter(kind__in=ACTION_KINDS).count(),
         calls=qs.filter(kind=Event.ACTION).count(),

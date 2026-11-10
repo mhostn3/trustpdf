@@ -93,6 +93,8 @@
     }
   }
 
+  const PASSWORD_MESSAGE = "This PDF is password-protected. Remove the password with the Unlock PDF tool on this site, then try again.";
+
   function friendlyMessage(error) {
     if (!error) return "Something went wrong. Please try again.";
     if (error.friendly) return error.message;
@@ -101,7 +103,7 @@
     const text = String(error.message || error);
 
     if (name === "EncryptedPDFError" || /encrypted/i.test(text)) {
-      return "This PDF is password-protected. Remove the password in your PDF reader (File → Save as, without a password) and try again.";
+      return PASSWORD_MESSAGE;
     }
     if (/Failed to parse PDF|No PDF header|Expected instance of PDF|Trying to parse invalid object|is not a PDF/i.test(text)) {
       return "This file could not be read as a PDF. It may be damaged, or it may not be a PDF at all.";
@@ -596,9 +598,20 @@
       this.dropZone.classList.add("is-busy");
       this.dropZone.setAttribute("aria-disabled", "true");
       if (this.fileList) {
-        this.fileList.querySelectorAll("button").forEach((btn) => btn.remove());
+        this.fileList.querySelectorAll("button").forEach((btn) => btn.classList.add("d-none"));
       }
       if (this.sortableList) this.sortableList.option("disabled", true);
+    }
+
+    /** Undo lock() after a failed run, so the files can be changed and tried again. */
+    unlock() {
+      this.locked = false;
+      this.dropZone.classList.remove("is-busy");
+      this.dropZone.removeAttribute("aria-disabled");
+      if (this.fileList) {
+        this.fileList.querySelectorAll("button").forEach((btn) => btn.classList.remove("d-none"));
+      }
+      if (this.sortableList) this.sortableList.option("disabled", false);
     }
 
     reset() {
@@ -634,6 +647,7 @@
   /* ----------------------------------------------------------------- */
 
   const state = { config: null, fileHandler: null };
+  const lockables = []; // page pickers and other widgets with lock() / unlock()
 
   function showDownloadArea(show) {
     const area = $("downloadArea");
@@ -682,7 +696,12 @@
       if (!error || !error.friendly) console.error(error);
       messages.error(friendlyMessage(error));
       showProcessButton(true);
+      // A tool locks its inputs before the heavy work; a failed run must hand them back.
+      if (state.fileHandler) state.fileHandler.unlock();
+      lockables.forEach((item) => item.unlock());
     } finally {
+      // A step that threw between busy() and idle() must not leave the spinner on.
+      busyDepth = 1;
       idle();
     }
   }
@@ -736,6 +755,8 @@
     nextFrame,
     ToolError,
     friendlyMessage,
+    PASSWORD_MESSAGE,
+    lockables,
     parsePageRanges,
     formatPageRanges,
     makeFilename,

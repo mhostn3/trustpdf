@@ -46,7 +46,12 @@
       if (!user) throw new T.ToolError("Please type the password that will be needed to open the PDF.");
       if (user !== user2) throw new T.ToolError("The two passwords do not match.");
       if (user.length < 4) throw new T.ToolError("Please use at least 4 characters.");
-      if (!owner) owner = user;
+      if (!owner) {
+        // With the same password for both, anyone who can open the file would have
+        // owner rights and the restrictions below would do nothing. Use a random one.
+        const random = crypto.getRandomValues(new Uint8Array(32));
+        owner = Array.from(random, (b) => b.toString(16).padStart(2, "0")).join("");
+      }
 
       handler.lock();
       const args = [

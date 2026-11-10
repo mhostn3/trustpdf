@@ -57,6 +57,7 @@
       this.rotation = 0;
       this.locked = false;
 
+      TrustPDF.lockables.push(this);
       this.container.classList.add("page-grid");
       if (this.mode === "sort") this.container.classList.add("sortable");
 
@@ -90,7 +91,7 @@
         if (generation !== this.generation) return;
         this.show(false);
         if (error && error.name === "PasswordException") {
-          throw new TrustPDF.ToolError("This PDF is password-protected. Remove the password in your PDF reader and try again.");
+          throw new TrustPDF.ToolError(TrustPDF.PASSWORD_MESSAGE);
         }
         throw error;
       }
@@ -276,6 +277,12 @@
       this.container.classList.add("is-busy");
     }
 
+    unlock() {
+      this.locked = false;
+      if (this.sortable) this.sortable.option("disabled", false);
+      this.container.classList.remove("is-busy");
+    }
+
     clear() {
       this.generation += 1;
       this.queue = [];
@@ -316,7 +323,7 @@
     } catch (error) {
       task.destroy();
       if (error && error.name === "PasswordException") {
-        throw new TrustPDF.ToolError("This PDF is password-protected. Remove the password in your PDF reader and try again.");
+        throw new TrustPDF.ToolError(TrustPDF.PASSWORD_MESSAGE);
       }
       if (error && error.name === "InvalidPDFException") {
         throw new TrustPDF.ToolError("This file could not be read as a PDF. It may be damaged, or it may not be a PDF at all.");

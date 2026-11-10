@@ -47,7 +47,7 @@ TOOLS = [
             ("Are my PDF files uploaded when I merge them?", PRIVACY_ANSWER),
             ("Is there a limit on the number or size of files?", "There is no fixed limit and no daily quota. The only limit is your device's memory; a modern computer handles hundreds of pages easily. Very large files (hundreds of megabytes) can be slow on phones."),
             ("Will merging reduce the quality of my PDF?", "No. Pages are copied as they are, so text, vector graphics and images keep their original quality."),
-            ("Can I merge password-protected PDFs?", "Not directly. Open the file in your PDF reader, save a copy without the password, and merge that copy."),
+            ("Can I merge password-protected PDFs?", "Not directly. Remove the password first with the Unlock PDF tool on this site (you need to know it), then merge the unlocked copy."),
         ],
         "related": ["split_pdf", "reorder_pdf_pages", "compress_pdf"],
     },
@@ -485,7 +485,7 @@ TOOLS = [
         "faq": [
             ("Is my PDF or my password uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your file and your password are").replace("upload it", "upload them")),
             ("How strong is the encryption?", "AES-256, the strongest encryption defined in the PDF standard, as used by Adobe Acrobat. A long password matters more than anything: a short or common one can be guessed."),
-            ("What is the owner password for?", "The owner password unlocks the restrictions (printing, copying, editing). Readers who only have the open password are bound by them. If you leave it empty, the open password is used for both."),
+            ("What is the owner password for?", "The owner password unlocks the restrictions (printing, copying, editing). Readers who only have the open password are bound by them. If you leave it empty, a random owner password is set that nobody knows, so the restrictions cannot be switched off with the open password. Note that restrictions rely on the PDF reader honouring them; only the open password actually encrypts the content."),
             ("What if I forget the password?", "There is no way to recover it; the content is encrypted with it. Store the password somewhere safe, such as a password manager."),
             ("Can old PDF readers open AES-256 files?", "Readers released since about 2009 (Adobe Reader 9 or newer, all current browsers) can. Very old readers may not."),
         ],

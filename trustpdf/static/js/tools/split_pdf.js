@@ -83,12 +83,15 @@
           const n = wanted[i];
           T.busy(`Creating page ${n} (${i + 1} of ${wanted.length})…`);
           await T.nextFrame();
-          const doc = await T.createPdf();
-          T.copyMetadata(source, doc);
-          const [page] = await doc.copyPages(source, [n - 1]);
-          doc.addPage(page);
-          zip.add(T.makeFilename(file.name, `page-${n}`), await doc.save());
-          T.idle();
+          try {
+            const doc = await T.createPdf();
+            T.copyMetadata(source, doc);
+            const [page] = await doc.copyPages(source, [n - 1]);
+            doc.addPage(page);
+            zip.add(T.makeFilename(file.name, `page-${n}`), await doc.save());
+          } finally {
+            T.idle();
+          }
         }
         T.finish(zip.build(), T.makeFilename(file.name, "pages", "zip"), {
           type: "application/zip",

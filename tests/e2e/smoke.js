@@ -104,6 +104,14 @@ async function run(name, fn) {
     return text.slice(0, 60);
   });
 
+  await run("merge: after an error the bad file can be removed and the run repeated", async () => {
+    await page.locator("#fileList li button").click();  // Remove is back
+    await page.setInputFiles("#fileInput", [path.join(FIX, "three.pdf")]);
+    await page.click("#processBtn");
+    await download();
+    const i = await inspect(); if (i.pages !== 3) throw new Error(`expected 3 pages, got ${i.pages}`);
+  });
+
   await run("split: click thumbnails", async () => {
     await open("split-pdf");
     await page.setInputFiles("#fileInput", path.join(FIX, "five pages.pdf"));

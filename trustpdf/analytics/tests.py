@@ -146,6 +146,8 @@ class TrackingTests(TestCase):
         self.assertContains(r, "Split PDF")  # tools nobody opened are listed too
         self.assertEqual(r.context["summary"]["visitors"], 2)
         self.assertEqual(r.context["summary"]["sessions"], 2)
+        self.assertEqual(r.context["summary"]["returning"], 0)
+        self.assertEqual(r.context["summary"]["new"], 2)
         self.assertEqual(r.context["filtered"], {"visitors": 1, "pageviews": 1})
         self.assertContains(r, "Setup check")
         self.assertContains(r, reverse("analytics:manifest"))
