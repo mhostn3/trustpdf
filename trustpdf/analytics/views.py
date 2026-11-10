@@ -110,7 +110,7 @@ def manifest(request):
         "name": "TrustPDF Analytics",
         "short_name": "Analytics",
         "start_url": start,
-        "scope": f"/{settings.ADMIN_PATH}/",  # login and admin pages stay inside the app window
+        "scope": reverse("admin:index"),  # login and admin pages stay inside the app window
         "display": "standalone",
         "background_color": "#f6f8fc",
         "theme_color": "#ffffff",
