@@ -124,7 +124,7 @@ def tools(period):
     prev = _tool_stats(period.previous())
     detail = _tool_detail(period)
     rows = []
-    for g, group_tools in tools_by_group():
+    for g, group_tools in tools_by_group(include_variants=True):
         for t in group_tools:
             s = cur.get(t["title"], {})
             p = prev.get(t["title"], {})

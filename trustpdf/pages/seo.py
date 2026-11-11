@@ -9,7 +9,7 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
-from .tools import TOOLS, HOME_FAQ
+from .tools import MAIN_TOOLS, HOME_FAQ
 
 SITE_NAME = "TrustPDF"
 AUTHOR_NAME = "Martin Hostnik"
@@ -164,7 +164,7 @@ def home_graph():
         "name": "TrustPDF tools",
         "itemListElement": [
             {"@type": "ListItem", "position": i + 1, "name": t["title"], "url": absolute_url(t["path"])}
-            for i, t in enumerate(TOOLS)
+            for i, t in enumerate(MAIN_TOOLS)
         ],
     }
     page = _web_page(

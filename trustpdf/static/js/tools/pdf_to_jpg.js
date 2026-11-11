@@ -32,7 +32,7 @@
     },
     busyText: "Converting…",
     reset() {
-      $("imgFormat").value = "jpg";
+      $("imgFormat").value = $("imgFormat").dataset.default || "jpg";
       $("imgDpi").value = "150";
       $("imgQuality").value = "0.9";
       $("pages").value = "";

@@ -36,7 +36,7 @@ class PageTests(SimpleTestCase):
                 self.assertEqual(response.status_code, 200)
                 html = response.content.decode()
                 self.assertIn(f"<title>{escape(tool['seo_title'])}</title>", html)
-                self.assertRegex(html, rf'js/tools/{tool["name"]}(\.[0-9a-f]+)?\.js')
+                self.assertRegex(html, rf'js/tools/{tool["script"]}(\.[0-9a-f]+)?\.js')
 
     def test_canonical_urls_resolve(self):
         pages = [reverse(f"pages:{t['name']}") for t in TOOLS] + [reverse("pages:about")]
@@ -136,7 +136,7 @@ class SeoTests(SimpleTestCase):
             with self.subTest(tool=tool["name"]):
                 for key in ("icon", "og_image"):
                     self.assertTrue((static / tool[key]).is_file(), tool[key])
-                self.assertTrue((static / "js" / "tools" / f"{tool['name']}.js").is_file())
+                self.assertTrue((static / "js" / "tools" / f"{tool['script']}.js").is_file())
                 self.assertGreaterEqual(len(tool["steps"]), 3)
                 self.assertGreaterEqual(len(tool["faq"]), 3)
                 self.assertLessEqual(len(tool["seo_title"]), 70, "title gets cut off in results")
@@ -207,7 +207,7 @@ class SeoTests(SimpleTestCase):
             self.assertTrue((static / path).is_file(), path)
         for tool in TOOLS:
             self.assertIn(f'"{tool["path"]}"', body)
-            self.assertIn(f'js/tools/{tool["name"]}.js"', body)
+            self.assertIn(f'js/tools/{tool["script"]}.js"', body)
         self.assertNotIn(settings.ADMIN_PATH, body)  # the staff path is never mentioned
         self.assertIn('data-sw="/sw.js"', self.client.get("/").content.decode())
 
@@ -236,9 +236,25 @@ class SeoTests(SimpleTestCase):
             self.assertIn('<meta name="msvalidate.01" content="b-xyz">', html)
 
     def test_alternative_urls_redirect(self):
-        for old, new in [("/tools/jpg-to-pdf/", "/tools/images-to-pdf/"), ("/compress/", "/tools/compress-pdf/"), ("/tools/", "/")]:
+        for old, new in [("/tools/pdf-to-image/", "/tools/pdf-to-jpg/"), ("/compress/", "/tools/compress-pdf/"), ("/tools/", "/")]:
             response = self.client.get(old)
             self.assertEqual((response.status_code, response["Location"]), (301, new))
+
+    def test_variant_pages_are_own_landing_pages(self):
+        """JPG to PDF etc. are real pages (not redirects) that run the main tool's script."""
+        variants = [t for t in TOOLS if t.get("variant_of")]
+        self.assertTrue(variants)
+        home = self.client.get("/").content.decode()
+        for tool in variants:
+            with self.subTest(tool=tool["name"]):
+                response = self.client.get(tool["path"])
+                self.assertEqual(response.status_code, 200)
+                html = response.content.decode()
+                self.assertIn(f"<h1>{tool['title']}</h1>", html)
+                self.assertRegex(html, rf'js/tools/{tool["variant_of"]}(\.[0-9a-f]+)?\.js')
+                self.assertNotIn(f'href="{tool["path"]}" class="tool-card"', home)
+        png = self.client.get("/tools/pdf-to-png/").content.decode()
+        self.assertIn('<option value="png" selected>', png)
 
     def test_sitemap_has_images(self):
         xml = self.client.get("/sitemap.xml").content.decode()

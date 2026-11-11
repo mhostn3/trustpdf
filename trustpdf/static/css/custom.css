@@ -1068,6 +1068,33 @@ code {
 .crop-handle[data-handle="sw"] { bottom: -9px; left: -9px; cursor: nesw-resize; }
 .crop-handle[data-handle="se"] { bottom: -9px; right: -9px; cursor: nwse-resize; }
 
+.redact-box {
+  position: absolute;
+  background: #000;
+  outline: 2px solid var(--tp-primary);
+  box-sizing: border-box;
+}
+
+.redact-draft {
+  opacity: 0.6;
+}
+
+.redact-remove {
+  position: absolute;
+  top: -11px;
+  right: -11px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid var(--tp-primary);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--tp-primary);
+  font-size: 15px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
 .signature-overlay {
   position: absolute;
   cursor: move;

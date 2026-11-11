@@ -2,6 +2,7 @@
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
+const zlib = require("zlib");
 
 const BASE = process.env.BASE_URL || "http://127.0.0.1:8765";
 const FIX = path.join(__dirname, "fixtures");
@@ -38,6 +39,25 @@ async function pageText(file) {
   }, b64);
   await p.close();
   return result;
+}
+
+// Every stream in a PDF, inflated where it is compressed, plus the raw bytes:
+// what anyone could dig out of the file, referenced by a page or not.
+function allPdfText(buf) {
+  const parts = [buf.toString("latin1")];
+  let at = 0;
+  for (;;) {
+    const start = buf.indexOf("stream", at);
+    if (start < 0) break;
+    let body = start + 6;
+    if (buf[body] === 0x0d) body++;
+    if (buf[body] === 0x0a) body++;
+    const end = buf.indexOf("endstream", body);
+    if (end < 0) break;
+    try { parts.push(zlib.inflateSync(buf.subarray(body, end)).toString("latin1")); } catch (_) { /* not flate */ }
+    at = end + 9;
+  }
+  return parts.join("\n");
 }
 
 async function run(name, fn) {
@@ -243,6 +263,64 @@ async function run(name, fn) {
     const d = await download();
     const i = await inspect(); if (i.pages !== 2) throw new Error("page count " + i.pages);
     return d.name;
+  });
+
+  await run("jpg to pdf landing page", async () => {
+    await open("jpg-to-pdf");
+    if ((await page.locator("h1").innerText()) !== "JPG to PDF") throw new Error("heading");
+    await page.setInputFiles("#fileInput", [path.join(FIX, "photo.jpg")]);
+    await page.click("#processBtn");
+    const d = await download();
+    const i = await inspect(); if (i.pages !== 1) throw new Error("page count " + i.pages);
+    return d.name;
+  });
+
+  await run("pdf to png landing page: PNG preselected", async () => {
+    await open("pdf-to-png");
+    if ((await page.inputValue("#imgFormat")) !== "png") throw new Error("format not preset");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await waitIdle();
+    await page.fill("#pages", "1");
+    await page.click("#processBtn");
+    const d = await download();
+    if (d.buf.slice(1, 4).toString() !== "PNG") throw new Error("not a png");
+    await page.click("#startAgainBtn");
+    if ((await page.inputValue("#imgFormat")) !== "png") throw new Error("start again lost the preset");
+    return d.name;
+  });
+
+  await run("redact: draw/remove box, find text, no leaks", async () => {
+    await open("redact-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "redact.pdf"));
+    await waitIdle();
+    await page.locator("#previewCanvas").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const canvas = await page.locator("#previewCanvas").boundingBox();
+    await page.mouse.move(canvas.x + 60, canvas.y + 200);
+    await page.mouse.down();
+    await page.mouse.move(canvas.x + 200, canvas.y + 260, { steps: 5 });
+    await page.mouse.up();
+    if ((await page.locator(".redact-box").count()) !== 1) throw new Error("drawn box missing");
+    await page.locator(".redact-remove").dispatchEvent("pointerdown");
+    if ((await page.locator(".redact-box").count()) !== 0) throw new Error("box not removed");
+
+    await page.fill("#findText", "secret-account");
+    await page.click("#findBtn");
+    await waitIdle();
+    const info = await page.locator("#redactInfo").innerText();
+    if (!/1 area marked on page 2/.test(info)) throw new Error("find: " + info);
+    await page.click("#findEmailsBtn");
+    await waitIdle();
+    await page.click("#processBtn");
+    const d = await download();
+    const i = await inspect(); if (i.pages !== 3) throw new Error("pages " + i.pages);
+    const text = await pageText(d.file);
+    if (!/Intro/.test(text[0]) || text[1].trim() !== "" || !/Public/.test(text[2])) throw new Error("text " + JSON.stringify(text));
+    const everything = allPdfText(d.buf);
+    if (/SECRET|jane\.doe|Fixture/.test(everything)) throw new Error("redacted text is still in the file");
+    const pageObjects = (everything.match(/\/Type\s*\/Page(?!s)/g) || []).length;
+    if (pageObjects !== 3) throw new Error(`${pageObjects} page objects in the file`);
+    return `${d.name}; ${info}`;
   });
 
   await run("compress: lossless or 'already small' warning", async () => {

@@ -45,9 +45,6 @@ _REDIRECTS = {
     "split/": "split_pdf",
     "compress/": "compress_pdf",
     "tools/pdf-to-image/": "pdf_to_jpg",
-    "tools/pdf-to-png/": "pdf_to_jpg",
-    "tools/jpg-to-pdf/": "images_to_pdf",
-    "tools/png-to-pdf/": "images_to_pdf",
     "tools/": "index",
 }
 urlpatterns += [

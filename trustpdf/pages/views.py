@@ -51,7 +51,7 @@ class ToolView(TemplateView):
             "og_title": tool["seo_title"],
             "og_description": tool["og_description"],
             "og_image": absolute_static(tool["og_image"]),
-            "tool_script": f"js/tools/{tool['name']}.js",
+            "tool_script": f"js/tools/{tool['script']}.js",
             "json_ld": seo.tool_graph(tool),
         })
         return context
@@ -128,13 +128,13 @@ def _text_response(template, context=None):
 @cache_control(max_age=86400, public=True)
 def llms_txt_view(request):
     """https://llmstxt.org: a short Markdown map of the site for AI assistants."""
-    return _text_response("llms.txt", {"tool_groups": tools_by_group()})
+    return _text_response("llms.txt", {"tool_groups": tools_by_group(include_variants=True)})
 
 
 @cache_control(max_age=86400, public=True)
 def llms_full_txt_view(request):
     """The same, with every tool's how-to steps and FAQ inlined."""
-    return _text_response("llms-full.txt", {"tool_groups": tools_by_group(), "home_faq": HOME_FAQ_ITEMS})
+    return _text_response("llms-full.txt", {"tool_groups": tools_by_group(include_variants=True), "home_faq": HOME_FAQ_ITEMS})
 
 
 @cache_control(max_age=86400, public=True)
@@ -193,7 +193,8 @@ def service_worker_view(request):
     """/sw.js: the offline cache. Served from the root so its scope is the whole site."""
     from django.templatetags.static import static
 
-    files = OFFLINE_STATIC + [f"js/tools/{t['name']}.js" for t in TOOLS] + [t["icon"] for t in TOOLS]
+    scripts = dict.fromkeys(f"js/tools/{t['script']}.js" for t in TOOLS)
+    files = OFFLINE_STATIC + list(scripts) + [t["icon"] for t in TOOLS]
     precache = [static(path) for path in files]
     pages = [reverse(name) for name, *_ in SITEMAP_PAGES] + [t["path"] for t in TOOLS]
     body = render_to_string("sw.js", {

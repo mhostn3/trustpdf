@@ -262,11 +262,11 @@ TOOLS = [
         "group": "convert",
         "title": "PDF to JPG",
         "short_title": "PDF to JPG",
-        "seo_title": "PDF to JPG / PNG Converter Free, No Upload - TrustPDF",
+        "seo_title": "PDF to JPG Converter Free, High Quality, No Upload - TrustPDF",
         "description": "Convert PDF pages into JPG or PNG images at up to 300 DPI.",
         "meta_description": "Convert PDF to JPG or PNG for free without uploading. Turn every page, or just the ones you pick, into high-quality images at 72, 150 or 300 DPI, right in your browser.",
         "og_description": "Convert PDF pages to JPG or PNG images directly in your browser. Nothing is uploaded.",
-        "keywords": "pdf to jpg, pdf to png, pdf to image, convert pdf to jpg, save pdf page as image, pdf to jpg high quality",
+        "keywords": "pdf to jpg, pdf to jpeg, pdf to image, convert pdf to jpg, save pdf page as image, pdf to jpg high quality",
         "icon": "img/icons/pdf-to-jpg.webp",
         "og_image": "img/og/pdf-to-jpg-og.jpg",
         "template_name": "pdf_to_jpg.html",
@@ -283,7 +283,39 @@ TOOLS = [
             ("What resolution should I use?", "72 DPI is enough for screens and previews, 150 DPI for documents and slides, 300 DPI for printing."),
             ("How do I get all pages at once?", "Leave the page field empty. Several pages download together as one ZIP file."),
         ],
-        "related": ["images_to_pdf", "pdf_to_text", "split_pdf"],
+        "related": ["pdf_to_png", "images_to_pdf", "pdf_to_text"],
+    },
+    {
+        "name": "pdf_to_png",
+        "variant_of": "pdf_to_jpg",
+        "preset": {"format": "png"},
+        "how_to_title": "How to convert PDF to PNG",
+        "path": "/tools/pdf-to-png/",
+        "group": "convert",
+        "title": "PDF to PNG",
+        "short_title": "PDF to PNG",
+        "seo_title": "PDF to PNG Converter Free, Lossless, No Upload - TrustPDF",
+        "description": "Convert PDF pages into sharp, lossless PNG images at up to 300 DPI.",
+        "meta_description": "Convert PDF to PNG for free without uploading. Save every page, or the pages you pick, as lossless PNG images at 72, 150 or 300 DPI, right in your browser. No sign-up.",
+        "og_description": "Convert PDF pages to lossless PNG images directly in your browser. Nothing is uploaded.",
+        "keywords": "pdf to png, convert pdf to png, pdf to png high resolution, pdf page to png, pdf to transparent png, save pdf as png",
+        "icon": "img/icons/pdf-to-png.webp",
+        "og_image": "img/og/pdf-to-png-og.jpg",
+        "template_name": "pdf_to_png.html",
+        "intro": "PNG is lossless, so text, diagrams, charts and screenshots stay perfectly sharp with no JPG blur around the letters. Use it for slides, documentation, design mock-ups or anything you will zoom into. Pick 300 DPI for print quality, or 150 DPI for screens.",
+        "steps": [
+            "Drop a PDF into the box, or click it to choose one.",
+            "PNG is already selected; choose a resolution (150 DPI suits most uses, 300 DPI for print).",
+            "Leave the page field empty for all pages, or type the pages you want.",
+            "Click “Convert to Images”, then save the PNG or the ZIP of PNGs.",
+        ],
+        "faq": [
+            ("Is my PDF uploaded to convert it to PNG?", PRIVACY_ANSWER),
+            ("Why choose PNG instead of JPG?", "PNG is lossless: every pixel is kept exactly, so text and line drawings stay crisp. JPG files are smaller but blur sharp edges slightly, which matters for text, charts and screenshots. For photos and scans, PDF to JPG gives much smaller files."),
+            ("Is the PNG background transparent?", "No. Pages are rendered on a white background, the way they look in a PDF viewer."),
+            ("How do I convert all pages to PNG at once?", "Leave the page field empty. Several pages download together as one ZIP file."),
+        ],
+        "related": ["pdf_to_jpg", "png_to_pdf", "split_pdf"],
     },
     {
         "name": "images_to_pdf",
@@ -292,7 +324,7 @@ TOOLS = [
         "group": "convert",
         "title": "Images to PDF",
         "short_title": "Images to PDF",
-        "seo_title": "JPG to PDF Converter Free (PNG too), No Upload - TrustPDF",
+        "seo_title": "Images to PDF: Combine Photos Into One PDF, No Upload - TrustPDF",
         "description": "Turn JPG and PNG images into one PDF, one image per page.",
         "meta_description": "Convert JPG and PNG images to PDF for free without uploading. Combine photos or scans into one PDF, in any order, at original size, A4 or Letter, right in your browser.",
         "og_description": "Convert JPG and PNG images into a PDF directly in your browser. Nothing is uploaded.",
@@ -312,7 +344,69 @@ TOOLS = [
             ("Which image formats are supported?", "JPG/JPEG and PNG. Photos from iPhones in HEIC format must be exported as JPG first."),
             ("Are the images compressed?", "No. Images are placed in the PDF as they are, so quality is unchanged. Use Compress PDF afterwards if you need a smaller file."),
         ],
-        "related": ["pdf_to_jpg", "merge_pdf", "compress_pdf"],
+        "related": ["jpg_to_pdf", "png_to_pdf", "pdf_to_jpg"],
+    },
+    {
+        "name": "jpg_to_pdf",
+        "variant_of": "images_to_pdf",
+        "how_to_title": "How to convert JPG to PDF",
+        "path": "/tools/jpg-to-pdf/",
+        "group": "convert",
+        "title": "JPG to PDF",
+        "short_title": "JPG to PDF",
+        "seo_title": "JPG to PDF Converter Free, No Upload - TrustPDF",
+        "description": "Convert JPG photos and scans into a PDF, one image per page.",
+        "meta_description": "Convert JPG to PDF for free without uploading. Turn one photo or many into a single PDF, in the order you choose, at original size, A4 or Letter. Runs in your browser, no sign-up.",
+        "og_description": "Convert JPG images to PDF directly in your browser. Nothing is uploaded.",
+        "keywords": "jpg to pdf, jpeg to pdf, convert jpg to pdf, photo to pdf, multiple jpg to one pdf, jpg to pdf without upload",
+        "icon": "img/icons/jpg-to-pdf.webp",
+        "og_image": "img/og/jpg-to-pdf-og.jpg",
+        "template_name": "jpg_to_pdf.html",
+        "intro": "Phone photos of receipts, passports, contracts or homework often have to be sent as a PDF. Add the JPG files, drag them into order and save one PDF. The photos are placed as they are, without recompression, and they never leave your device, which matters for ID documents.",
+        "steps": [
+            "Drop your JPG photos into the box, or click it to choose them.",
+            "Drag the photos into the order you want the pages in.",
+            "Choose the page size (same as the photo, A4 or US Letter) and a margin.",
+            "Click “Create PDF”, then “Save PDF”.",
+        ],
+        "faq": [
+            ("Are my photos uploaded to convert them to PDF?", PRIVACY_ANSWER.replace("Your file is", "Your photos are")),
+            ("Can I combine several JPGs into one PDF?", "Yes. Add as many JPG files as you like; each becomes one page, in the order shown in the list. Drag them to change the order."),
+            ("Does converting JPG to PDF reduce quality?", "No. The JPG data is copied into the PDF unchanged. If the PDF is too large to email, run it through Compress PDF afterwards."),
+            ("Can I convert iPhone photos (HEIC)?", "Not directly. Export or share them as JPG first; most phones can do this in the share menu or the camera settings (“Most Compatible”)."),
+        ],
+        "related": ["png_to_pdf", "merge_pdf", "compress_pdf"],
+    },
+    {
+        "name": "png_to_pdf",
+        "variant_of": "images_to_pdf",
+        "how_to_title": "How to convert PNG to PDF",
+        "path": "/tools/png-to-pdf/",
+        "group": "convert",
+        "title": "PNG to PDF",
+        "short_title": "PNG to PDF",
+        "seo_title": "PNG to PDF Converter Free, No Upload - TrustPDF",
+        "description": "Convert PNG screenshots and images into a PDF, one image per page.",
+        "meta_description": "Convert PNG to PDF for free without uploading. Combine screenshots, diagrams or scans into one PDF, losslessly, in any order, at original size, A4 or Letter. Runs in your browser.",
+        "og_description": "Convert PNG images to PDF directly in your browser. Nothing is uploaded.",
+        "keywords": "png to pdf, convert png to pdf, screenshot to pdf, multiple png to one pdf, png to pdf lossless, png to pdf without upload",
+        "icon": "img/icons/png-to-pdf.webp",
+        "og_image": "img/og/png-to-pdf-og.jpg",
+        "template_name": "png_to_pdf.html",
+        "intro": "Turn screenshots, diagrams, charts or scanned pages saved as PNG into a single PDF for sharing or printing. PNG images are stored losslessly, so text in screenshots stays sharp, and transparent areas show as white. Nothing is uploaded, so screenshots of private chats, bank pages or dashboards stay on your device.",
+        "steps": [
+            "Drop your PNG images into the box, or click it to choose them.",
+            "Drag the images into the order you want the pages in.",
+            "Choose the page size (same as the image, A4 or US Letter) and a margin.",
+            "Click “Create PDF”, then “Save PDF”.",
+        ],
+        "faq": [
+            ("Are my PNG files uploaded?", PRIVACY_ANSWER.replace("Your file is", "Your images are")),
+            ("Is PNG to PDF conversion lossless?", "Yes. The PNG pixels are stored in the PDF without any lossy compression, so screenshots and text stay exactly as sharp as the original."),
+            ("Can I mix PNG and JPG images?", "Yes. You can add JPG and PNG files in the same PDF; each image becomes one page."),
+            ("Why is my PDF larger than the PNG files?", "It should be about the same size. A PDF made from many large screenshots can still be big; Compress PDF with the Strong setting turns pages into JPGs and makes it much smaller."),
+        ],
+        "related": ["jpg_to_pdf", "pdf_to_png", "merge_pdf"],
     },
     {
         "name": "pdf_to_text",
@@ -397,7 +491,7 @@ TOOLS = [
             ("How do I remove all metadata from a PDF?", "Click “Clear all fields”, keep “Also remove the embedded XMP metadata stream” ticked, then click Update Metadata. The saved file has no title, author, software or XMP data."),
             ("Does the PDF title matter for SEO?", "Yes. Search engines can show the PDF's Title field as the result title, so a clear title helps people find and recognise your document."),
         ],
-        "related": ["pdf_metadata_viewer", "watermark_pdf", "compress_pdf"],
+        "related": ["pdf_metadata_viewer", "redact_pdf", "compress_pdf"],
     },
     {
         "name": "sign_pdf",
@@ -521,6 +615,37 @@ TOOLS = [
         "related": ["protect_pdf", "merge_pdf", "pdf_metadata_viewer"],
     },
     {
+        "name": "redact_pdf",
+        "how_to_title": "How to redact a PDF",
+        "path": "/tools/redact-pdf/",
+        "group": "metadata",
+        "title": "Redact PDF",
+        "short_title": "Redact",
+        "seo_title": "Redact PDF Free, Black Out Text Without Upload - TrustPDF",
+        "description": "Black out names, numbers and other text so it is really gone from the PDF.",
+        "meta_description": "Redact PDF files for free without uploading. Black out text and areas by hand or find words, emails and phone numbers automatically. The hidden text is really removed, not just covered.",
+        "og_description": "Permanently black out text in a PDF, directly in your browser. Nothing is uploaded.",
+        "keywords": "redact pdf, black out text in pdf, redact pdf free, remove sensitive information from pdf, pdf redaction tool, censor pdf, redact pdf without upload",
+        "icon": "img/icons/redact-pdf.webp",
+        "og_image": "img/og/redact-pdf-og.jpg",
+        "template_name": "redact_pdf.html",
+        "intro": "Before you share a bank statement, contract, medical report or court document, hide what the other side should not see: names, addresses, account numbers, signatures. Drawing a black box in most PDF editors only covers the text, and it can still be copied out underneath. TrustPDF turns every page you redact into an image with the black boxes burned in, so the text under them is really gone. And because nothing is uploaded, the unredacted original is never sent to anyone.",
+        "steps": [
+            "Drop the PDF into the box, or click it to choose it.",
+            "Drag rectangles over what you want to hide, or type a word and click “Find and mark” (or use the email and phone buttons).",
+            "Check every page with the arrows; click the × on a box to remove it.",
+            "Click “Redact PDF”, then save the redacted file.",
+        ],
+        "faq": [
+            ("Is my PDF uploaded to redact it?", PRIVACY_ANSWER),
+            ("Is the redacted text really removed?", "Yes. Each page with a black box is rebuilt as an image with the box drawn in, so the original text, images and layers under the box are not in the new file at all. Pages without boxes are kept as they are. The document's metadata (title, author, dates) is also left out."),
+            ("Can I still select and search text on redacted pages?", "Not on the pages you redacted, because they become images. If you need searchable text, run the redacted file through OCR PDF on this site; it only finds the text that is still visible."),
+            ("Does “Find and mark” catch every occurrence?", "It finds the word or pattern in the PDF's text layer, page by page. It cannot see text inside scanned images, and a phrase broken across two lines may be missed, so always check every page before saving."),
+            ("What about scanned documents?", "Draw boxes by hand over what you want to hide. Scanned pages are already images, and the redacted page is rebuilt from the picture with the boxes burned in."),
+        ],
+        "related": ["pdf_metadata_editor", "protect_pdf", "ocr_pdf"],
+    },
+    {
         "name": "ocr_pdf",
         "how_to_title": "How to OCR a scanned PDF",
         "path": "/tools/ocr-pdf/",
@@ -589,6 +714,10 @@ _GROUP_LABELS = {g["key"]: g["label"] for g in GROUPS}
 for _tool in TOOLS:
     # Namespaced URL name, used by {% url %} in templates.
     _tool["url_name"] = f"pages:{_tool['name']}"
+    # A variant ("JPG to PDF") is its own landing page for a common search,
+    # running another tool's script; it is left out of the home page and menus.
+    _tool["script"] = _tool.get("variant_of", _tool["name"])
+    _tool.setdefault("preset", {})
     _tool["og_title"] = _tool["seo_title"]
     _tool["group_label"] = _GROUP_LABELS[_tool["group"]]
     _tool["faq_items"] = [{"q": q, "a": a} for q, a in _tool["faq"]]
@@ -603,15 +732,18 @@ _SORTABLE = {"merge_pdf", "images_to_pdf", "reorder_pdf_pages"}
 _ZIP = {"split_pdf", "pdf_to_jpg", "pdf_to_word"}
 for _tool in TOOLS:
     _tool["libs"] = (
-        ([] if _tool["name"] in _NO_PDFLIB else ["pdflib"])
-        + (["sortable"] if _tool["name"] in _SORTABLE else [])
-        + (["zip"] if _tool["name"] in _ZIP else [])
+        ([] if _tool["script"] in _NO_PDFLIB else ["pdflib"])
+        + (["sortable"] if _tool["script"] in _SORTABLE else [])
+        + (["zip"] if _tool["script"] in _ZIP else [])
     )
 
+MAIN_TOOLS = [t for t in TOOLS if "variant_of" not in t]
 
-def tools_by_group():
+
+def tools_by_group(include_variants=False):
     """[(group dict, [tools...]), ...] in GROUPS order, for the home page."""
-    return [(group, [t for t in TOOLS if t["group"] == group["key"]]) for group in GROUPS]
+    tools = TOOLS if include_variants else MAIN_TOOLS
+    return [(group, [t for t in tools if t["group"] == group["key"]]) for group in GROUPS]
 
 
 HOME_FAQ = [

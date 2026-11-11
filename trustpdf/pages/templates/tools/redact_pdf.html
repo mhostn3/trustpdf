@@ -1,0 +1,54 @@
+{% extends 'tools/tool_base.html' %}
+{% load static %}
+
+{% block heading %}Redact PDF{% endblock %}
+{% block lead %}Black out names, numbers and anything else before you share a PDF. The text under the boxes is removed, not just covered.{% endblock %}
+
+{% block options %}
+  {% include 'snippets/preview_stage.html' with preview_label="Drag on the page to black out an area" %}
+
+  <div class="row g-3 mt-1" data-tool-options>
+    <div class="col-12">
+      <label for="findText" class="form-label">Find text to black out on every page</label>
+      <div class="input-group">
+        <input type="text" id="findText" class="form-control" placeholder="A name, account number, word…" autocomplete="off">
+        <button type="button" class="btn btn-outline-primary" id="findBtn"><i class="bi bi-search me-1" aria-hidden="true"></i>Find and mark</button>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mt-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="findEmailsBtn"><i class="bi bi-envelope me-1" aria-hidden="true"></i>Mark email addresses</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="findPhonesBtn"><i class="bi bi-telephone me-1" aria-hidden="true"></i>Mark phone numbers</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="clearPageBtn">Clear this page</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllBtn">Clear all</button>
+      </div>
+      <div id="redactInfo" class="small text-secondary mt-2" aria-live="polite"></div>
+    </div>
+    <div class="col-md-6">
+      <label for="redactDpi" class="form-label">Quality of redacted pages</label>
+      <select id="redactDpi" class="form-select">
+        <option value="150">150 DPI (smaller file)</option>
+        <option value="200" selected>200 DPI (good)</option>
+        <option value="300">300 DPI (print)</option>
+      </select>
+    </div>
+    <div class="col-md-6 d-flex align-items-end">
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="redactAll">
+        <label class="form-check-label" for="redactAll">Turn every page into an image (safest)</label>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-text">
+        Pages with black boxes are rebuilt as images, so the hidden text cannot be copied out. Other pages are kept as they are,
+        unless you tick “every page”. Links, form fields and metadata are left out of the new file.
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block process_label %}Redact PDF{% endblock %}
+{% block download_label %}Save Redacted PDF{% endblock %}
+
+{% block tool_libs %}
+  {% include 'snippets/pdfjs_libs.html' %}
+  <script src="{% static 'js/trustpdf-preview.js' %}"></script>
+{% endblock %}

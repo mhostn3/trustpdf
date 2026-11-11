@@ -7,9 +7,9 @@
   <div class="row g-3 mt-1" data-tool-options>
     <div class="col-md-4">
       <label for="imgFormat" class="form-label">Image format</label>
-      <select id="imgFormat" class="form-select">
+      <select id="imgFormat" class="form-select" data-default="{{ tool.preset.format|default:'jpg' }}">
         <option value="jpg">JPG (smaller files)</option>
-        <option value="png">PNG (lossless)</option>
+        <option value="png"{% if tool.preset.format == "png" %} selected{% endif %}>PNG (lossless)</option>
       </select>
     </div>
     <div class="col-md-4">
