@@ -41,8 +41,14 @@ jobs:
       - name: Install Playwright and the fixture tools
         run: |
           npm install --no-save playwright@1
-          npx playwright install --with-deps chromium
           pip install pillow
+          # The system packages come from Ubuntu's mirrors, which sometimes fail
+          # to resolve for a minute; retry instead of failing the whole run.
+          for attempt in 1 2 3; do
+            sudo apt-get update -q && npx playwright install --with-deps chromium && break
+            if [ "$attempt" = 3 ]; then exit 1; fi
+            echo "Playwright install failed (attempt $attempt), retrying in 30 s"; sleep 30
+          done
 
       - name: Browser smoke test (every tool, with real files)
         env:
