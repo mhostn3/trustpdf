@@ -46,6 +46,15 @@ _REDIRECTS = {
     "compress/": "compress_pdf",
     "tools/pdf-to-image/": "pdf_to_jpg",
     "tools/": "index",
+    # Tools lived at the site root before they moved under /tools/; Google still crawls these.
+    "merge-pdf/": "merge_pdf",
+    "split-pdf/": "split_pdf",
+    "rotate-pdf-pages/": "rotate_pdf_pages",
+    "remove-pdf-pages/": "remove_pdf_pages",
+    "reorder-pdf-pages/": "reorder_pdf_pages",
+    "images-to-pdf/": "images_to_pdf",
+    "pdf-metadata-viewer/": "pdf_metadata_viewer",
+    "pdf-metadata-editor/": "pdf_metadata_editor",
 }
 urlpatterns += [
     path(old, RedirectView.as_view(pattern_name=f"pages:{new}", permanent=True))

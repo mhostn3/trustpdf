@@ -240,6 +240,12 @@ class SeoTests(SimpleTestCase):
             response = self.client.get(old)
             self.assertEqual((response.status_code, response["Location"]), (301, new))
 
+    def test_old_root_tool_urls_redirect(self):
+        for slug in ["merge-pdf", "split-pdf", "rotate-pdf-pages", "remove-pdf-pages", "reorder-pdf-pages",
+                     "images-to-pdf", "pdf-metadata-viewer", "pdf-metadata-editor"]:
+            response = self.client.get(f"/{slug}/")
+            self.assertEqual((response.status_code, response["Location"]), (301, f"/tools/{slug}/"))
+
     def test_variant_pages_are_own_landing_pages(self):
         """JPG to PDF etc. are real pages (not redirects) that run the main tool's script."""
         variants = [t for t in TOOLS if t.get("variant_of")]
