@@ -1,0 +1,75 @@
+<p>
+  Redacting a PDF means removing information before you share it: a name in a court filing, an account
+  number on a bank statement, a patient's details in a report. Done wrong, it is one of the most
+  embarrassing mistakes in document handling, because the "hidden" text can be copied straight back out.
+  This guide shows how to do it properly, for free, without sending the unredacted file to anyone.
+</p>
+
+<h2 id="why-black-boxes-fail">Why a black box is often not a redaction</h2>
+<p>
+  Most PDF editors, and many online PDF sites, let you draw a filled black rectangle or highlight text
+  in black. That looks like a redaction, but the rectangle is only a shape drawn <em>on top of</em> the
+  page. The text underneath is still in the file. Anyone can select it, copy it and paste it into a text
+  editor, or extract it with any PDF-to-text converter.
+</p>
+<p>
+  This has caught out lawyers, governments and large companies. In a well-known case from 2019, a court
+  filing in a high-profile US trial was "redacted" with black bars; reporters simply copied the text from
+  under them. The same thing happens every year with leaked reports and contracts.
+</p>
+
+<div class="guide-callout">
+  <p><strong>Rule of thumb:</strong> a proper redaction removes the content under the box from the file. A cover-up only hides it on screen.</p>
+</div>
+
+<h2 id="why-not-upload">Why not use an online redaction service?</h2>
+<p>
+  Redaction exists because a document contains something that must not be seen. Uploading the
+  unredacted original to a free website sends exactly that information to a server you know nothing
+  about, where it may be stored, logged or backed up. That defeats the purpose.
+</p>
+<p>
+  <a href="{% url 'pages:redact_pdf' %}">TrustPDF's Redact PDF</a> runs entirely in your web browser. The
+  file is read from your disk into the page, processed by JavaScript on your device and saved back to
+  your disk. It is never sent anywhere, and you can <a href="{% url 'pages:guide_check_pdf_tool_does_not_upload_files' %}">check that yourself</a>.
+</p>
+
+<h2 id="how-to">How to redact a PDF, step by step</h2>
+<ol>
+  <li>Open <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a> and drop your file into the box, or click it to choose the file.</li>
+  <li>Drag rectangles over everything you want to hide: names, addresses, signatures, account numbers, photos.</li>
+  <li>To find text automatically, type a word or number and click <strong>Find and mark</strong>. Use the email and phone buttons to mark every email address or phone number in the document.</li>
+  <li>Go through <strong>every page</strong> with the arrows. Remove a box you placed by mistake with its × button.</li>
+  <li>Click <strong>Redact PDF</strong>, then save the redacted file under a new name. Keep the original somewhere safe.</li>
+</ol>
+<p>
+  Every page with at least one box is rebuilt as an image with the black boxes burned in, so the text,
+  images and layers under the boxes are not in the new file at all. Pages without boxes are copied
+  unchanged. The document's metadata (title, author, dates) is left out too.
+</p>
+
+<h2 id="check">Check the result</h2>
+<p>Never send a redacted document without checking it. Two quick tests:</p>
+<ul>
+  <li><strong>Select and copy:</strong> open the redacted PDF, press <kbd>Ctrl</kbd>+<kbd>A</kbd> (<kbd>Cmd</kbd>+<kbd>A</kbd> on a Mac), copy, and paste into a text editor. The hidden words must not appear.</li>
+  <li><strong>Search:</strong> press <kbd>Ctrl</kbd>+<kbd>F</kbd> and search for a name or number you redacted. It must not be found.</li>
+</ul>
+<p>
+  You can also run the file through <a href="{% url 'pages:pdf_to_text' %}">PDF to Text</a> and read what is left.
+</p>
+
+<h2 id="dont-forget">Things people forget to redact</h2>
+<ul>
+  <li><strong>Metadata.</strong> The author field often holds a full name and the company. Check it with the <a href="{% url 'pages:pdf_metadata_viewer' %}">Metadata Viewer</a> and clear it with the <a href="{% url 'pages:pdf_metadata_editor' %}">Metadata Editor</a>. Read more in <a href="{% url 'pages:guide_remove_metadata_from_pdf' %}">how to remove metadata from a PDF</a>.</li>
+  <li><strong>Headers and footers</strong> that repeat a name or case number on every page.</li>
+  <li><strong>Signatures and stamps</strong>, which are often images rather than text, so a text search will not find them.</li>
+  <li><strong>The file name</strong> itself, such as <code>Smith_divorce_settlement.pdf</code>.</li>
+</ul>
+
+<h2 id="scans">What about scanned documents?</h2>
+<p>
+  A scanned page is already a picture, so text search cannot find anything on it. Draw the boxes by hand
+  over what you want to hide. The redacted page is rebuilt from the picture with the boxes burned in.
+  If you need the rest of the text to be searchable afterwards, run the redacted file through
+  <a href="{% url 'pages:ocr_pdf' %}">OCR PDF</a>; it can only find the text that is still visible.
+</p>

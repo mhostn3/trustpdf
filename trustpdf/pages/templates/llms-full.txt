@@ -17,6 +17,10 @@ URL: {{ site_url }}{{ tool.path }}
 **{{ item.q }}**
 {{ item.a }}
 {% endfor %}{% endfor %}{% endfor %}
+## Guides
+{% for guide in guides %}
+- [{{ guide.title }}]({{ site_url }}{{ guide.path }}): {{ guide.description }}{% endfor %}
+
 ## General questions
 {% for item in home_faq %}
 **{{ item.q }}**

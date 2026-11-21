@@ -101,6 +101,13 @@
   </ol>
 </section>
 
+<section class="mt-5 pt-3" aria-labelledby="guides-heading">
+  <h2 id="guides-heading" class="section-title">Guides</h2>
+  <ul class="guide-links guide-links-home mx-auto">
+    {% for guide in guides %}<li><a href="{% url guide.url_name %}">{{ guide.title }}</a></li>{% endfor %}
+  </ul>
+</section>
+
 <section class="mt-5 pt-3" aria-labelledby="faq-heading">
   <h2 id="faq-heading" class="section-title">Frequently asked questions</h2>
   <div class="faq faq-home mx-auto">

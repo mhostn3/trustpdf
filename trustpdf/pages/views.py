@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import json
+import re
 
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
@@ -11,6 +12,7 @@ from django.views.generic import TemplateView
 
 from . import seo
 from .seo import absolute_static, absolute_url
+from .guides import GUIDES, GUIDES_PAGE
 from .tools import TOOLS, STATIC_PAGES, HOME_FAQ_ITEMS, tools_by_group
 
 
@@ -31,6 +33,7 @@ class PageView(TemplateView):
             context["json_ld"] = seo.home_graph()
             context["tool_groups"] = tools_by_group()
             context["home_faq"] = HOME_FAQ_ITEMS
+            context["guides"] = GUIDES
         else:
             context["json_ld"] = seo.page_graph(url, page["seo_title"], page["meta_description"], self.schema_type)
         return context
@@ -57,6 +60,56 @@ class ToolView(TemplateView):
         return context
 
 
+class GuideIndexView(TemplateView):
+    template_name = "guides_index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        page = GUIDES_PAGE
+        context.update(page)
+        context.update({
+            "guides": GUIDES,
+            "canonical_url": absolute_url("/guides/"),
+            "og_image": absolute_static(page["og_image"]),
+            "json_ld": seo.guides_index_graph(GUIDES, page["seo_title"], page["meta_description"]),
+        })
+        return context
+
+
+_READING_MINUTES = {}
+
+
+def reading_minutes(guide):
+    """Minutes to read a guide's article, at about 220 words a minute."""
+    if guide["slug"] not in _READING_MINUTES:
+        text = re.sub(r"<[^>]+>", " ", render_to_string(guide["template_name"], {"guide": guide}))
+        _READING_MINUTES[guide["slug"]] = max(1, round(len(text.split()) / 220))
+    return _READING_MINUTES[guide["slug"]]
+
+
+class GuideView(TemplateView):
+    template_name = "guide.html"
+    guide = None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        guide = self.guide
+        context.update({
+            "guide": guide,
+            "seo_title": guide["seo_title"],
+            "meta_description": guide["meta_description"],
+            "canonical_url": absolute_url(guide["path"]),
+            "og_title": guide["title"],
+            "og_type": "article",
+            "og_description": guide["description"],
+            "og_image": absolute_static(guide["og_image"]),
+            "json_ld": seo.guide_graph(guide),
+            "reading_minutes": reading_minutes(guide),
+            "other_guides": [g for g in GUIDES if g is not guide][:4],
+        })
+        return context
+
+
 # ------------------ #
 #      Site Map      #
 # ------------------ #
@@ -76,6 +129,8 @@ def sitemap_urls():
     """Every public page as (absolute url, priority, changefreq, image or None)."""
     entries = [(absolute_url(reverse(name)), prio, freq, None) for name, prio, freq in SITEMAP_PAGES]
     entries += [(absolute_url(t["path"]), "0.9", "monthly", t) for t in TOOLS]
+    entries.append((absolute_url(reverse("pages:guides")), "0.7", "weekly", None))
+    entries += [(absolute_url(g["path"]), "0.7", "monthly", g) for g in GUIDES]
     return entries
 
 
@@ -86,10 +141,10 @@ def sitemap_xml_view(request):
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
         ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
     ]
-    for url, priority, changefreq, tool in sitemap_urls():
+    for url, priority, changefreq, item in sitemap_urls():
         lines += ["  <url>", f"    <loc>{url}</loc>", f"    <changefreq>{changefreq}</changefreq>", f"    <priority>{priority}</priority>"]
-        if tool:
-            lines += ["    <image:image>", f"      <image:loc>{absolute_static(tool['og_image'])}</image:loc>", "    </image:image>"]
+        if item:
+            lines += ["    <image:image>", f"      <image:loc>{absolute_static(item['og_image'])}</image:loc>", "    </image:image>"]
         lines.append("  </url>")
     lines.append("</urlset>")
     return HttpResponse("\n".join(lines) + "\n", content_type="application/xml")
@@ -121,7 +176,7 @@ def robots_txt_view(request):
 
 
 def _text_response(template, context=None):
-    body = render_to_string(template, {"tools": TOOLS, "site_url": settings.SITE_URL, **(context or {})})
+    body = render_to_string(template, {"tools": TOOLS, "guides": GUIDES, "site_url": settings.SITE_URL, **(context or {})})
     return HttpResponse(body, content_type="text/plain; charset=utf-8")
 
 

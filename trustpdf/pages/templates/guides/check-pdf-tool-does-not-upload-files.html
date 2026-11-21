@@ -1,0 +1,84 @@
+<p>
+  Every PDF website claims to be secure, and many now say "your files are never uploaded". A promise on a
+  web page is just text, though. The good news is that you do not need to trust it: with the browser you
+  already have, you can see for yourself what a page sends. Here are three tests, from the easiest to the
+  most thorough. Each takes a minute or two.
+</p>
+
+<div class="guide-callout">
+  <p>Use a harmless test file for these checks, such as a one-page PDF you made yourself, not the confidential document you want to protect.</p>
+</div>
+
+<h2 id="offline-test">Test 1: the offline test</h2>
+<p>A tool that processes files on your device does not need the internet once the page has loaded.</p>
+<ol>
+  <li>Open the tool you want to check, for example <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a>, and wait for the page to load completely.</li>
+  <li>Disconnect from the internet: switch off Wi-Fi, unplug the network cable, or turn on flight mode.</li>
+  <li>Add your test file and run the tool.</li>
+</ol>
+<p>
+  If you get a result, the processing happened on your device. If the tool hangs, shows a network
+  error or asks you to try again later, it needed a server, which means your file was going to be sent to one.
+</p>
+<p>
+  TrustPDF passes this test and goes further: after your first visit it keeps a copy of its own pages and
+  scripts in your browser, so the tools even open when you are offline. A few larger parts (the OCR engine,
+  the password library and extra fonts) are stored the first time you use them online.
+</p>
+
+<h2 id="network-tab">Test 2: watch the Network tab</h2>
+<p>Your browser's developer tools list every request a page makes. An upload is hard to hide there.</p>
+<ol>
+  <li>Open the tool page. Press <kbd>F12</kbd> (or <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>I</kbd> on a Mac) and choose the <strong>Network</strong> tab.</li>
+  <li>Tick <strong>Preserve log</strong> so the list is not cleared, then click the clear button (🚫) to start with an empty list.</li>
+  <li>Add your test file, run the tool and save the result.</li>
+  <li>Look at what appeared. Sort by the <strong>Size</strong> column and look at the <strong>Method</strong> column: an upload is a <code>POST</code> or <code>PUT</code> request at least as big as your file.</li>
+</ol>
+<p>
+  On TrustPDF you will see files loaded from trustpdf.net (scripts, fonts, icons) and, if statistics are on,
+  a few tiny <code>POST</code> requests to <code>/analytics/e/</code>, a few hundred bytes each. Those are cookie-free page
+  statistics: the page address, the names of the buttons that were clicked, and how long the page was open.
+  They never contain file names, file contents or anything you typed. What you will not see is a request
+  the size of your PDF.
+</p>
+<p>
+  A <code>blob:</code> address in the list is not an upload either: it is the browser handing the finished file
+  to your downloads, inside your own computer.
+</p>
+
+<h2 id="csp">Test 3: read the Content-Security-Policy</h2>
+<p>
+  The first two tests show what a page did. The Content-Security-Policy shows what a page is <em>allowed</em> to
+  do. It is a rule the website gives to your browser, and the browser enforces it: if the policy says the
+  page may only talk to its own site, the browser blocks any attempt to send data anywhere else, even by a
+  buggy or compromised script.
+</p>
+<ol>
+  <li>In the Network tab, reload the page and click the first request (the page itself).</li>
+  <li>Under <strong>Response Headers</strong>, find <code>content-security-policy</code>.</li>
+  <li>Look at <code>connect-src</code>, which lists where scripts may send data.</li>
+</ol>
+<p>
+  TrustPDF's policy says <code>connect-src 'self'</code>: scripts may only talk to trustpdf.net, never to an
+  analytics company, an advertising network or another server. Many sites have no such policy at all, or
+  allow dozens of third-party domains.
+</p>
+
+<h2 id="source">Bonus: read the source code</h2>
+<p>
+  The strongest guarantee is code you can read. TrustPDF is open source under the AGPL-3.0 license, and
+  <a href="https://github.com/mhostn3/trustpdf" rel="noopener">the code is on GitHub</a>. Each tool is a short
+  JavaScript file; search it for <code>fetch</code> or <code>XMLHttpRequest</code> and you will find no code that sends your file.
+  If you prefer, you can run your own copy.
+</p>
+
+<h2 id="red-flags">Red flags</h2>
+<ul>
+  <li>An "uploading…" progress bar, or a queue position.</li>
+  <li>A result that you download from a different domain, or a link that "expires in 1 hour".</li>
+  <li>A request to create an account or give an email address before you can download.</li>
+  <li>A privacy policy that talks about how long files are kept: files that are never received do not need to be deleted.</li>
+</ul>
+<p>
+  For more on why this matters, read <a href="{% url 'pages:guide_are_online_pdf_tools_safe' %}">Are online PDF tools safe?</a>
+</p>

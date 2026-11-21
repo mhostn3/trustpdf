@@ -1,0 +1,58 @@
+<p>
+  A scanned PDF is a set of photographs of paper. You can read it, but your computer cannot: you cannot
+  search it, select a sentence or copy a number out of it. OCR, short for optical character recognition,
+  fixes that by recognising the letters in the images. Here is how to do it for free, without uploading
+  scans of your documents to an OCR service.
+</p>
+
+<h2 id="do-you-need-it">Does your PDF need OCR?</h2>
+<p>
+  Open the PDF and try to select a word with the mouse, or press <kbd>Ctrl</kbd>+<kbd>F</kbd>
+  (<kbd>Cmd</kbd>+<kbd>F</kbd> on a Mac) and search for a word you can see. If nothing can be selected or
+  found, the page is an image and needs OCR. Phone scanning apps, office copiers and "print to PDF" from a
+  photo all produce this kind of file.
+</p>
+
+<h2 id="how-to">How to make a scanned PDF searchable</h2>
+<ol>
+  <li>Open <a href="{% url 'pages:ocr_pdf' %}">OCR PDF</a> and drop the scan into the box.</li>
+  <li>Choose the language of the document. For a document that mixes two, such as English and German, choose a second language.</li>
+  <li>Choose <strong>Searchable PDF</strong> to keep the document and add text to it, or <strong>Plain text</strong> to get a .txt file. Optionally limit the pages.</li>
+  <li>Click <strong>Recognize Text</strong>, check the recognised text in the preview, then save the result.</li>
+</ol>
+<p>
+  The searchable PDF looks exactly like the original. An invisible text layer is placed over each page, so
+  you can search, select and copy, and the file grows by only a few kilobytes per page.
+</p>
+<p>
+  OCR runs with Tesseract, a widely used open-source engine, inside your browser. The engine and the
+  language data (about 5 to 7 MB) load from TrustPDF the first time and are then cached. Expect roughly 2 to
+  5 seconds per page on a laptop, longer on a phone.
+</p>
+
+<h2 id="accuracy">Getting the best accuracy</h2>
+<ul>
+  <li><strong>Scan at 300 DPI.</strong> 200 DPI is usually fine; below 150 DPI accuracy drops quickly.</li>
+  <li><strong>Keep pages straight.</strong> Rotate sideways pages first with <a href="{% url 'pages:rotate_pdf_pages' %}">Rotate PDF Pages</a>.</li>
+  <li><strong>Choose the right language.</strong> It matters for letters such as č, ß or é.</li>
+  <li><strong>Good contrast helps.</strong> Faded copies, coloured backgrounds and shadows from phone photos lower accuracy.</li>
+  <li><strong>Printed text only.</strong> Handwriting is usually not recognised.</li>
+</ul>
+<p>
+  On a clean scan of printed text, accuracy is usually above 98%, which still means a few mistakes per page.
+  Check names and numbers before you rely on them.
+</p>
+
+<h2 id="next">What you can do next</h2>
+<ul>
+  <li>Edit the text in Word: convert the searchable PDF with <a href="{% url 'pages:pdf_to_word' %}">PDF to Word</a>.</li>
+  <li>Get just the words: <a href="{% url 'pages:pdf_to_text' %}">PDF to Text</a> saves them as a .txt file.</li>
+  <li>Make the file smaller first with <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a>, then run OCR on the compressed file.</li>
+</ul>
+
+<h2 id="privacy">Why OCR in your browser?</h2>
+<p>
+  The documents people scan are often the most private ones: IDs, letters from the tax office, medical
+  reports, old contracts. Online OCR services need you to upload them. With TrustPDF the recognition happens
+  on your own device, so the scan never leaves it.
+</p>

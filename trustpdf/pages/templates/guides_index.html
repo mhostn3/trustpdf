@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-9 mx-auto">
+    <div class="page-header">
+      <h1>PDF guides</h1>
+      <p class="lead">How to redact, sign, fill in, compress and protect PDFs without uploading them to anyone's server.</p>
+    </div>
+
+    <div class="row g-3 g-lg-4">
+      {% for guide in guides %}
+        <div class="col-md-6">
+          <a href="{% url guide.url_name %}" class="guide-card">
+            <img src="{% static guide.main_tool.icon %}" alt="" width="56" height="56" loading="lazy">
+            <span>
+              <h2>{{ guide.title }}</h2>
+              <p>{{ guide.description }}</p>
+              <span class="tool-cta">Read the guide <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+            </span>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+
+    <p class="text-center text-secondary mt-5">
+      Looking for a tool instead? <a href="{% url 'pages:index' %}">See all PDF tools</a>.
+    </p>
+  </div>
+</div>
+{% endblock %}

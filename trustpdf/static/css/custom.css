@@ -1194,3 +1194,189 @@ code {
     padding-bottom: 5.5rem;
   }
 }
+
+/* Fill PDF Form ---------------------------------------------------------- */
+
+.form-fields {
+  border-top: 1px solid var(--tp-border);
+  padding-top: 1rem;
+}
+
+.form-fields-page {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tp-primary);
+  margin: 1.25rem 0 0.75rem;
+}
+
+.form-fields-page:first-child {
+  margin-top: 0;
+}
+
+/* Guides ------------------------------------------------------------------ */
+
+.guide-header h1 {
+  font-size: clamp(1.8rem, 3.4vw, 2.5rem);
+  margin-bottom: 0.75rem;
+}
+
+.guide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  font-size: 0.875rem;
+  color: var(--tp-muted);
+}
+
+.guide-cta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--tp-primary-soft);
+  border: 1px solid rgba(47, 91, 234, 0.25);
+  border-radius: var(--tp-radius);
+  text-decoration: none;
+  color: var(--tp-ink);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.guide-cta:hover,
+.guide-cta:focus-visible {
+  border-color: rgba(47, 91, 234, 0.5);
+  box-shadow: var(--tp-shadow);
+  color: var(--tp-ink);
+}
+
+.guide-cta img {
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--tp-border);
+  flex: 0 0 auto;
+}
+
+.guide-cta strong {
+  display: block;
+  color: var(--tp-primary-dark);
+}
+
+.guide-cta span span {
+  display: block;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.guide-cta .bi {
+  margin-left: auto;
+  font-size: 1.25rem;
+  color: var(--tp-primary);
+}
+
+.guide-body {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #1f2937;
+}
+
+.guide h2 {
+  font-size: 1.4rem;
+  margin: 2.25rem 0 0.75rem;
+  scroll-margin-top: 80px;
+}
+
+.guide-body h3 {
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.guide-body ol,
+.guide-body ul {
+  padding-left: 1.4rem;
+}
+
+.guide-body li + li {
+  margin-top: 0.4rem;
+}
+
+.guide-body kbd {
+  font-size: 0.85em;
+}
+
+.guide-callout {
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-border);
+  border-left: 4px solid var(--tp-accent);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  font-size: 0.975rem;
+}
+
+.guide-callout p:last-child {
+  margin-bottom: 0;
+}
+
+.guide-links {
+  padding-left: 1.2rem;
+}
+
+.guide-links li + li {
+  margin-top: 0.35rem;
+}
+
+.guide-links-home {
+  max-width: 44rem;
+  columns: 2 20rem;
+  column-gap: 2.5rem;
+}
+
+.guide-card {
+  display: flex;
+  gap: 1rem;
+  height: 100%;
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-border);
+  border-radius: var(--tp-radius);
+  padding: 1.25rem;
+  text-decoration: none;
+  color: var(--tp-ink);
+  box-shadow: var(--tp-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.guide-card:hover,
+.guide-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(47, 91, 234, 0.35);
+  box-shadow: var(--tp-shadow-lg);
+  color: var(--tp-ink);
+}
+
+.guide-card img {
+  border-radius: 50%;
+  border: 1px solid var(--tp-border);
+  background: #fff;
+  flex: 0 0 auto;
+}
+
+.guide-card h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.guide-card p {
+  color: var(--tp-muted);
+  font-size: 0.925rem;
+  margin: 0;
+}
+
+.guide-card .tool-cta {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--tp-primary);
+}

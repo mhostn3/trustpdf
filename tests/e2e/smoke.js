@@ -576,6 +576,84 @@ async function run(name, fn) {
     return d.name;
   });
 
+  await run("extract pages: 2-3 into a new PDF", async () => {
+    await open("extract-pdf-pages");
+    await page.setInputFiles("#fileInput", path.join(FIX, "five pages.pdf"));
+    await waitIdle();
+    await page.fill("#pages", "2-3");
+    await page.click("#processBtn");
+    const d = await download();
+    const i = await inspect(); if (i.pages !== 2) throw new Error(`expected 2 pages, got ${i.pages}`);
+    return d.name;
+  });
+
+  await run("fill form: text (č), checkbox, dropdown, radio", async () => {
+    await open("fill-pdf-form");
+    // Build a small fillable form with pdf-lib in the page and keep it as a fixture.
+    const b64 = await page.evaluate(async () => {
+      const d = await PDFLib.PDFDocument.create();
+      const p1 = d.addPage([595, 842]);
+      const p2 = d.addPage([595, 842]);
+      const f = d.getForm();
+      f.createTextField("applicant.full_name").addToPage(p1, { x: 72, y: 700, width: 300, height: 24 });
+      const country = f.createDropdown("country");
+      country.addOptions(["Slovenia", "Austria"]);
+      country.addToPage(p1, { x: 72, y: 640, width: 200, height: 24 });
+      f.createCheckBox("agree").addToPage(p2, { x: 72, y: 600, width: 16, height: 16 });
+      const size = f.createRadioGroup("size");
+      size.addOptionToPage("S", p2, { x: 72, y: 500, width: 16, height: 16 });
+      size.addOptionToPage("M", p2, { x: 100, y: 500, width: 16, height: 16 });
+      const bytes = await d.save();
+      let s = ""; bytes.forEach((b) => { s += String.fromCharCode(b); });
+      return btoa(s);
+    });
+    fs.writeFileSync(path.join(FIX, "form.pdf"), Buffer.from(b64, "base64"));
+    await page.setInputFiles("#fileInput", path.join(FIX, "form.pdf"));
+    await page.locator("#formFields:not(.d-none)").waitFor();
+    const headings = await page.locator(".form-fields-page").allTextContents();
+    if (headings.join(",") !== "Page 1,Page 2") throw new Error("page headings: " + headings);
+    const labels = await page.locator("#formFieldList label").allInnerTexts();
+    if (labels.join(",") !== "Full name,Country,Agree,Size") throw new Error("labels: " + labels);
+    await page.fill("#formFieldList input[type=text]", "Žiga Čuk");
+    await page.locator("#formFieldList select").nth(0).selectOption("Austria");
+    await page.check("#formFieldList input[type=checkbox]");
+    await page.locator("#formFieldList select").nth(1).selectOption("M");
+    await page.click("#processBtn");
+    const d = await download();
+    const got = await page.evaluate(async () => {
+      const f = (await PDFLib.PDFDocument.load(TrustPDF.download.bytes)).getForm();
+      return [f.getTextField("applicant.full_name").getText(), f.getDropdown("country").getSelected()[0],
+              f.getCheckBox("agree").isChecked(), f.getRadioGroup("size").getSelected()];
+    });
+    if (JSON.stringify(got) !== JSON.stringify(["Žiga Čuk", "Austria", true, "M"])) throw new Error(JSON.stringify(got));
+    return `${d.name} ${JSON.stringify(got)}`;
+  });
+
+  await run("flatten pdf: fields become page content", async () => {
+    await open("flatten-pdf");
+    if (!(await page.isChecked("#flattenForm"))) throw new Error("flatten not preset");
+    await page.setInputFiles("#fileInput", path.join(OUT, "form-filled.pdf"));
+    await page.locator("#formFields:not(.d-none)").waitFor();
+    const value = await page.inputValue("#formFieldList input[type=text]");
+    if (value !== "Žiga Čuk") throw new Error("existing value not shown: " + value);
+    await page.click("#processBtn");
+    const d = await download();
+    const fields = await page.evaluate(async () => (await PDFLib.PDFDocument.load(TrustPDF.download.bytes)).getForm().getFields().length);
+    if (fields !== 0) throw new Error(`${fields} fields left`);
+    const text = (await pageText(d.file)).join(" ");
+    if (!text.includes("Žiga Čuk") || !text.includes("Austria")) throw new Error("text not on the page: " + text);
+    return d.name;
+  });
+
+  await run("fill form: a PDF without fields says so", async () => {
+    await open("fill-pdf-form");
+    await page.setInputFiles("#fileInput", path.join(FIX, "three.pdf"));
+    await page.locator("#toolMessage .alert-warning").waitFor();
+    await page.click("#processBtn");
+    await page.locator("#toolMessage .alert-danger").waitFor();
+    if (!(await page.locator("#processBtn").isEnabled())) throw new Error("process button not re-enabled");
+  });
+
   await run("crawler files", async () => {
     for (const p of ["/robots.txt", "/sitemap.xml", "/llms.txt", "/llms-full.txt", "/manifest.webmanifest", "/.well-known/security.txt"]) {
       const r = await page.goto(BASE + p);
@@ -584,7 +662,7 @@ async function run(name, fn) {
   });
 
   await run("static pages", async () => {
-    for (const p of ["/", "/about/", "/privacy/", "/cookies/", "/terms/", "/privacy-tools/"]) {
+    for (const p of ["/", "/about/", "/privacy/", "/cookies/", "/terms/", "/privacy-tools/", "/guides/", "/guides/redact-pdf-without-uploading/"]) {
       const r = await page.goto(BASE + p);
       if (r.status() !== 200) throw new Error(`${p} -> ${r.status()}`);
     }

@@ -29,7 +29,7 @@
 
   {# Open Graph #}
   <meta property="og:site_name" content="TrustPDF">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="{{ og_type|default:'website' }}">
   <meta property="og:locale" content="en_US">
   <meta property="og:title" content="{% if og_title %}{{ og_title }}{% elif seo_title %}{{ seo_title }}{% else %}TrustPDF - Private Client-Side PDF Tools{% endif %}">
   <meta property="og:description" content="{% if og_description %}{{ og_description }}{% elif meta_description %}{{ meta_description }}{% else %}Private, client-side PDF tools with no uploads, no accounts, and no cookies.{% endif %}">
@@ -113,6 +113,9 @@
               </div>
             </li>
             <li class="nav-item">
+              <a class="nav-link {% if guide or request.resolver_match.url_name == 'guides' %}active{% endif %}" href="{% url 'pages:guides' %}">Guides</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'privacy_tools' %}active{% endif %}" href="{% url 'pages:privacy_tools' %}">Privacy Tools</a>
             </li>
             <li class="nav-item">
@@ -158,6 +161,7 @@
           <h2 class="footer-heading">Site</h2>
           <ul class="list-unstyled small mb-0">
             <li><a href="{% url 'pages:about' %}" class="footer-link">About</a></li>
+            <li><a href="{% url 'pages:guides' %}" class="footer-link">Guides</a></li>
             <li><a href="{% url 'pages:privacy_tools' %}" class="footer-link">Privacy Tools</a></li>
             <li><a href="{% url 'pages:privacy' %}" class="footer-link">Privacy Policy</a></li>
             <li><a href="{% url 'pages:cookies' %}" class="footer-link">Cookie Policy</a></li>

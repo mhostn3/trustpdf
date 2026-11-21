@@ -2,6 +2,7 @@ from django.urls import path, re_path
 from django.views.generic import RedirectView
 
 from . import views
+from .guides import GUIDES
 from .tools import TOOLS
 from .views import PageView
 
@@ -38,6 +39,10 @@ for tool in TOOLS:
             name=tool["name"],
         ),
     )
+
+urlpatterns.append(path("guides/", views.GuideIndexView.as_view(), name="guides"))
+for guide in GUIDES:
+    urlpatterns.append(path(guide["path"].lstrip("/"), views.GuideView.as_view(guide=guide), name=guide["url_name"].split(":")[1]))
 
 # Old and alternative URLs, kept so existing links and search results keep working.
 _REDIRECTS = {

@@ -1,0 +1,54 @@
+<p>
+  Tax returns, visa and job applications, school enrolment, insurance claims and medical questionnaires
+  still arrive as PDF forms. They ask for your ID number, address, income and health details, which is
+  exactly the information you should not upload to a free website. Here is how to fill one in on your own
+  device, without printing it and without installing anything.
+</p>
+
+<h2 id="fillable">First: is your form fillable?</h2>
+<p>
+  A <strong>fillable</strong> PDF has form fields: boxes you can click and type into, checkboxes and drop-down lists. A
+  <strong>flat</strong> PDF just has lines printed on the page, like a photocopy. The quickest way to find out is to open
+  it in <a href="{% url 'pages:fill_pdf_form' %}">Fill PDF Form</a>: if it lists fields, the form is fillable.
+</p>
+
+<h2 id="how-to">How to fill in a PDF form</h2>
+<ol>
+  <li>Open <a href="{% url 'pages:fill_pdf_form' %}">Fill PDF Form</a> and drop the form into the box.</li>
+  <li>The fields appear below the file, page by page, in the order they are on the page. Each is labelled with the question the form's author gave it, or the field's name.</li>
+  <li>Type your answers, tick the checkboxes and choose options from the lists.</li>
+  <li>Decide whether to flatten the form (see below).</li>
+  <li>Click <strong>Fill PDF Form</strong>, then <strong>Save Filled PDF</strong>. Open the saved file to check it.</li>
+</ol>
+<p>
+  Accented letters such as č, š, ž, é and ü work, and so do Greek and Cyrillic: if the form's own font
+  cannot show them, TrustPDF embeds a font that can.
+</p>
+
+<h2 id="flatten">Should you flatten the form?</h2>
+<p>
+  <strong>Flattening</strong> turns each field and its answer into ordinary text on the page. Afterwards the answers
+  look the same in every PDF reader, print correctly, and can no longer be changed in the form.
+</p>
+<ul>
+  <li><strong>Flatten</strong> when you send the finished form to someone, upload it to a portal, print it, or merge it with other documents. Some viewers and portals show form fields empty or drop them.</li>
+  <li><strong>Do not flatten</strong> if you want to come back and edit your answers, or if the recipient asked for a fillable form so they can read the data automatically.</li>
+</ul>
+<p>
+  Already filled the form somewhere else? <a href="{% url 'pages:flatten_pdf' %}">Flatten PDF</a> does just the
+  flattening step.
+</p>
+
+<h2 id="sign">Signing the form</h2>
+<p>
+  Signature fields in PDF forms are meant for certificate-based digital signatures, which need special
+  software. For an ordinary signature, fill and flatten the form first, then add your signature with
+  <a href="{% url 'pages:sign_pdf' %}">Sign PDF</a>. The guide <a href="{% url 'pages:guide_sign_pdf_without_uploading' %}">How to sign a PDF without uploading it</a> explains what such a signature is valid for.
+</p>
+
+<h2 id="problems">If something does not work</h2>
+<ul>
+  <li><strong>No fields are listed.</strong> The PDF is flat. Print and fill it by hand, or ask the sender for a fillable version.</li>
+  <li><strong>The form says it needs Adobe Reader.</strong> It is an Adobe XFA form. If it also contains standard fields, TrustPDF fills those; a form built only in XFA can only be filled in Adobe Acrobat or Reader.</li>
+  <li><strong>The answers do not show up after uploading to a portal.</strong> Flatten the form and upload it again.</li>
+</ul>

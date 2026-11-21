@@ -1,0 +1,66 @@
+<p>
+  "Attachment too large." It always happens with the one document that has to go out today: a scanned
+  contract, a portfolio, a set of photos turned into a PDF. Here is how big an attachment can be, why your
+  PDF is so large, and how to shrink it in a minute without uploading it to a compression website.
+</p>
+
+<h2 id="limits">How big can an email attachment be?</h2>
+<ul>
+  <li><strong>Gmail:</strong> about 25 MB per email in total.</li>
+  <li><strong>Yahoo Mail:</strong> about 25 MB.</li>
+  <li><strong>Outlook.com:</strong> about 20 MB. Company Outlook and Exchange servers are often set lower.</li>
+  <li><strong>Many company and government mail servers:</strong> 10 MB or less, and some reject anything over 5 MB.</li>
+</ul>
+<p>
+  Attachments are encoded for sending, which makes them roughly a third larger on the way, so a 20 MB PDF can
+  count as about 27 MB. Aim for well under the limit; under 10 MB is safe almost everywhere.
+</p>
+
+<h2 id="why-big">Why is my PDF so big?</h2>
+<p>
+  Text takes very little space: a hundred pages of plain text is often under 1 MB. Size comes almost
+  entirely from <strong>images</strong>:
+</p>
+<ul>
+  <li>Scanned pages, especially scanned in colour at 300 DPI or more.</li>
+  <li>Photos taken with a phone and turned into a PDF at full camera resolution.</li>
+  <li>Pictures pasted into Word or PowerPoint without being resized.</li>
+</ul>
+<p>So the fix is to store those images more efficiently, or at a resolution that suits a screen.</p>
+
+<h2 id="how-to">How to compress a PDF</h2>
+<ol>
+  <li>Open <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a> and drop the file into the box.</li>
+  <li>Choose a level:
+    <ul>
+      <li><strong>Lossless</strong> rewrites the file structure more efficiently. Nothing you see changes and text stays selectable. Try this first.</li>
+      <li><strong>Strong (150 DPI)</strong> turns each page into a compressed image. Best for scans and photo-heavy files; still sharp on screen and in normal printing.</li>
+      <li><strong>Maximum (100 DPI)</strong> gives the smallest file, fine for reading on screen.</li>
+    </ul>
+  </li>
+  <li>Click <strong>Compress PDF</strong> and look at the new size.</li>
+  <li>If it is small enough, click <strong>Save Compressed PDF</strong>. If not, start again with a stronger level.</li>
+</ol>
+<div class="guide-callout">
+  <p>
+    Strong and Maximum turn pages into images, so text can no longer be selected or searched. If that
+    matters, run the compressed file through <a href="{% url 'pages:ocr_pdf' %}">OCR PDF</a> afterwards, which adds
+    an invisible text layer and only a few kilobytes per page.
+  </p>
+</div>
+
+<h2 id="still-too-big">Still too big?</h2>
+<ul>
+  <li><strong>Send only what is needed.</strong> Take the relevant pages out with <a href="{% url 'pages:split_pdf' %}">Split PDF</a> or <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>.</li>
+  <li><strong>Split it into parts</strong> and send two or three emails.</li>
+  <li><strong>Rescan in black and white or greyscale</strong> at 200 DPI if you still have the paper. Colour scans of black-and-white documents waste a lot of space.</li>
+  <li><strong>Share a link</strong> from your own cloud storage instead of attaching the file.</li>
+</ul>
+
+<h2 id="privacy">Why compress in your browser?</h2>
+<p>
+  The documents people most often need to shrink, such as scanned IDs, contracts and medical records, are
+  exactly the ones that should not be uploaded to a free compression website. TrustPDF compresses the file
+  on your own device, so it never leaves your computer or phone. Read more in
+  <a href="{% url 'pages:guide_are_online_pdf_tools_safe' %}">Are online PDF tools safe?</a>
+</p>

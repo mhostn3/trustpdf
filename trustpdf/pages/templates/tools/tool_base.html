@@ -100,6 +100,13 @@
         {% endfor %}
       </div>
 
+      {% if tool.guides %}
+      <h2 id="guides">Guides</h2>
+      <ul class="guide-links">
+        {% for item in tool.guides %}<li><a href="{% url item.url_name %}">{{ item.title }}</a></li>{% endfor %}
+      </ul>
+      {% endif %}
+
       <h2 id="related">Related tools</h2>
       <div class="related-tools">
         {% for item in tool.related_tools %}

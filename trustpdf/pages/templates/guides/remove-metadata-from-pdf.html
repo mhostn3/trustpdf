@@ -1,0 +1,57 @@
+<p>
+  A PDF carries more than its pages. Hidden in the file there is usually a small record about the document:
+  who wrote it, which company they work for, which programs made it, and when it was created and last
+  changed. That is called metadata. Before you send a CV, a report, a legal document or anything you
+  publish anonymously, it is worth checking what it says, and removing it.
+</p>
+
+<h2 id="what-is-in-it">What PDF metadata can reveal</h2>
+<ul>
+  <li><strong>Author:</strong> often your full name, taken automatically from Word or from your computer's user account.</li>
+  <li><strong>Title and subject:</strong> sometimes a working title you never meant to share, such as "Draft v7 – do not send".</li>
+  <li><strong>Creator and producer:</strong> the programs and versions used, for example Microsoft Word for Microsoft 365, or a scanner's software.</li>
+  <li><strong>Creation and modification dates:</strong> exact to the second, which can contradict the date on the letter.</li>
+  <li><strong>Keywords</strong> and sometimes the company name.</li>
+</ul>
+
+<h2 id="xmp">The part most tools miss: XMP</h2>
+<p>
+  PDFs can store metadata twice. The classic "document properties" are what most viewers show and most
+  editors let you change. Many programs also embed an <strong>XMP</strong> block, a separate XML record that can
+  repeat the author and title, and add edit history, software details and more. Clearing the visible
+  properties leaves the XMP block untouched, so the author's name can still be in the file.
+</p>
+
+<h2 id="check">Step 1: see what your PDF contains</h2>
+<ol>
+  <li>Open the <a href="{% url 'pages:pdf_metadata_viewer' %}">PDF Metadata Viewer</a> and drop your file into the box.</li>
+  <li>Click <strong>View Metadata</strong>.</li>
+  <li>Read the fields, and look at the line that says whether an XMP metadata stream is present.</li>
+</ol>
+
+<h2 id="remove">Step 2: remove it</h2>
+<ol>
+  <li>Open the <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a> and drop in the same file. The current values are filled in.</li>
+  <li>Click <strong>Clear all fields</strong>. To set a neutral title instead, type it in the Title field.</li>
+  <li>Keep <strong>Also remove the embedded XMP metadata stream</strong> ticked.</li>
+  <li>Click <strong>Update Metadata</strong> and save the cleaned PDF.</li>
+</ol>
+<p>
+  Open the saved file in the viewer again to confirm that the fields are empty and no XMP block is left. The
+  pages themselves are not changed at all. Both tools run in your browser, so the file you are cleaning is
+  never uploaded.
+</p>
+
+<h2 id="beyond-metadata">Other places a PDF can give you away</h2>
+<ul>
+  <li><strong>The visible content:</strong> names in headers, footers, signatures and stamps. Remove them properly with <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a>, as explained in <a href="{% url 'pages:guide_redact_pdf_without_uploading' %}">how to redact a PDF</a>.</li>
+  <li><strong>Comments and tracked changes</strong> exported from Word. Accept or delete them in Word before you export the PDF.</li>
+  <li><strong>The file name</strong>, which travels with the file.</li>
+  <li><strong>Images</strong> pasted in from a phone can carry their own camera data inside the PDF. If that matters, compress the PDF with the Strong setting in <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a>, which redraws every page as a new image.</li>
+</ul>
+
+<h2 id="title-seo">When you want metadata</h2>
+<p>
+  If you publish a PDF on a website, a clear Title helps: search engines can show it as the result title
+  instead of the file name. Use the editor to set a good title and leave your personal details out.
+</p>

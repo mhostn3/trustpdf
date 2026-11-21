@@ -1,0 +1,59 @@
+<p>
+  Search for "merge PDF" or "PDF to Word" and almost every result works the same way: you upload your
+  document, a server processes it, and you download the result. For a restaurant menu, that is fine. For a
+  passport scan, a tax return, a payslip or a signed contract, it is worth knowing what actually happens.
+</p>
+
+<h2 id="what-happens">What happens when you upload a PDF</h2>
+<ol>
+  <li>Your file travels over the internet to the service's servers, which may be in another country and run by a cloud provider you have never heard of.</li>
+  <li>It is stored on a disk there while it is processed, and the result is stored too, so you can download it.</li>
+  <li>The service promises to delete both after some time, often one or a few hours. Some keep them longer if you have an account.</li>
+</ol>
+<p>
+  Reputable services do delete files and protect their servers well. But you have no way to check: the
+  deletion happens on a computer you cannot see. Copies can survive in backups, logs, caches or error
+  reports, and a server that holds thousands of people's documents is an attractive target for attackers.
+</p>
+
+<h2 id="the-real-risks">The real risks</h2>
+<ul>
+  <li><strong>Data breaches.</strong> Any server that stores uploaded files can be breached, and a PDF service sees a steady stream of IDs, contracts and financial records.</li>
+  <li><strong>Confidentiality obligations.</strong> Lawyers, accountants, doctors and HR staff are often not allowed to hand client data to a third party without an agreement. Under GDPR, uploading someone's personal data to a random website can itself be a breach.</li>
+  <li><strong>Unclear terms.</strong> Free services have to pay for their servers somehow. Read the terms: some reserve the right to analyse documents, or are owned by companies whose business is data.</li>
+  <li><strong>Fake tools.</strong> Malicious "converter" websites exist to collect documents or to serve malware with the result.</li>
+</ul>
+
+<h2 id="alternative">The alternative: tools that run in your browser</h2>
+<p>
+  Modern browsers are powerful enough to process PDFs themselves. A browser-based tool sends the
+  <em>program</em> to you instead of asking you to send the <em>file</em> to it. Your document is read from
+  your disk into the web page, processed by JavaScript on your own computer or phone, and saved back to
+  your disk. It never crosses the internet, so there is nothing to store, leak or delete.
+</p>
+<p>
+  That is how every TrustPDF tool works: <a href="{% url 'pages:merge_pdf' %}">merging</a>,
+  <a href="{% url 'pages:compress_pdf' %}">compressing</a>, <a href="{% url 'pages:pdf_to_word' %}">converting to Word</a>,
+  <a href="{% url 'pages:sign_pdf' %}">signing</a>, <a href="{% url 'pages:redact_pdf' %}">redacting</a>,
+  <a href="{% url 'pages:ocr_pdf' %}">OCR</a> and the rest. The code is open source, so anyone can check what it does.
+</p>
+
+<h2 id="how-to-tell">How to tell whether a tool uploads your file</h2>
+<ul>
+  <li><strong>Watch for an upload.</strong> A progress bar that says "uploading", a queue, or a wait for "the server" means the file left your device.</li>
+  <li><strong>Go offline.</strong> Open the tool, disconnect from Wi-Fi, then use it. A browser-based tool keeps working; an upload-based one fails.</li>
+  <li><strong>Look at the Network tab</strong> of your browser's developer tools while you process a file. An upload shows up as a large outgoing request.</li>
+</ul>
+<p>
+  The guide <a href="{% url 'pages:guide_check_pdf_tool_does_not_upload_files' %}">How to check that a PDF tool doesn't upload your files</a>
+  walks through all three tests.
+</p>
+
+<h2 id="checklist">A short checklist before you use any PDF website</h2>
+<ul>
+  <li>Does it say clearly whether files are uploaded? Vague wording such as "secure processing" usually means they are.</li>
+  <li>Does it still work offline after the page has loaded?</li>
+  <li>Is the source code public?</li>
+  <li>Does it need an account or an email address for a simple task? Then it is collecting something.</li>
+  <li>Would you be comfortable emailing this document to a stranger? If not, do not upload it.</li>
+</ul>

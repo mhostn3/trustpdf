@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+  <div class="col col-lg-8 mx-auto">
+
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb tp-breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'pages:index' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'pages:guides' %}">Guides</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ guide.title }}</li>
+      </ol>
+    </nav>
+
+    <article class="guide">
+      <header class="guide-header">
+        <h1>{{ guide.title }}</h1>
+        <p class="lead">{{ guide.description }}</p>
+        <p class="guide-meta">
+          <span>By <a href="{% url 'pages:about' %}">Martin Hostnik</a></span>
+          <span>Updated <time datetime="{{ guide.updated|date:'Y-m-d' }}">{{ guide.updated|date:'j F Y' }}</time></span>
+          <span>{{ reading_minutes }} min read</span>
+        </p>
+      </header>
+
+      {% with tool=guide.main_tool %}
+      <a href="{% url tool.url_name %}" class="guide-cta" data-tp-event="Guide CTA: {{ tool.short_title }}">
+        <img src="{% static tool.icon %}" alt="" width="56" height="56">
+        <span>
+          <strong>Use {{ tool.title }}</strong>
+          <span>{{ tool.description }} Free, and your file never leaves your device.</span>
+        </span>
+        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+      </a>
+      {% endwith %}
+
+      <div class="guide-body">
+        {% include guide.template_name %}
+      </div>
+
+      {% if guide.faq_items %}
+      <section aria-labelledby="faq">
+        <h2 id="faq">Frequently asked questions</h2>
+        <div class="faq">
+          {% for item in guide.faq_items %}
+            <details{% if forloop.first %} open{% endif %}>
+              <summary>{{ item.q }}</summary>
+              <p>{{ item.a }}</p>
+            </details>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section aria-labelledby="tools-used">
+        <h2 id="tools-used">Tools in this guide</h2>
+        <div class="related-tools">
+          {% for item in guide.tool_list %}
+            <a href="{% url item.url_name %}" class="related-tool">
+              <img src="{% static item.icon %}" alt="" width="44" height="44" loading="lazy">
+              <span><strong>{{ item.title }}</strong><span>{{ item.description }}</span></span>
+            </a>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section aria-labelledby="more-guides">
+        <h2 id="more-guides">More guides</h2>
+        <ul class="guide-links">
+          {% for item in other_guides %}
+            <li><a href="{% url item.url_name %}">{{ item.title }}</a></li>
+          {% endfor %}
+          <li><a href="{% url 'pages:guides' %}">All guides <i class="bi bi-arrow-right" aria-hidden="true"></i></a></li>
+        </ul>
+      </section>
+    </article>
+
+  </div>
+</div>
+{% endblock %}

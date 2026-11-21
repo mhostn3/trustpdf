@@ -203,3 +203,61 @@ def page_graph(url, title, description, page_type="WebPage"):
         page["mainEntity"] = {"@id": _ids()["author"]}
         graph.append(_author())
     return render(graph)
+
+
+def _article(guide, url):
+    ids = _ids()
+    return {
+        "@type": "Article",
+        "@id": f"{url}#article",
+        "headline": guide["title"],
+        "description": guide["meta_description"],
+        "url": url,
+        "image": absolute_static(guide["og_image"]),
+        "datePublished": guide["published"].isoformat(),
+        "dateModified": guide["updated"].isoformat(),
+        "inLanguage": "en",
+        "author": {"@id": ids["author"]},
+        "publisher": {"@id": ids["org"]},
+        "mainEntityOfPage": {"@id": f"{url}#webpage"},
+        "isPartOf": {"@id": ids["website"]},
+        "mentions": [
+            {"@type": "WebApplication", "name": f"{tool['title']} - TrustPDF", "url": absolute_url(tool["path"])}
+            for tool in guide["tool_list"]
+        ],
+    }
+
+
+def guide_graph(guide):
+    url = absolute_url(guide["path"])
+    guides_url = absolute_url("/guides/")
+    page = _web_page(
+        url,
+        guide["seo_title"],
+        guide["meta_description"],
+        extra={"breadcrumb": {"@id": f"{url}#breadcrumbs"}, "primaryImageOfPage": absolute_static(guide["og_image"])},
+    )
+    crumbs = _breadcrumbs(url, [("Home", absolute_url("/")), ("Guides", guides_url), (guide["title"], url)])
+    graph = [page, _article(guide, url), crumbs, _website(), _organization(), _author()]
+    if guide["faq"]:
+        graph.insert(2, _faq_page(guide["faq"], url))
+    return render(graph)
+
+
+def guides_index_graph(guides, title, description):
+    url = absolute_url("/guides/")
+    item_list = {
+        "@type": "ItemList",
+        "@id": f"{url}#guides",
+        "name": "TrustPDF guides",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": g["title"], "url": absolute_url(g["path"])}
+            for i, g in enumerate(guides)
+        ],
+    }
+    page = _web_page(
+        url, title, description, "CollectionPage",
+        extra={"breadcrumb": {"@id": f"{url}#breadcrumbs"}, "mainEntity": {"@id": f"{url}#guides"}},
+    )
+    crumbs = _breadcrumbs(url, [("Home", absolute_url("/")), ("Guides", url)])
+    return render([page, item_list, crumbs, _website(), _organization()])

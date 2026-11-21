@@ -265,3 +265,82 @@ class SeoTests(SimpleTestCase):
     def test_sitemap_has_images(self):
         xml = self.client.get("/sitemap.xml").content.decode()
         self.assertIn("<image:loc>", xml)
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    STORAGES={"staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}},
+)
+class GuideTests(SimpleTestCase):
+    """The how-to guides: pages, SEO tags, structured data and links to tools."""
+
+    def test_guide_pages_render_with_seo(self):
+        from .guides import GUIDES
+        self.assertGreaterEqual(len(GUIDES), 5)
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                self.assertEqual(reverse(guide["url_name"]), guide["path"])
+                response = self.client.get(guide["path"])
+                self.assertEqual(response.status_code, 200)
+                html = response.content.decode()
+                self.assertIn(f"<title>{escape(guide['seo_title'])}</title>", html)
+                self.assertIn(f"<h1>{escape(guide['title'])}</h1>", html)
+                self.assertIn(f'<link rel="canonical" href="{settings.SITE_URL}{guide["path"]}">', html)
+                self.assertIn('<meta property="og:type" content="article">', html)
+                self.assertLessEqual(len(guide["seo_title"]), 70)
+                self.assertLessEqual(len(guide["meta_description"]), 200)
+                self.assertNotIn("&", guide["seo_title"])
+                # The article links to the tool it is about.
+                self.assertIn(f'href="{guide["main_tool"]["path"]}"', html)
+                self.assertNotRegex(html, r"<style|\sstyle=")
+                self.assertNotRegex(html, r'<script(?![^>]*\ssrc=)(?![^>]*type="application/ld\+json")[^>]*>')
+
+    def test_guide_json_ld_matches_visible_content(self):
+        from .guides import GUIDES
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                html = self.client.get(guide["path"]).content.decode()
+                graph = {node["@type"]: node for node in json_ld(html)["@graph"]}
+                for kind in ("WebPage", "Article", "BreadcrumbList", "Organization", "WebSite", "Person"):
+                    self.assertIn(kind, graph)
+                self.assertEqual(graph["Article"]["headline"], guide["title"])
+                self.assertEqual(len(graph["BreadcrumbList"]["itemListElement"]), 3)
+                if guide["faq"]:
+                    for question in graph["FAQPage"]["mainEntity"]:
+                        self.assertIn(f"<summary>{escape(question['name'])}</summary>", html)
+
+    def test_guide_links_resolve(self):
+        """Every internal link in every guide points to a page that exists."""
+        from .guides import GUIDES
+        for guide in GUIDES:
+            html = self.client.get(guide["path"]).content.decode()
+            for href in set(re.findall(r'href="(/[^"#]*)', html)):
+                if href.startswith("/static/"):
+                    continue
+                with self.subTest(guide=guide["slug"], href=href):
+                    self.assertEqual(self.client.get(href).status_code, 200, href)
+
+    def test_guides_index_sitemap_and_llms(self):
+        from .guides import GUIDES
+        html = self.client.get("/guides/").content.decode()
+        self.assertIn("CollectionPage", html)
+        xml = self.client.get("/sitemap.xml").content.decode()
+        llms = self.client.get("/llms.txt").content.decode()
+        home = self.client.get("/").content.decode()
+        self.assertIn(f"{settings.SITE_URL}/guides/</loc>", xml)
+        for guide in GUIDES:
+            self.assertIn(f'href="{guide["path"]}"', html)
+            self.assertIn(f'href="{guide["path"]}"', home)
+            self.assertIn(f"{settings.SITE_URL}{guide['path']}</loc>", xml)
+            self.assertIn(f"{settings.SITE_URL}{guide['path']}", llms)
+
+    def test_tool_pages_link_to_their_guides(self):
+        html = self.client.get(reverse("pages:redact_pdf")).content.decode()
+        self.assertIn('href="/guides/redact-pdf-without-uploading/"', html)
+        self.assertIn('href="/guides/"', html)  # main navigation
+
+    def test_flatten_variant_is_preset(self):
+        html = self.client.get("/tools/flatten-pdf/").content.decode()
+        self.assertIn('id="flattenForm" checked', html)
+        self.assertIn("Flatten PDF", html)
+        self.assertNotIn('id="flattenForm" checked', self.client.get("/tools/fill-pdf-form/").content.decode())

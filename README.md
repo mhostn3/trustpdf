@@ -12,7 +12,7 @@ Every tool runs entirely in your browser: **no uploads, no accounts, no cookies*
 | Tool | What it does |
 | --- | --- |
 | **Merge PDF** | Combine several PDFs into one, in the order you choose |
-| **Split PDF** | Extract pages by clicking thumbnails or typing ranges (`1-3,5,8-10`); optionally one PDF per page as a ZIP |
+| **Split PDF** | Extract pages by clicking thumbnails or typing ranges (`1-3,5,8-10`); optionally one PDF per page as a ZIP (also at `/tools/extract-pdf-pages/`) |
 | **Rotate PDF Pages** | Rotate all pages or selected ones, with a live preview |
 | **Remove PDF Pages** | Delete pages you don't need |
 | **Reorder PDF Pages** | Drag page thumbnails into a new order |
@@ -25,6 +25,7 @@ Every tool runs entirely in your browser: **no uploads, no accounts, no cookies*
 | **PDF to JPG** | Render pages to JPG or PNG at 72/150/300 DPI; several pages download as a ZIP (PNG preset at `/tools/pdf-to-png/`) |
 | **PDF to Text** | Extract text to a `.txt` file, with a preview and copy button |
 | **Sign PDF** | Draw, type or upload a signature, drag it into place, optional date, optional on every page |
+| **Fill PDF Form** | Lists the form's fields page by page (text, checkboxes, radio buttons, lists), fills them, optionally flattens; non-Latin answers get Noto Sans (flatten preset at `/tools/flatten-pdf/`) |
 | **Crop PDF** | Drag an area on a preview, type margins in mm, or auto-trim white margins |
 | **Protect PDF** | AES-256 encryption with open/owner passwords and print/copy/edit permissions (qpdf in WebAssembly) |
 | **Unlock PDF** | Remove a known password and permission restrictions (qpdf) |
@@ -52,6 +53,7 @@ Features:
 trustpdf/                  Django project (manage.py lives here)
   trustpdf/settings.py     settings, security headers, CSP directives
   pages/tools.py           the list of tools and SEO text for every page
+  pages/guides.py          the how-to guides under /guides/ (article bodies in pages/templates/guides/)
   pages/urls.py            routes: /, /about/, /privacy/, /cookies/, /terms/, /tools/<tool>/
   pages/templates/tools/   one small template per tool, all extending tool_base.html
   static/js/trustpdf-core.js   shared behaviour: file handling, errors, page ranges, download

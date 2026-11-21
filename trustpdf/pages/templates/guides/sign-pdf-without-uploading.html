@@ -1,0 +1,55 @@
+<p>
+  Someone has sent you a contract, a lease or a consent form to sign. Printing it, signing it with a pen,
+  scanning it and emailing it back works, but it takes a printer, a scanner and twenty minutes. Signing
+  services work too, but they upload the document and often want an account. Here is how to sign a PDF on
+  your own computer or phone, free, in about a minute.
+</p>
+
+<h2 id="how-to">How to sign a PDF</h2>
+<ol>
+  <li>Open <a href="{% url 'pages:sign_pdf' %}">Sign PDF</a> and drop the document into the box.</li>
+  <li>Create your signature in one of three ways:
+    <ul>
+      <li><strong>Draw:</strong> sign with the mouse, a touchpad, or your finger on a phone or tablet.</li>
+      <li><strong>Type:</strong> type your name and pick a script or handwritten style.</li>
+      <li><strong>Upload image:</strong> use a photo or scan of your signature on white paper; tick the option to make the white background transparent.</li>
+    </ul>
+  </li>
+  <li>Go to the right page and drag the signature onto the signature line. Adjust its width.</li>
+  <li>Optionally tick <strong>Add today's date under the signature</strong>, or <strong>Put it on every page</strong> for initials.</li>
+  <li>Click <strong>Sign PDF</strong>, then <strong>Save Signed PDF</strong>, and send the saved file back.</li>
+</ol>
+<p>
+  The document and your signature stay on your device the whole time. Nothing is uploaded and nothing is
+  stored: when you close the page, the signature is gone.
+</p>
+
+<h2 id="forms">If the document has form fields</h2>
+<p>
+  Many contracts and applications have fields for your name, address and date. Fill those in first with
+  <a href="{% url 'pages:fill_pdf_form' %}">Fill PDF Form</a>, and tick <strong>Flatten the form</strong> so your answers
+  become part of the page. Then add your signature as the last step. See
+  <a href="{% url 'pages:guide_fill_pdf_form_without_uploading' %}">how to fill in a PDF form without uploading it</a>.
+</p>
+
+<h2 id="legal">Is it legally valid?</h2>
+<p>
+  Placing an image of your signature on a document creates what the law calls a <strong>simple electronic
+  signature</strong>. In the EU, the eIDAS regulation says an electronic signature cannot be refused as evidence
+  just because it is electronic, and in the US the ESIGN Act and UETA give electronic signatures the same
+  standing as handwritten ones for most transactions. For everyday contracts, rental agreements, HR forms and
+  consent forms, this is usually all that is needed.
+</p>
+<p>
+  Some documents need more: certain property transfers, court documents, wills and notarial deeds, or
+  anything where the other party asks for a "qualified" or "certified" digital signature. Those use a
+  cryptographic certificate issued by a trust service provider, which this kind of signature is not. When in
+  doubt, ask the person who sent you the document what they accept. This is general information, not legal advice.
+</p>
+
+<h2 id="tips">Tips</h2>
+<ul>
+  <li>Sign last. Adding pages, merging or filling forms after signing can make it look as if the document changed after you signed it.</li>
+  <li>If you want to stop casual editing of the signed file, <a href="{% url 'pages:protect_pdf' %}">protect it</a> with an owner password and editing switched off.</li>
+  <li>Keep a copy of exactly what you signed.</li>
+</ul>
