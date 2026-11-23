@@ -12,7 +12,7 @@ from django.views.generic import TemplateView
 
 from . import seo
 from .seo import absolute_static, absolute_url
-from .guides import GUIDES_PAGE, guides_for_tool, is_live, live_guides
+from .guides import GUIDES_PAGE, guides_for_tool, is_live, live_guides, release_date
 from .tools import TOOLS, STATIC_PAGES, HOME_FAQ_ITEMS, tools_by_group
 
 
@@ -101,6 +101,11 @@ class GuideView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         guide = self.guide
+        published = release_date(guide)
+        if published != guide["published"]:
+            # Released on another day from the admin: show that date.
+            updated = published if guide["updated"] == guide["published"] else max(guide["updated"], published)
+            guide = {**guide, "published": published, "updated": updated}
         context.update({
             "guide": guide,
             "seo_title": guide["seo_title"],
@@ -112,7 +117,7 @@ class GuideView(TemplateView):
             "og_image": absolute_static(guide["og_image"]),
             "json_ld": seo.guide_graph(guide),
             "reading_minutes": reading_minutes(guide),
-            "other_guides": [g for g in live_guides() if g is not guide][:4],
+            "other_guides": [g for g in live_guides() if g["slug"] != guide["slug"]][:4],
         })
         return context
 

@@ -8,7 +8,8 @@ The article body is the template guides/<slug>.html.
 
 A guide goes live on its "published" date: before that its page is a 404
 and it is left out of every list, so a batch can be deployed at once and
-released one a week. Link from one guide to another with
+released one a week. The admin (Pages > Guides) can move that date,
+publish a guide now or hold it back; see models.GuideSchedule. Link from one guide to another with
 {% guide_link 'slug' 'text' %}, which prints plain text until the target
 is live.
 
@@ -305,7 +306,9 @@ for _guide in GUIDES:
     _guide["og_image"] = _guide["main_tool"]["og_image"]
     _guide["faq_items"] = [{"q": q, "a": a} for q, a in _guide["faq"]]
 
-_BY_SLUG = {g["slug"]: g for g in GUIDES}
+GUIDES_BY_SLUG = {g["slug"]: g for g in GUIDES}
+
+_UNSET = object()
 
 
 def today():
@@ -313,24 +316,48 @@ def today():
     return timezone.localdate()
 
 
+def _schedule():
+    """Release dates set in the admin: {slug: date or None (held)}."""
+    from .models import GuideSchedule
+    return dict(GuideSchedule.objects.values_list("slug", "publish_on"))
+
+
+def _release_date(guide, schedule):
+    date = schedule.get(guide["slug"], _UNSET)
+    return guide["published"] if date is _UNSET else date
+
+
+def _is_live(guide, schedule):
+    date = _release_date(guide, schedule)
+    return date is not None and date <= today()
+
+
 def is_live(guide):
-    return guide["published"] <= today()
+    return _is_live(guide, _schedule())
+
+
+def release_date(guide):
+    """The day the guide went or goes live, after any change in the admin."""
+    return _release_date(guide, _schedule())
 
 
 def live_guides():
     """Published guides, newest first."""
-    return sorted((g for g in GUIDES if is_live(g)), key=lambda g: g["published"], reverse=True)
+    schedule = _schedule()
+    live = [g for g in GUIDES if _is_live(g, schedule)]
+    return sorted(live, key=lambda g: _release_date(g, schedule), reverse=True)
 
 
 def live_guide(slug):
     """The guide with this slug if it is live, else None."""
-    guide = _BY_SLUG[slug]  # a KeyError here means a typo in a guide_link
+    guide = GUIDES_BY_SLUG[slug]  # a KeyError here means a typo in a guide_link
     return guide if is_live(guide) else None
 
 
 def guides_for_tool(tool):
     """The live guides that use a tool, for the list on its page."""
     return [g for g in live_guides() if tool["name"] in g["tools"]]
+
 
 GUIDES_PAGE = {
     "title": "Guides",

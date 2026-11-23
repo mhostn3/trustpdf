@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest import mock
 
 from django.conf import settings
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils.html import escape
 
@@ -19,6 +19,8 @@ from .tools import TOOLS, STATIC_PAGES
 )
 class PageTests(SimpleTestCase):
     """Every public page renders, and the SEO tags point to pages that exist."""
+
+    databases = {"default"}  # guide release dates set in the admin
 
     def test_public_pages_set_no_cookies(self):
         for path in ["/", reverse("pages:merge_pdf"), reverse("pages:privacy")]:
@@ -131,6 +133,8 @@ def json_ld(html):
 )
 class SeoTests(SimpleTestCase):
     """Structured data, crawler files and per-tool content."""
+
+    databases = {"default"}  # guide release dates set in the admin
 
     def test_every_tool_has_assets_and_content(self):
         static = Path(settings.BASE_DIR) / "static"
@@ -277,6 +281,8 @@ class SeoTests(SimpleTestCase):
 class GuideTests(SimpleTestCase):
     """The how-to guides: pages, SEO tags, structured data and links to tools."""
 
+    databases = {"default"}  # release dates set in the admin
+
     def test_guide_pages_render_with_seo(self):
         from .guides import GUIDES
         self.assertGreaterEqual(len(GUIDES), 5)
@@ -375,3 +381,45 @@ class GuideTests(SimpleTestCase):
         self.assertIn('id="flattenForm" checked', html)
         self.assertIn("Flatten PDF", html)
         self.assertNotIn('id="flattenForm" checked', self.client.get("/tools/fill-pdf-form/").content.decode())
+
+
+@override_settings(
+    SECURE_SSL_REDIRECT=False,
+    STORAGES={"staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}},
+)
+class GuideScheduleTests(TestCase):
+    """Release dates changed in the admin override the dates in guides.py."""
+
+    def setUp(self):
+        from .guides import GUIDES
+        self.guides = sorted(GUIDES, key=lambda g: g["published"])
+        self.old, self.new = self.guides[0], self.guides[-1]
+
+    def test_hold_and_publish_early(self):
+        from .models import GuideSchedule
+        GuideSchedule.objects.create(slug=self.old["slug"], publish_on=None)
+        GuideSchedule.objects.create(slug=self.new["slug"], publish_on=datetime.date(2000, 1, 1))
+        self.assertEqual(self.client.get(self.old["path"]).status_code, 404)
+        self.assertNotIn(self.old["path"], self.client.get("/guides/").content.decode())
+        html = self.client.get(self.new["path"]).content.decode()
+        self.assertEqual(self.client.get(self.new["path"]).status_code, 200)
+        article = next(n for n in json_ld(html)["@graph"] if n["@type"] == "Article")
+        self.assertEqual(article["datePublished"], "2000-01-01")
+        self.assertEqual(article["dateModified"], "2000-01-01")
+        self.assertIn(f'href="{self.new["path"]}"', self.client.get("/guides/").content.decode())
+
+    def test_admin_lists_every_guide_and_publishes_now(self):
+        from django.contrib.auth import get_user_model
+        from .guides import GUIDES, today
+        from .models import GuideSchedule
+        admin = get_user_model().objects.create_superuser("boss", "boss@example.com", "pw-123-long-enough")
+        self.client.force_login(admin)
+        url = reverse("admin:pages_guideschedule_changelist")
+        html = self.client.get(url).content.decode()
+        for guide in GUIDES:
+            self.assertIn(escape(guide["title"]), html)
+        self.assertEqual(GuideSchedule.objects.count(), len(GUIDES))
+        row = GuideSchedule.objects.get(slug=self.new["slug"])
+        self.client.post(url, {"action": "publish_now", "_selected_action": [row.pk]})
+        row.refresh_from_db()
+        self.assertEqual(row.publish_on, today())
