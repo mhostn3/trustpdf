@@ -1,3 +1,4 @@
+{% load guide_links %}
 <p>
   Visa applications, residence permits and rental applications all ask for the same kind of documents: a
   passport, payslips, bank statements, an employment contract, sometimes a tax return. They are also exactly
@@ -37,8 +38,8 @@
 <h2 id="only-what-is-needed">3. Send only what is asked for</h2>
 <ul>
   <li><strong>Leave out pages that aren't needed.</strong> A bank statement's transaction pages may not be required if a balance summary is enough. Keep only the pages that matter with <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>.</li>
-  <li><strong>Black out what isn't relevant,</strong> where the rules allow it. For a rental application, a landlord rarely needs your full account number or social security number. Use <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a>, which removes the text for real, and see <a href="{% url 'pages:guide_redact_pdf_without_uploading' %}">how to redact a PDF properly</a>. Do not redact documents for a visa or a government office unless they say you may.</li>
-  <li><strong>Mark copies for a single use.</strong> For rental and other private applications, a watermark such as "Copy for the rental application to X, November 2026" makes a stolen copy less useful. See <a href="{% url 'pages:guide_watermark_id_copy' %}">how to watermark a copy of your ID</a>.</li>
+  <li><strong>Black out what isn't relevant,</strong> where the rules allow it. For a rental application, a landlord rarely needs your full account number or social security number. Use <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a>, which removes the text for real, and see {% guide_link 'redact-pdf-without-uploading' "how to redact a PDF properly" %}. Do not redact documents for a visa or a government office unless they say you may.</li>
+  <li><strong>Mark copies for a single use.</strong> For rental and other private applications, a watermark such as "Copy for the rental application to X, November 2026" makes a stolen copy less useful. See {% guide_link 'watermark-id-copy' "how to watermark a copy of your ID" %}.</li>
 </ul>
 
 <h2 id="size">4. Get under the size limit</h2>

@@ -1,3 +1,4 @@
+{% load guide_links %}
 <p>
   Adobe Acrobat Reader is free, but most of what people actually want to do with a PDF, such as merging,
   splitting, compressing, password protecting, redacting or recognising text in scans, needs a paid Acrobat
@@ -10,7 +11,7 @@
 <ul>
   <li><strong>Built into your system:</strong> macOS Preview, the iPhone and iPad Files app, and the PDF viewers in Chrome, Edge, Firefox and Safari. Nothing to install, but limited.</li>
   <li><strong>Free desktop programs:</strong> for example PDFsam Basic (open source, merge and split), LibreOffice Draw (edit PDF text and layout) and the command-line tools qpdf and pdfunite. They work offline but need installing, which is not always possible on a work or shared computer.</li>
-  <li><strong>Web tools:</strong> nothing to install, they work on any device. Most upload your file to a server; a few, including TrustPDF, process it in your browser instead. <a href="{% url 'pages:guide_desktop_vs_online_vs_browser_pdf_tools' %}">Desktop, online or in-browser?</a> compares the three approaches.</li>
+  <li><strong>Web tools:</strong> nothing to install, they work on any device. Most upload your file to a server; a few, including TrustPDF, process it in your browser instead. {% guide_link 'desktop-vs-online-vs-browser-pdf-tools' "Desktop, online or in-browser?" %} compares the three approaches.</li>
 </ul>
 
 <h2 id="by-task">Free options by task</h2>
@@ -28,7 +29,7 @@
   solid desktop choice. In the browser, <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a>,
   <a href="{% url 'pages:split_pdf' %}">Split PDF</a> and <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>.
   Step-by-step instructions for each device are in
-  <a href="{% url 'pages:guide_merge_pdf_on_mac_windows_iphone_android' %}">how to merge PDFs on Mac, Windows, iPhone and Android</a>.
+  {% guide_link 'merge-pdf-on-mac-windows-iphone-android' "how to merge PDFs on Mac, Windows, iPhone and Android" %}.
 </p>
 
 <h3>Rotating, reordering and deleting pages</h3>
@@ -56,7 +57,7 @@
 <p>
   This is where free tools most often go wrong: drawing a black box in Preview or another viewer usually leaves
   the text underneath in the file. <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a> removes it, and
-  <a href="{% url 'pages:guide_redact_pdf_without_uploading' %}">how to redact a PDF</a> explains how to check.
+  {% guide_link 'redact-pdf-without-uploading' "how to redact a PDF" %} explains how to check.
 </p>
 
 <h3>OCR and converting to Word</h3>

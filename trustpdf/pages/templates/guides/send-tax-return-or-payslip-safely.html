@@ -1,3 +1,4 @@
+{% load guide_links %}
 <p>
   Accountants, banks, landlords, lenders and new employers regularly ask for a tax return, a payslip or a
   bank statement as a PDF. These files hold the details a fraudster most wants: your full name and address,
@@ -20,7 +21,7 @@
   A landlord checking your income does not need your bank account number, your tax identification number or
   your children's names. Black them out with <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a>: search for
   a number to remove it on every page, or drag over an area. Unlike a black box drawn in an ordinary editor,
-  it removes the text from the file. <a href="{% url 'pages:guide_redact_pdf_without_uploading' %}">How to redact a PDF properly</a>
+  it removes the text from the file. {% guide_link 'redact-pdf-without-uploading' "How to redact a PDF properly" %}
   explains the difference and how to check the result.
 </p>
 <p>
@@ -33,7 +34,7 @@
   PDFs exported from payroll or tax software can carry metadata such as the software name, the company that
   generated them and sometimes a person's name. It is usually harmless, but if you redacted the document,
   clean the metadata too with the <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a>,
-  as described in <a href="{% url 'pages:guide_remove_metadata_from_pdf' %}">how to remove metadata from a PDF</a>.
+  as described in {% guide_link 'remove-metadata-from-pdf' "how to remove metadata from a PDF" %}.
 </p>
 
 <h2 id="encrypt">4. Put a password on it</h2>
@@ -49,7 +50,7 @@
 <p>
   Send the password through a <strong>different channel</strong> from the file: email the PDF, then text the
   password or say it on the phone. Never put it in the same email. More in
-  <a href="{% url 'pages:guide_password_protect_pdf_free' %}">how to password protect a PDF</a>.
+  {% guide_link 'password-protect-pdf-free' "how to password protect a PDF" %}.
 </p>
 
 <h2 id="send">5. Send it to the right place</h2>
@@ -64,5 +65,5 @@
   Many free PDF sites upload the file to process it. For a tax return that means handing the unredacted,
   unencrypted original, the very thing you are trying to protect, to a third party first. Every tool in this
   guide runs in your browser, so the original never leaves your device.
-  <a href="{% url 'pages:guide_are_online_pdf_tools_safe' %}">Are online PDF tools safe?</a> goes into the details.
+  {% guide_link 'are-online-pdf-tools-safe' "Are online PDF tools safe?" %} goes into the details.
 </p>

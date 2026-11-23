@@ -12,7 +12,7 @@ from django.views.generic import TemplateView
 
 from . import seo
 from .seo import absolute_static, absolute_url
-from .guides import GUIDES, GUIDES_PAGE
+from .guides import GUIDES_PAGE, guides_for_tool, is_live, live_guides
 from .tools import TOOLS, STATIC_PAGES, HOME_FAQ_ITEMS, tools_by_group
 
 
@@ -33,7 +33,7 @@ class PageView(TemplateView):
             context["json_ld"] = seo.home_graph()
             context["tool_groups"] = tools_by_group()
             context["home_faq"] = HOME_FAQ_ITEMS
-            context["guides"] = GUIDES
+            context["guides"] = live_guides()
         else:
             context["json_ld"] = seo.page_graph(url, page["seo_title"], page["meta_description"], self.schema_type)
         return context
@@ -47,6 +47,7 @@ class ToolView(TemplateView):
         tool = self.tool
         context.update({
             "tool": tool,
+            "tool_guides": guides_for_tool(tool),
             "seo_title": tool["seo_title"],
             "meta_description": tool["meta_description"],
             "meta_keywords": tool["keywords"],
@@ -66,12 +67,13 @@ class GuideIndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         page = GUIDES_PAGE
+        guides = live_guides()
         context.update(page)
         context.update({
-            "guides": GUIDES,
+            "guides": guides,
             "canonical_url": absolute_url("/guides/"),
             "og_image": absolute_static(page["og_image"]),
-            "json_ld": seo.guides_index_graph(GUIDES, page["seo_title"], page["meta_description"]),
+            "json_ld": seo.guides_index_graph(guides, page["seo_title"], page["meta_description"]),
         })
         return context
 
@@ -91,6 +93,11 @@ class GuideView(TemplateView):
     template_name = "guide.html"
     guide = None
 
+    def get(self, request, *args, **kwargs):
+        if not is_live(self.guide):
+            raise Http404("This guide is not published yet.")
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         guide = self.guide
@@ -105,7 +112,7 @@ class GuideView(TemplateView):
             "og_image": absolute_static(guide["og_image"]),
             "json_ld": seo.guide_graph(guide),
             "reading_minutes": reading_minutes(guide),
-            "other_guides": [g for g in GUIDES if g is not guide][:4],
+            "other_guides": [g for g in live_guides() if g is not guide][:4],
         })
         return context
 
@@ -130,7 +137,7 @@ def sitemap_urls():
     entries = [(absolute_url(reverse(name)), prio, freq, None) for name, prio, freq in SITEMAP_PAGES]
     entries += [(absolute_url(t["path"]), "0.9", "monthly", t) for t in TOOLS]
     entries.append((absolute_url(reverse("pages:guides")), "0.7", "weekly", None))
-    entries += [(absolute_url(g["path"]), "0.7", "monthly", g) for g in GUIDES]
+    entries += [(absolute_url(g["path"]), "0.7", "monthly", g) for g in live_guides()]
     return entries
 
 
@@ -176,7 +183,7 @@ def robots_txt_view(request):
 
 
 def _text_response(template, context=None):
-    body = render_to_string(template, {"tools": TOOLS, "guides": GUIDES, "site_url": settings.SITE_URL, **(context or {})})
+    body = render_to_string(template, {"tools": TOOLS, "guides": live_guides(), "site_url": settings.SITE_URL, **(context or {})})
     return HttpResponse(body, content_type="text/plain; charset=utf-8")
 
 

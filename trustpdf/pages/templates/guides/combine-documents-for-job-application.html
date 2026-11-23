@@ -1,3 +1,4 @@
+{% load guide_links %}
 <p>
   Many job portals ask for a single PDF, or let you upload only one or two files: your CV, cover letter,
   diplomas, certificates and references all have to fit. Here is how to put them together into one clean,
@@ -41,7 +42,7 @@
   <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a>, set the Title to something like
   "Ana Silva, Application for Product Designer", set the Author to your name, keep
   <strong>Also remove the embedded XMP metadata stream</strong> ticked, and save. The guide
-  <a href="{% url 'pages:guide_change_pdf_title_and_author' %}">how to change a PDF's title and author</a> has the details.
+  {% guide_link 'change-pdf-title-and-author' "how to change a PDF's title and author" %} has the details.
 </p>
 
 <h2 id="name">5. Name the file well</h2>

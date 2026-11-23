@@ -1,3 +1,4 @@
+{% load guide_links %}
 <p>
   There are three ways to get a PDF job done without paying for a full editor: install a desktop program, use
   an online service that processes the file on its servers, or use a web tool that does the work in your
@@ -37,11 +38,11 @@
   Reputable providers delete files after a set time and protect their servers well, but you cannot check that.
   With a desktop program or an in-browser tool, the document stays with you. For anything personal or
   confidential, such as IDs, contracts, tax papers, medical or HR records, that is the safer default. See
-  <a href="{% url 'pages:guide_are_online_pdf_tools_safe' %}">are online PDF tools safe?</a> for more.
+  {% guide_link 'are-online-pdf-tools-safe' "are online PDF tools safe?" %} for more.
 </p>
 <p>
   "Runs in your browser" is still a claim. You can test it yourself in two minutes:
-  <a href="{% url 'pages:guide_check_pdf_tool_does_not_upload_files' %}">how to check that a PDF tool doesn't upload your files</a>.
+  {% guide_link 'check-pdf-tool-does-not-upload-files' "how to check that a PDF tool doesn't upload your files" %}.
 </p>
 
 <h2 id="which">Which one should you use?</h2>
@@ -59,5 +60,5 @@
   and <a href="{% url 'pages:pdf_metadata_editor' %}">editing metadata</a>, all in the browser and free. It does
   not edit the existing text of a PDF, and OCR and Word conversion run slower than on a server because your
   own device does the work. If you need full text editing every day, a desktop editor will serve you better;
-  <a href="{% url 'pages:guide_free_adobe_acrobat_alternatives' %}">free alternatives to Adobe Acrobat</a> lists options for each task.
+  {% guide_link 'free-adobe-acrobat-alternatives' "free alternatives to Adobe Acrobat" %} lists options for each task.
 </p>

@@ -1,6 +1,8 @@
+import datetime
 import json
 import re
 from pathlib import Path
+from unittest import mock
 
 from django.conf import settings
 from django.test import SimpleTestCase, override_settings
@@ -271,6 +273,7 @@ class SeoTests(SimpleTestCase):
     SECURE_SSL_REDIRECT=False,
     STORAGES={"staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}},
 )
+@mock.patch("pages.guides.today", new=lambda: datetime.date(2100, 1, 1))  # every guide is live
 class GuideTests(SimpleTestCase):
     """The how-to guides: pages, SEO tags, structured data and links to tools."""
 
@@ -333,6 +336,34 @@ class GuideTests(SimpleTestCase):
             self.assertIn(f'href="{guide["path"]}"', home)
             self.assertIn(f"{settings.SITE_URL}{guide['path']}</loc>", xml)
             self.assertIn(f"{settings.SITE_URL}{guide['path']}", llms)
+
+    def test_unpublished_guides_are_hidden(self):
+        """A guide is a 404 and missing from every list until its published date."""
+        from .guides import GUIDES
+        later = max(GUIDES, key=lambda g: g["published"])
+        earlier = [g for g in GUIDES if g["published"] < later["published"]]
+        self.assertTrue(earlier)
+        before = later["published"] - datetime.timedelta(days=1)
+        tool_path = later["main_tool"]["path"]
+        with mock.patch("pages.guides.today", new=lambda: before):
+            self.assertEqual(self.client.get(later["path"]).status_code, 404)
+            for url in ("/", "/guides/", "/sitemap.xml", "/llms.txt", "/llms-full.txt", tool_path, earlier[0]["path"]):
+                with self.subTest(url=url):
+                    self.assertNotIn(later["path"], self.client.get(url).content.decode())
+        with mock.patch("pages.guides.today", new=lambda: later["published"]):
+            self.assertEqual(self.client.get(later["path"]).status_code, 200)
+            self.assertIn(f'href="{later["path"]}"', self.client.get("/guides/").content.decode())
+            self.assertIn(f'href="{later["path"]}"', self.client.get(tool_path).content.decode())
+
+    def test_guide_link_waits_for_its_target(self):
+        from django.template import Context, Template
+        from .guides import GUIDES
+        target = max(GUIDES, key=lambda g: g["published"])
+        tpl = Template("{% load guide_links %}{% guide_link '" + target["slug"] + "' 'Read this' %}")
+        with mock.patch("pages.guides.today", new=lambda: target["published"] - datetime.timedelta(days=1)):
+            self.assertEqual(tpl.render(Context()), "Read this")
+        with mock.patch("pages.guides.today", new=lambda: target["published"]):
+            self.assertEqual(tpl.render(Context()), f'<a href="{target["path"]}">Read this</a>')
 
     def test_tool_pages_link_to_their_guides(self):
         html = self.client.get(reverse("pages:redact_pdf")).content.decode()

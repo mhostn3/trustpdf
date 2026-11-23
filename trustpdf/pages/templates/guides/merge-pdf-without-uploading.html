@@ -1,3 +1,4 @@
+{% load guide_links %}
 <p>
   Merging PDFs is the most common PDF task there is: a contract and its annexes, a set of invoices for your
   accountant, scanned pages that ended up as separate files. It is also the task people most often hand to
@@ -48,7 +49,7 @@
 <p>
   A merged PDF is roughly as big as all the files put together. If it is too large to email or upload,
   run it through <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a>. The guide
-  <a href="{% url 'pages:guide_compress_pdf_for_email' %}">how to make a PDF smaller for email</a> explains
+  {% guide_link 'compress-pdf-for-email' 'how to make a PDF smaller for email' %} explains
   which setting to choose.
 </p>
 
@@ -57,5 +58,5 @@
   The documents people merge are rarely menus. They are contracts with annexes, loan applications, medical
   records and tax papers, often several people's worth in one go. A server-based merger receives all of them
   in full. Doing it in the browser removes that step entirely. If you would like to check rather than trust
-  that claim, <a href="{% url 'pages:guide_check_pdf_tool_does_not_upload_files' %}">here is how</a>.
+  that claim, {% guide_link 'check-pdf-tool-does-not-upload-files' 'here is how' %}.
 </p>

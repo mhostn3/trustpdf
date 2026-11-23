@@ -1,3 +1,4 @@
+{% load guide_links %}
 <p>
   Every PDF has a few fields that describe it: a title, an author, a subject and keywords. You rarely see
   them, but other people do. The title is what a browser tab shows when the PDF is opened online, what
@@ -51,6 +52,6 @@
 <h2 id="remove-instead">Want to remove metadata rather than change it?</h2>
 <p>
   If the goal is to share a file anonymously, clear every field instead. The guide
-  <a href="{% url 'pages:guide_remove_metadata_from_pdf' %}">how to remove metadata from a PDF</a> covers that,
+  {% guide_link 'remove-metadata-from-pdf' 'how to remove metadata from a PDF' %} covers that,
   and the other places a PDF can give your name away.
 </p>

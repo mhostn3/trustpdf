@@ -6,10 +6,18 @@ Each guide drives: the route /guides/<slug>/, the card on /guides/, the
 sitemap and llms.txt, and the "Guides" links under the tools it uses.
 The article body is the template guides/<slug>.html.
 
+A guide goes live on its "published" date: before that its page is a 404
+and it is left out of every list, so a batch can be deployed at once and
+released one a week. Link from one guide to another with
+{% guide_link 'slug' 'text' %}, which prints plain text until the target
+is live.
+
 Keep the text truthful and specific to what the tools really do: the FAQ
 is repeated word for word in the structured data.
 """
 import datetime
+
+from django.utils import timezone
 
 from .tools import TOOLS
 
@@ -38,8 +46,8 @@ GUIDES = [
         "description": "Fix the title a browser tab or search result shows for your PDF, and replace someone else's name as author.",
         "meta_description": "Change a PDF's title, author, subject and keywords for free, without Acrobat and without uploading the file. Why the old title still shows up, and how to fix it for good.",
         "tools": ["pdf_metadata_editor", "pdf_metadata_viewer"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2026, 11, 30),
+        "updated": datetime.date(2026, 11, 30),
         "faq": [
             ("Why does my PDF show a different title from its file name?", "The title shown in a browser tab or a PDF reader's title bar comes from the Title field inside the PDF, not from the file name. Change that field with a metadata editor."),
             ("I changed the title but the old one still appears. Why?", "Many PDFs keep a second copy of the metadata in an XMP block, and some readers show that copy first. Remove the XMP block when you save, so only your new values remain."),
@@ -53,8 +61,8 @@ GUIDES = [
         "description": "What each device can do out of the box, and a free option that works on all of them.",
         "meta_description": "Merge PDF files for free on a Mac with Preview or Finder, on iPhone with the Files app, on Linux from the command line, and on Windows and Android in the browser, without uploading.",
         "tools": ["merge_pdf", "images_to_pdf", "unlock_pdf"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2026, 12, 7),
+        "updated": datetime.date(2026, 12, 7),
         "faq": [
             ("Can Windows merge PDFs without extra software?", "No. Windows has no built-in tool for combining PDF files. You can use a browser-based tool, which needs no installation, or install a free desktop program."),
             ("How do I merge PDFs on an iPhone?", "In the Files app, select the PDFs, tap More and choose Create PDF. To choose the order yourself, open a browser-based merger in Safari and drag the files into place."),
@@ -68,8 +76,8 @@ GUIDES = [
         "description": "Put a cover letter, CV, diplomas and references into one small, tidy PDF for a job portal.",
         "meta_description": "Job portal wants one PDF? Combine your cover letter, CV, diplomas and certificates into one file, get under the size limit and fix the title, free and without uploading.",
         "tools": ["merge_pdf", "compress_pdf", "pdf_metadata_editor"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2026, 12, 14),
+        "updated": datetime.date(2026, 12, 14),
         "faq": [
             ("In what order should application documents go?", "Unless the job ad says otherwise, a common order is cover letter, CV, then certificates and references from most to least relevant."),
             ("How do I make my application PDF smaller without making my CV blurry?", "Compress only the scanned certificates with a strong setting, then merge them with your CV and cover letter. The scans get smaller while the CV stays sharp, selectable text."),
@@ -83,8 +91,8 @@ GUIDES = [
         "description": "Scan, combine and shrink your passport, payslips and bank statements without handing them to a converter site.",
         "meta_description": "Prepare passport scans, payslips and bank statements for a visa or rental application: combine them, get under the size limit and share only what is needed, without uploading.",
         "tools": ["images_to_pdf", "merge_pdf", "compress_pdf"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2026, 12, 28),
+        "updated": datetime.date(2026, 12, 28),
         "faq": [
             ("Should I send one PDF or a separate file for each document?", "Follow the instructions of the office, agency or landlord. Without instructions, one PDF per category, such as all payslips together, is easy to read and check."),
             ("Can I black out information on documents for an application?", "For a private landlord, removing details they don't need, such as your full account number, is often reasonable. For a visa or government office, don't redact anything unless they say you may."),
@@ -98,8 +106,8 @@ GUIDES = [
         "description": "Send fewer pages, remove what isn't needed, and encrypt the file before it goes into anyone's inbox.",
         "meta_description": "Sending a tax return, payslip or bank statement by email? Send only the pages needed, redact details the recipient doesn't need, and password protect the PDF, free and offline.",
         "tools": ["protect_pdf", "redact_pdf", "extract_pdf_pages"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2026, 12, 21),
+        "updated": datetime.date(2026, 12, 21),
         "faq": [
             ("Is it safe to email a tax return?", "Ordinary email is not end-to-end encrypted, and attachments stay in mailboxes for years. Password-protect the PDF, send the password through another channel, or use the recipient's secure upload portal if they have one."),
             ("What should I remove before sending a payslip to a landlord?", "Details they don't need to check your income, such as your bank account number, tax or social security number, and other people's names. Use real redaction, not a black box drawn on top."),
@@ -113,8 +121,8 @@ GUIDES = [
         "description": "Stamp who a copy is for, and when, across your ID before you send it, so it is less useful to anyone else.",
         "meta_description": "Add a watermark to a copy of your passport or ID card before sending it to a landlord, hotel or employer. Free, and the image of your ID never leaves your device.",
         "tools": ["watermark_pdf", "images_to_pdf", "compress_pdf"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2027, 1, 4),
+        "updated": datetime.date(2027, 1, 4),
         "faq": [
             ("What should a watermark on an ID copy say?", "Who the copy is for, why, and the date, for example: Copy for ACME Lettings, rental application, 23/11/2026."),
             ("Can a watermark be removed?", "A text watermark can be deleted by someone with a PDF editor. Running the file through Compress PDF with the Strong setting redraws each page as an image, which bakes the watermark in and makes it much harder to remove."),
@@ -128,8 +136,8 @@ GUIDES = [
         "description": "Free ways to merge, compress, sign, protect, redact and OCR PDFs, task by task, and when Acrobat is still worth it.",
         "meta_description": "Free alternatives to Adobe Acrobat, task by task: merge, split, compress, sign, password protect, redact and OCR PDFs with built-in apps, free programs or your browser.",
         "tools": ["merge_pdf", "protect_pdf", "redact_pdf"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2027, 1, 18),
+        "updated": datetime.date(2027, 1, 18),
         "faq": [
             ("Is Adobe Acrobat Reader free?", "Yes. Acrobat Reader is free for viewing, printing, filling in forms and adding a simple signature. Tasks such as merging, compressing, password protecting and redacting need a paid Acrobat plan or another tool."),
             ("What is the best free PDF editor?", "It depends on the task. For merging, signing, compressing or protecting a PDF, free browser and desktop tools do the job. Editing the existing text of a PDF is harder; LibreOffice Draw can do it, but layouts may shift."),
@@ -143,8 +151,8 @@ GUIDES = [
         "description": "How the three kinds of PDF tools handle your file, compared on privacy, convenience and speed.",
         "meta_description": "Desktop programs, online PDF services and in-browser tools compared: where your file goes, offline use, phones, speed and privacy, and which kind to use for which document.",
         "tools": ["merge_pdf", "compress_pdf", "pdf_metadata_editor"],
-        "published": datetime.date(2026, 11, 23),
-        "updated": datetime.date(2026, 11, 23),
+        "published": datetime.date(2027, 1, 11),
+        "updated": datetime.date(2027, 1, 11),
         "faq": [
             ("What is the difference between an online PDF tool and an in-browser PDF tool?", "Both are websites. An online, server-based tool uploads your file and processes it on the provider's server. An in-browser tool processes the file on your own device, so the file is not sent anywhere."),
             ("Are desktop PDF programs safer than websites?", "A desktop program keeps the file on your computer, like an in-browser tool. It is safer than a server-based website for confidential files, as long as you download it from its official source."),
@@ -297,9 +305,32 @@ for _guide in GUIDES:
     _guide["og_image"] = _guide["main_tool"]["og_image"]
     _guide["faq_items"] = [{"q": q, "a": a} for q, a in _guide["faq"]]
 
-# Each tool page lists the guides that use it.
-for _tool in TOOLS:
-    _tool["guides"] = [g for g in GUIDES if _tool["name"] in g["tools"]]
+_BY_SLUG = {g["slug"]: g for g in GUIDES}
+
+
+def today():
+    """The date that decides which guides are live (patched in tests)."""
+    return timezone.localdate()
+
+
+def is_live(guide):
+    return guide["published"] <= today()
+
+
+def live_guides():
+    """Published guides, newest first."""
+    return sorted((g for g in GUIDES if is_live(g)), key=lambda g: g["published"], reverse=True)
+
+
+def live_guide(slug):
+    """The guide with this slug if it is live, else None."""
+    guide = _BY_SLUG[slug]  # a KeyError here means a typo in a guide_link
+    return guide if is_live(guide) else None
+
+
+def guides_for_tool(tool):
+    """The live guides that use a tool, for the list on its page."""
+    return [g for g in live_guides() if tool["name"] in g["tools"]]
 
 GUIDES_PAGE = {
     "title": "Guides",
