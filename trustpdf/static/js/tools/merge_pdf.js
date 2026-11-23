@@ -27,7 +27,9 @@
         });
       } catch (error) {
         if (error.index === undefined) throw error;
-        throw new T.ToolError(`${files[error.index].name}: ${T.friendlyMessage(error)}`);
+        const wrapped = new T.ToolError(`${files[error.index].name}: ${T.friendlyMessage(error)}`);
+        wrapped.cause = error;  // analytics reports the real category (password, unreadable, ...)
+        throw wrapped;
       }
 
       T.finish(result.bytes, T.makeFilename(files[0].name, "merged"), {

@@ -33,7 +33,7 @@ class AnalyticsMiddleware:
             if status != 200:
                 return
             tracking.record(request, Event.PAGEVIEW, status=status,
-                            referrer=tracking.referrer_host(request))
+                            referrer=tracking.referrer_host(request), campaign=tracking.campaign(request))
         elif "attachment" in response.get("Content-Disposition", ""):
             tracking.record(request, Event.ACTION, name="download " + (url_name or request.path), status=status)
         elif request.method == "POST" or is_htmx:

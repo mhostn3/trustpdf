@@ -470,6 +470,7 @@ TOOLS = [
     },
     {
         "name": "pdf_metadata_viewer",
+        "saves": False,  # read-only tool: no Save button, so no "saved a file" rate
         "how_to_title": "How to view PDF metadata",
         "path": "/tools/pdf-metadata-viewer/",
         "group": "metadata",

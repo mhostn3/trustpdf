@@ -16,8 +16,11 @@ class Event(models.Model):
     INPUT = "input"         # select / checkbox / radio changed in the browser (never typed text)
     ENGAGE = "engage"       # seconds the page was visible (value)
     PING = "ping"           # the page's script ran: a real browser, not a script-less bot
-    KINDS = [(k, k) for k in (PAGEVIEW, ACTION, CLICK, INPUT, ENGAGE, PING)]
-    BROWSER_KINDS = (CLICK, INPUT, ENGAGE, PING)  # only sent by a browser that ran our script
+    ERROR = "error"         # a tool failed in the browser; name is a fixed category, never the message
+    KINDS = [(k, k) for k in (PAGEVIEW, ACTION, CLICK, INPUT, ENGAGE, PING, ERROR)]
+    BROWSER_KINDS = (CLICK, INPUT, ENGAGE, PING, ERROR)  # only sent by a browser that ran our script
+    ERROR_NAMES = ("input", "password", "unreadable", "memory", "other")
+    SAVE_PREFIX = "Save "   # the "Save <tool>" button only appears after a tool produced a file
 
     ts = models.DateTimeField(default=timezone.now, db_index=True)
     kind = models.CharField(max_length=10, choices=KINDS)
@@ -27,6 +30,7 @@ class Event(models.Model):
     visitor = models.CharField(max_length=16, db_index=True)
     session = models.CharField(max_length=16, db_index=True)
     referrer = models.CharField(max_length=200, blank=True)
+    campaign = models.CharField(max_length=40, blank=True)  # ?ref= or ?utm_source= of the landing page
     country = models.CharField(max_length=2, blank=True)
     country_name = models.CharField(max_length=60, blank=True)
     city = models.CharField(max_length=80, blank=True)

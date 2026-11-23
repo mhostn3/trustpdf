@@ -119,6 +119,24 @@
     return "Something went wrong while processing the file. Please check that it is a valid PDF and try again.";
   }
 
+  /** Fixed category of a failure for the site's own analytics; never the message itself. */
+  function errorCategory(error) {
+    if (error && error.cause) return errorCategory(error.cause);  // a ToolError wrapping the real failure
+    if (error && error.friendly) return "input";
+    const name = (error && error.name) || "";
+    const text = String((error && (error.message || error)) || "");
+    if (name === "EncryptedPDFError" || /encrypted/i.test(text)) return "password";
+    if (/Failed to parse PDF|No PDF header|Expected instance of PDF|Trying to parse invalid object|is not a PDF/i.test(text)) return "unreadable";
+    if (/out of memory|allocation failed|Array buffer allocation/i.test(text)) return "memory";
+    return "other";
+  }
+
+  function reportError(error) {
+    try {
+      if (window.tpError) window.tpError(errorCategory(error));
+    } catch (e) { /* analytics must never break a tool */ }
+  }
+
   /* ----------------------------------------------------------------- */
   /*  Page ranges                                                       */
   /* ----------------------------------------------------------------- */
@@ -679,6 +697,7 @@
       if (this.onChange) {
         Promise.resolve(this.onChange(this.getFiles())).catch((error) => {
           console.error(error);
+          reportError(error);
           messages.error(friendlyMessage(error));
         });
       }
@@ -786,6 +805,7 @@
       await fn();
     } catch (error) {
       if (!error || !error.friendly) console.error(error);
+      reportError(error);
       messages.error(friendlyMessage(error));
       showProcessButton(true);
       // A tool locks its inputs before the heavy work; a failed run must hand them back.
@@ -847,6 +867,7 @@
     nextFrame,
     ToolError,
     friendlyMessage,
+    reportError,
     PASSWORD_MESSAGE,
     lockables,
     parsePageRanges,

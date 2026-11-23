@@ -4,6 +4,7 @@
  *   input  - dropdown, checkbox and radio changes ("Label: option"); never typed text
  *   engage - seconds the page was visible
  *   view   - sent once on load: tells the server a real browser ran this script (bots usually don't)
+ *   error  - a tool failed: a fixed category only (input, password, unreadable, memory, other)
  *
  * Privacy guard: names are taken only from the page as the server sent it. Everything a tool
  * adds later (file lists, page thumbnails, "Remove <file name>" buttons, download links) is
@@ -22,6 +23,9 @@
     } catch (e) { /* never break the page */ }
   }
   window.tpTrack = function (name) { send("click", String(name)); };
+  // A tool failed. Only a fixed category is sent (the server drops anything else), never the
+  // error message, which can quote page ranges, characters or other parts of the visitor's input.
+  window.tpError = function (category) { send("error", String(category)); };
 
   function clean(s, max) { return (s || "").replace(/\s+/g, " ").trim().slice(0, max || 60); }
 

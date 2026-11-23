@@ -138,6 +138,21 @@ class TrackingTests(TestCase):
         e = Event.objects.get()
         self.assertEqual((e.kind, e.name, e.value, e.tool), ("ping", "", None, "Merge PDF"))
 
+    def test_error_events_keep_only_fixed_categories(self, _):
+        self.beacon({"k": "error", "n": "password", "p": "/tools/merge-pdf/"})
+        self.beacon({"k": "error", "n": "bank-statement.pdf: not a PDF", "p": "/tools/merge-pdf/"})
+        self.beacon({"k": "error", "p": "/tools/merge-pdf/"})
+        rows = list(Event.objects.values_list("kind", "name", "tool"))
+        self.assertEqual(rows, [("error", "password", "Merge PDF")])
+
+    def test_launch_tag_from_ref_or_utm_source(self, _):
+        self.get("/?ref=HN")
+        self.get("/tools/merge-pdf/?utm_source=reddit-privacy&utm_medium=social")
+        self.get("/?ref=<script>")
+        self.get("/about/")
+        self.assertEqual(list(Event.objects.order_by("id").values_list("campaign", flat=True)),
+                         ["hn", "reddit-privacy", "", ""])
+
     @override_settings(ANALYTICS_ENABLED=False)
     def test_can_be_switched_off(self, _):
         self.get("/")
@@ -173,6 +188,7 @@ class TrackingTests(TestCase):
         self.assertTrue(m["start_url"].startswith(m["scope"]))
         r = self.client.get(reverse("analytics:dashboard") + "?days=28&traffic=all")
         self.assertEqual(r.context["summary"]["visitors"], 3)
+        self.assertEqual(r.context["summary"]["saved_rate"], 0)  # opened a tool, nobody saved a file yet
         csv = self.client.get(reverse("analytics:dashboard") + "?format=csv")
         self.assertEqual(csv["Content-Type"], "text/csv")
         self.assertEqual(len(csv.content.decode().strip().splitlines()), 1 + Event.objects.count())
@@ -180,6 +196,25 @@ class TrackingTests(TestCase):
         bot = [r for r in rows if r["kind"] == "pageview" and r["real_browser"] == "0"]
         self.assertEqual(len(bot), 1)
         self.assertEqual(sum(r["real_browser"] == "1" for r in rows), len(rows) - 1)
+
+    def test_saved_rate_errors_and_launch_links_on_dashboard(self, _):
+        for ip in ("193.2.5.1", "193.2.5.2"):
+            self.get("/tools/merge-pdf/?ref=hn", ip=ip)
+            self.beacon({"k": "view", "p": "/tools/merge-pdf/"}, ip=ip)
+        self.beacon({"k": "click", "n": "Save Merge PDF", "p": "/tools/merge-pdf/"}, ip="193.2.5.1")
+        self.beacon({"k": "error", "n": "unreadable", "p": "/tools/merge-pdf/"}, ip="193.2.5.2")
+        self.get("/", ip="193.2.5.3")  # no tool opened, no script: not in the rate
+        self.client.force_login(User.objects.create_user("m", password="x", is_staff=True))
+        r = self.client.get(reverse("analytics:dashboard"))
+        s = r.context["summary"]
+        self.assertEqual((s["savers"], s["tool_visitors"], s["saved_rate"], s["errors"]), (1, 2, 50, 1))
+        merge = next(t for t in r.context["tool_rows"] if t["title"] == "Merge PDF")
+        self.assertEqual((merge["saved_rate"], merge["errors"]), (50, 1))
+        viewer = next(t for t in r.context["tool_rows"] if t["title"] == "PDF Metadata Viewer")
+        self.assertIsNone(viewer["saved_rate"])
+        self.assertEqual([(c["label"], c["v"]) for c in r.context["campaigns"]], [("hn", 2)])
+        self.assertContains(r, "Saved a file")
+        self.assertContains(r, "unreadable")
 
     def test_proxy_forwarded_ip(self, _):
         self.get("/", ip="127.0.0.1", HTTP_X_FORWARDED_FOR="10.9.9.9, 193.2.1.10")

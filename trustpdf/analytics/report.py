@@ -55,6 +55,15 @@ def period_from_request(request):
     return Period(end - timedelta(days=days - 1), end, days, request.GET.get("traffic") != "all")
 
 
+def _saved():
+    """A "Save <tool>" click: the tool produced a file and the visitor took it."""
+    return Q(kind=Event.CLICK, name__startswith=Event.SAVE_PREFIX)
+
+
+def _rate(part, whole):
+    return round(100.0 * part / whole) if whole else None
+
+
 def _change(now, before):
     if not before:
         return None
@@ -81,6 +90,9 @@ def summary(period):
     bounces = sum(1 for s in sessions if s["views"] <= 1 and not s["acts"])
     engaged = sum(s["engaged"] or 0 for s in sessions)
     # A subquery, not a Python list of ids: SQLite refuses more than ~32,000 bound variables.
+    savers = qs.filter(_saved()).values("visitor").distinct().count()
+    # Tool pages only: a visitor who never opened a tool could not have saved anything.
+    tool_visitors = qs.exclude(tool="").values("visitor").distinct().count()
     returning = (Event.objects.filter(visitor__in=qs.values("visitor"), ts__lt=period.start_dt)
                  .values("visitor").distinct().count())
     return dict(
@@ -89,6 +101,8 @@ def summary(period):
         actions=qs.filter(kind__in=ACTION_KINDS).count(),
         calls=qs.filter(kind=Event.ACTION).count(),
         inputs=qs.filter(kind=Event.INPUT).count(),
+        savers=savers, tool_visitors=tool_visitors, saved_rate=_rate(savers, tool_visitors),
+        errors=qs.filter(kind=Event.ERROR).count(),
         bounce=round(100.0 * bounces / n_sessions) if n_sessions else None,
         engaged_per_session=engaged / n_sessions if n_sessions else None,
     )
@@ -133,6 +147,11 @@ def tools(period):
                 title=t["title"], group=g["label"], url=t["path"], flag=g["label"],
                 pageviews=views, visitors=s.get("visitors", 0), sessions=s.get("sessions", 0),
                 actions=s.get("actions", 0), inputs=s.get("inputs", 0), calls=s.get("calls", 0),
+                savers=s.get("savers", 0), errors=s.get("errors", 0),
+                # None for tools without a Save button (e.g. the metadata viewer)
+                saved_rate=_rate(s.get("savers", 0), s.get("visitors", 0))
+                if t.get("saves", True) and s.get("visitors") else None,
+                prev_saved_rate=_rate(p.get("savers", 0), p.get("visitors", 0)),
                 engaged=(s.get("engaged") or 0) / views if views else None,
                 change=_change(views, p.get("pageviews", 0)), prev=p.get("pageviews", 0),
                 detail=detail.get(t["title"], [])))
@@ -151,13 +170,15 @@ def _tool_stats(period):
         actions=Count("id", filter=_kinds(ACTION_KINDS)),
         inputs=Count("id", filter=_kind(Event.INPUT)),
         calls=Count("id", filter=_kind(Event.ACTION)),
+        savers=Count("visitor", distinct=True, filter=_saved()),
+        errors=Count("id", filter=_kind(Event.ERROR)),
         engaged=Sum("value", filter=_kind(Event.ENGAGE)))}
 
 
 def _tool_detail(period, limit=15):
     """What people did inside each tool: buttons, server actions, changed options."""
     out = defaultdict(list)
-    rows = (_qs(period).exclude(tool="").filter(kind__in=(Event.CLICK, Event.INPUT, Event.ACTION))
+    rows = (_qs(period).exclude(tool="").filter(kind__in=(Event.CLICK, Event.INPUT, Event.ACTION, Event.ERROR))
             .values("tool", "kind", "name").annotate(n=Count("id"), v=Count("visitor", distinct=True))
             .order_by("tool", "-n"))
     for r in rows:
@@ -225,9 +246,10 @@ def build_report(period):
         ("visitors", "Visitors", "int"), ("sessions", "Sessions", "int"),
         ("pageviews", "Page views", "int"), ("actions", "Clicks in tools", "int"),
         ("engaged_per_session", "Time per session", "dur"), ("bounce", "Bounce rate", "pct"),
+        ("saved_rate", "Saved a file", "pct"), ("errors", "Tool errors", "int"),
     ]:
         kpis.append(dict(label=label, value=cur[key], fmt=fmt, change=_change(cur[key] or 0, prev[key] or 0)
-                         if key not in ("bounce",) else None, prev=prev[key]))
+                         if fmt != "pct" else None, prev=prev[key], lower_is_better=key == "errors"))
     first = Event.objects.aggregate(first=Min("ts"))["first"]
     everything = _qs(period.with_all_traffic())
     filtered = dict(
@@ -241,6 +263,7 @@ def build_report(period):
         daily=daily(period), tool_rows=tools(period),  # "tools" is the site menu
         countries=countries(period), cities=cities(period),
         referrers=top(period, "referrer", blank="(direct / none)"),
+        campaigns=[r for r in top(period, "campaign") if r["label"] != "(unknown)"],
         pages=top(period, "path"),
         devices=top(period, "device", limit=5), browsers=top(period, "browser", limit=8),
         oses=top(period, "os", limit=8), journeys=journeys(period), first_event=first,

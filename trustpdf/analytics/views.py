@@ -16,7 +16,8 @@ from . import tracking
 from .models import Event
 from .report import build_report, period_from_request
 
-BROWSER_KINDS = {"click": Event.CLICK, "input": Event.INPUT, "engage": Event.ENGAGE, "view": Event.PING}
+BROWSER_KINDS = {"click": Event.CLICK, "input": Event.INPUT, "engage": Event.ENGAGE, "view": Event.PING,
+                 "error": Event.ERROR}
 MAX_EVENTS_PER_HOUR = 600
 
 
@@ -39,6 +40,9 @@ def collect(request):
         return HttpResponse(status=204)
     if kind == Event.ENGAGE:
         if value is None or not (0 < value <= 4 * 3600):
+            return HttpResponse(status=204)
+    elif kind == Event.ERROR:
+        if name not in Event.ERROR_NAMES:  # fixed categories only: an error message could hold file data
             return HttpResponse(status=204)
     elif not name and kind != Event.PING:
         return HttpResponse(status=204)
@@ -103,7 +107,7 @@ def export_csv(period, everything=False):
     resp = HttpResponse(content_type="text/csv")
     span = "all" if everything else f"{period.start:%Y%m%d}-{period.end:%Y%m%d}"
     resp["Content-Disposition"] = f'attachment; filename="trustpdf-analytics-{span}.csv"'
-    fields = ["ts", "kind", "name", "path", "tool", "visitor", "session", "referrer", "country",
+    fields = ["ts", "kind", "name", "path", "tool", "visitor", "session", "referrer", "campaign", "country",
               "country_name", "city", "browser", "os", "device", "status", "value"]
     w = csv.writer(resp)
     # real_browser: 1 when the event's session ran the page script (the dashboard's

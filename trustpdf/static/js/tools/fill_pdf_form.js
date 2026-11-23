@@ -215,6 +215,7 @@
           await showFields(files[0]);
         } catch (error) {
           clearFields();
+          T.reportError(error);
           T.messages.error(T.friendlyMessage(error));
         } finally {
           T.idle();

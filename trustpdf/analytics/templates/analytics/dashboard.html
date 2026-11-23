@@ -55,14 +55,14 @@
   {# ------------------------------------------------------------ KPIs #}
   <div class="row g-2 mb-3">
     {% for k in kpis %}
-    <div class="col-6 col-md-4 col-xl-2">
+    <div class="col-6 col-md-3">
       <div class="an-kpi">
         <div class="lbl">{{ k.label }}</div>
         <div class="val">
           {% if k.value is None %}–{% elif k.fmt == "dur" %}{{ k.value|dur }}{% elif k.fmt == "pct" %}{{ k.value }}%{% else %}{{ k.value|intcomma }}{% endif %}
         </div>
         <div class="chg">
-          {% if k.change is not None %}<span class="{% if k.change > 0 %}an-up{% elif k.change < 0 %}an-down{% endif %}">{{ k.change|change }}</span> vs previous
+          {% if k.change is not None %}<span class="{% if k.change > 0 %}{% if k.lower_is_better %}an-down{% else %}an-up{% endif %}{% elif k.change < 0 %}{% if k.lower_is_better %}an-up{% else %}an-down{% endif %}{% endif %}">{{ k.change|change }}</span> vs previous
           {% elif k.fmt == "pct" and k.prev is not None %}previous {{ k.prev }}%
           {% else %}no earlier data{% endif %}
         </div>
@@ -73,6 +73,7 @@
   <p class="small text-secondary mb-3">
     {{ summary.new|intcomma }} new and {{ summary.returning|intcomma }} returning visitors.
     {{ summary.inputs|intcomma }} option changes (dropdowns, checkboxes) and {{ summary.calls|intcomma }} server calculations/exports.
+    Saved a file = {{ summary.savers|intcomma }} of {{ summary.tool_visitors|intcomma }} visitors who opened a tool clicked its Save button (it appears only after the tool made a file).
     Returning visitors are recognised within the current quarter only.
     {% if period.humans and filtered.visitors %}
       <br><i class="bi bi-funnel"></i> Left out as bots or script-less clients: {{ filtered.visitors|intcomma }} visitors, {{ filtered.pageviews|intcomma }} page views
@@ -93,7 +94,7 @@
     <table class="table an-table">
       <thead><tr>
         <th>Tool</th><th class="an-num">Views</th><th class="an-num">vs prev.</th><th class="an-num">Visitors</th>
-        <th class="an-num">Sessions</th><th class="an-num">Clicks</th><th class="an-num">Option changes</th><th class="an-num">Server calls</th><th class="an-num">Time / view</th>
+        <th class="an-num">Sessions</th><th class="an-num" title="Share of the tool's visitors who saved a file">Saved</th><th class="an-num">Errors</th><th class="an-num">Clicks</th><th class="an-num">Option changes</th><th class="an-num">Server calls</th><th class="an-num">Time / view</th>
       </tr></thead>
       <tbody>
       {% for t in tool_rows %}
@@ -104,7 +105,7 @@
             <details class="an-detail"><summary><span>{{ t.title }}</span>{% if t.flag %} <span class="badge text-bg-light">{{ t.flag }}</span>{% endif %}</summary>
               <table class="table table-sm an-table mt-1 mb-2">
                 <thead><tr><th>Type</th><th>What</th><th class="an-num">Times</th><th class="an-num">Visitors</th></tr></thead>
-                {% for d in t.detail %}<tr><td class="text-secondary">{% if d.kind == "action" %}server{% elif d.kind == "input" %}option{% else %}{{ d.kind }}{% endif %}</td><td>{{ d.name }}</td><td class="an-num">{{ d.n|intcomma }}</td><td class="an-num">{{ d.v|intcomma }}</td></tr>{% endfor %}
+                {% for d in t.detail %}<tr><td class="text-secondary">{% if d.kind == "action" %}server{% elif d.kind == "input" %}option{% elif d.kind == "error" %}<span class="an-down">error</span>{% else %}{{ d.kind }}{% endif %}</td><td>{{ d.name }}</td><td class="an-num">{{ d.n|intcomma }}</td><td class="an-num">{{ d.v|intcomma }}</td></tr>{% endfor %}
               </table>
             </details>
             {% else %}<span>{{ t.title }}</span>{% if t.flag %} <span class="badge text-bg-light">{{ t.flag }}</span>{% endif %}{% endif %}
@@ -113,6 +114,8 @@
           <td class="an-num">{% if t.change is not None %}<span class="{% if t.change > 0 %}an-up{% elif t.change < 0 %}an-down{% endif %}">{{ t.change|change }}</span>{% elif t.pageviews %}new{% endif %}</td>
           <td class="an-num">{{ t.visitors|intcomma }}</td>
           <td class="an-num">{{ t.sessions|intcomma }}</td>
+          <td class="an-num" title="{{ t.savers }} of {{ t.visitors }} visitors{% if t.prev_saved_rate is not None %}; previous period {{ t.prev_saved_rate }}%{% endif %}">{% if t.saved_rate is not None %}{{ t.saved_rate }}%{% endif %}</td>
+          <td class="an-num">{% if t.errors %}<span class="an-down">{{ t.errors|intcomma }}</span>{% endif %}</td>
           <td class="an-num">{{ t.actions|intcomma }}</td>
           <td class="an-num">{{ t.inputs|intcomma }}</td>
           <td class="an-num">{{ t.calls|intcomma }}</td>
@@ -122,7 +125,7 @@
       </tbody>
     </table>
     </div>
-    <div class="small text-secondary">Clicks = buttons, tabs, copy and export buttons, downloads. Option changes = dropdowns, checkboxes and radio buttons (typed values are never recorded). Server calls = calculations, uploads and file exports done on the server (some run automatically when a page loads). Time / view = time the page was visible.</div>
+    <div class="small text-secondary">Clicks = buttons, tabs, copy and export buttons, downloads. Option changes = dropdowns, checkboxes and radio buttons (typed values are never recorded). Server calls = calculations, uploads and file exports done on the server (some run automatically when a page loads). Time / view = time the page was visible. Saved = share of the tool's visitors who saved a file. Errors = failed runs, by category: input (a problem the tool explained, e.g. a bad page range), password, unreadable (not a valid PDF), memory, other (unexpected, worth a look).</div>
   </div>
 
   {# ------------------------------------------------------------ location #}
@@ -139,6 +142,8 @@
   <div class="row g-3 mb-3">
     <div class="col-lg-4"><div class="an-card"><h2>Where visitors come from</h2>
       {% include "analytics/_top.html" with rows=referrers empty="No visits yet." %}
+      <h2 class="mt-3">Launch links <span class="fw-normal text-secondary small">· ?ref= or ?utm_source=</span></h2>
+      {% include "analytics/_top.html" with rows=campaigns empty="None yet. Share links like /?ref=hn or /?ref=reddit-privacy to see each post here." %}
     </div></div>
     <div class="col-lg-4"><div class="an-card"><h2>Entry page / tool <span class="fw-normal text-secondary small">· sessions</span></h2>
       <table class="table an-table"><tbody>

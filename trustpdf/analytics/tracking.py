@@ -253,9 +253,21 @@ def referrer_host(request):
     return host.removeprefix("www.")[:200]
 
 
+CAMPAIGN_RE = re.compile(r"[a-z0-9][a-z0-9._-]{0,39}")
+
+
+def campaign(request):
+    """Launch tag from ?ref= or ?utm_source= (e.g. /?ref=hn), lower case; "" when absent or odd."""
+    for key in ("ref", "utm_source"):
+        value = request.GET.get(key, "").strip().lower()[:40]
+        if value and CAMPAIGN_RE.fullmatch(value):
+            return value
+    return ""
+
+
 # --------------------------------------------------------------------- record
 
-def record(request, kind, name="", path=None, status=None, value=None, referrer=""):
+def record(request, kind, name="", path=None, status=None, value=None, referrer="", campaign=""):
     """Store one event. Never raises: analytics must not break the site."""
     try:
         now = timezone.now()
@@ -265,7 +277,7 @@ def record(request, kind, name="", path=None, status=None, value=None, referrer=
         cc, cname, city = locate(client_ip(request))
         return Event.objects.create(
             ts=now, kind=kind, name=(name or "")[:120], path=path, tool=tool_for_path(path),
-            visitor=visitor, session=session_id(visitor, now), referrer=referrer,
+            visitor=visitor, session=session_id(visitor, now), referrer=referrer, campaign=campaign,
             country=cc, country_name=cname, city=city,
             browser=browser, os=os_, device=device, status=status, value=value)
     except Exception:
