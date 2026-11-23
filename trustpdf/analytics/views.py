@@ -106,11 +106,15 @@ def export_csv(period, everything=False):
     fields = ["ts", "kind", "name", "path", "tool", "visitor", "session", "referrer", "country",
               "country_name", "city", "browser", "os", "device", "status", "value"]
     w = csv.writer(resp)
-    w.writerow(fields)
+    # real_browser: 1 when the event's session ran the page script (the dashboard's
+    # "Real browsers" filter), 0 for bots and script-less clients.
+    w.writerow(fields + ["real_browser"])
     qs = Event.objects.all() if everything else \
         Event.objects.filter(ts__gte=period.start_dt, ts__lt=period.end_dt)
+    browser_sessions = set(qs.filter(kind__in=Event.BROWSER_KINDS).values_list("session", flat=True))
+    session_col = fields.index("session")
     for row in qs.order_by("ts").values_list(*fields).iterator():
-        w.writerow(row)
+        w.writerow(row + (int(row[session_col] in browser_sessions),))
     return resp
 
 

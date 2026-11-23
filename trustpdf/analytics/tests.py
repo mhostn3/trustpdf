@@ -1,3 +1,4 @@
+import csv as csvlib
 import json
 from datetime import timedelta
 from unittest import mock
@@ -175,6 +176,10 @@ class TrackingTests(TestCase):
         csv = self.client.get(reverse("analytics:dashboard") + "?format=csv")
         self.assertEqual(csv["Content-Type"], "text/csv")
         self.assertEqual(len(csv.content.decode().strip().splitlines()), 1 + Event.objects.count())
+        rows = list(csvlib.DictReader(csv.content.decode().splitlines()))
+        bot = [r for r in rows if r["kind"] == "pageview" and r["real_browser"] == "0"]
+        self.assertEqual(len(bot), 1)
+        self.assertEqual(sum(r["real_browser"] == "1" for r in rows), len(rows) - 1)
 
     def test_proxy_forwarded_ip(self, _):
         self.get("/", ip="127.0.0.1", HTTP_X_FORWARDED_FOR="10.9.9.9, 193.2.1.10")
