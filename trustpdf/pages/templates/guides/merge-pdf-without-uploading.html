@@ -1,0 +1,61 @@
+<p>
+  Merging PDFs is the most common PDF task there is: a contract and its annexes, a set of invoices for your
+  accountant, scanned pages that ended up as separate files. It is also the task people most often hand to
+  a random website, which means uploading every one of those documents to someone else's server. You do
+  not have to. Your browser can combine PDFs by itself.
+</p>
+
+<h2 id="steps">How to merge PDFs in your browser</h2>
+<ol>
+  <li>Open <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a>.</li>
+  <li>Drop all the PDFs into the box, or click it to pick them. You can add files in several rounds.</li>
+  <li>Drag the files in the list into the order you want. The first file in the list becomes the first pages of the result.</li>
+  <li>Click <strong>Merge PDFs</strong>, then <strong>Save Merged PDF</strong>.</li>
+</ol>
+<p>
+  The files are read from your disk into the page and combined on your own computer or phone, in a
+  background worker so the page stays responsive with large files. Nothing is sent anywhere, and the
+  tool keeps working if you disconnect from the internet after the page has loaded.
+</p>
+
+<h2 id="order">Getting the page order right</h2>
+<p>
+  Merge PDF keeps every file's pages in their original order and puts the files one after another. If you
+  need to mix pages between files, for example to put page 3 of one document after page 1 of another,
+  merge first and then fix the order with <a href="{% url 'pages:reorder_pdf_pages' %}">Reorder PDF Pages</a>,
+  where you drag page thumbnails. To leave pages out, use <a href="{% url 'pages:remove_pdf_pages' %}">Remove PDF Pages</a>
+  afterwards, or take only the pages you need from each file first with
+  <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>.
+</p>
+
+<h2 id="what-is-kept">What the merged PDF keeps, and what it doesn't</h2>
+<ul>
+  <li><strong>Pages</strong> are copied exactly: text stays selectable and searchable, and images are not recompressed.</li>
+  <li><strong>The document title, author, subject and keywords</strong> are taken from the first file. If that file carries your name or an old working title, change it with the <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a> before you send the result.</li>
+  <li><strong>Bookmarks</strong> (the outline in a PDF reader's sidebar) are not carried over.</li>
+  <li><strong>Fillable form fields</strong> may stop working after a merge. Fill in the forms first and <a href="{% url 'pages:flatten_pdf' %}">flatten</a> them, then merge.</li>
+  <li><strong>Password-protected files</strong> cannot be merged until the password is removed. If you know it, use <a href="{% url 'pages:unlock_pdf' %}">Unlock PDF</a> first, and protect the merged file again with <a href="{% url 'pages:protect_pdf' %}">Protect PDF</a> if it needs it.</li>
+</ul>
+
+<h2 id="images">Merging photos or scans that are not PDFs</h2>
+<p>
+  Merge PDF takes PDF files only. If some of your pages are JPG or PNG images, for example photos of a
+  receipt taken with your phone, turn them into a PDF first with <a href="{% url 'pages:images_to_pdf' %}">Images to PDF</a>,
+  then merge that PDF with the others.
+</p>
+
+<h2 id="size">If the merged file is too big</h2>
+<p>
+  A merged PDF is roughly as big as all the files put together. If it is too large to email or upload,
+  run it through <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a>. The guide
+  <a href="{% url 'pages:guide_compress_pdf_for_email' %}">how to make a PDF smaller for email</a> explains
+  which setting to choose.
+</p>
+
+<h2 id="why-local">Why it matters where the merge happens</h2>
+<p>
+  The documents people merge are rarely menus. They are contracts with annexes, loan applications, medical
+  records and tax papers, often several people's worth in one go. A server-based merger receives all of them
+  in full. Doing it in the browser removes that step entirely. If you would like to check rather than trust
+  that claim, <a href="{% url 'pages:guide_check_pdf_tool_does_not_upload_files' %}">here is how</a>.
+</p>

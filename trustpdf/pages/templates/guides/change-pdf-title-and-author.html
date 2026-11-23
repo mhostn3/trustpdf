@@ -1,0 +1,56 @@
+<p>
+  Every PDF has a few fields that describe it: a title, an author, a subject and keywords. You rarely see
+  them, but other people do. The title is what a browser tab shows when the PDF is opened online, what
+  some PDF readers show in their title bar, and often what Google shows as the headline of a PDF in its
+  results. The author is usually filled in automatically with your name, or with the name of whoever
+  created the template you started from.
+</p>
+
+<h2 id="why">When it is worth changing</h2>
+<ul>
+  <li><strong>A wrong or embarrassing title.</strong> Files made from a copied document keep its old title, so a CV can show up as "Report Q3 final" in the reader's title bar.</li>
+  <li><strong>Someone else's name as author.</strong> Templates, company laptops and second-hand files carry the original author's name.</li>
+  <li><strong>PDFs you publish on a website.</strong> A clear title helps search engines and people choose your file. A blank title makes them fall back to the file name, such as "scan0042.pdf".</li>
+  <li><strong>Merged files</strong> take the title and author of the first file you merged, which is rarely right for the whole thing.</li>
+</ul>
+
+<h2 id="check">Step 1: see the current values</h2>
+<p>
+  Open the <a href="{% url 'pages:pdf_metadata_viewer' %}">PDF Metadata Viewer</a>, drop in your file and
+  click <strong>View Metadata</strong>. It shows the title, author, subject, keywords, the programs that made
+  the file, the dates, and whether there is a hidden XMP copy of the metadata.
+</p>
+
+<h2 id="edit">Step 2: change them</h2>
+<ol>
+  <li>Open the <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a> and drop in the file. The current values are filled in for you.</li>
+  <li>Type the new <strong>Title</strong>, <strong>Author</strong>, <strong>Subject</strong> and <strong>Keywords</strong>. Separate keywords with commas. Leave a field empty to remove it.</li>
+  <li>You can also change <strong>Creator</strong> (the program the document was written in) and <strong>Producer</strong> (the software that made the PDF), or empty them.</li>
+  <li>Tick <strong>Keep the original creation and modification dates</strong> if the dates should stay as they are. Otherwise the modification date is set to now.</li>
+  <li>Click <strong>Update Metadata</strong> and then <strong>Save Updated PDF</strong>.</li>
+</ol>
+<p>The pages themselves are not touched, and the file never leaves your device.</p>
+
+<h2 id="xmp">Why the old title can still show up</h2>
+<p>
+  Many PDFs store their metadata twice: in the classic document properties and in a separate XMP block.
+  Some readers show the XMP values first, so if you only change the classic fields, the old title or author
+  can keep appearing. The editor's option <strong>Also remove the embedded XMP metadata stream</strong>
+  removes that second copy, so the values you typed are the only ones left. Leave it ticked unless you know
+  you need the XMP data, for example for a print workflow.
+</p>
+
+<h2 id="good-titles">Writing a good title</h2>
+<ul>
+  <li>Describe the document, not the file: "Annual Report 2026, Lisbon Rowing Club" rather than "AR_final_v3".</li>
+  <li>Keep it under about 60 characters so it is not cut off in search results and browser tabs.</li>
+  <li>For a CV or cover letter, use your name and the document type, for example "Ana Silva, CV".</li>
+  <li>Do not put anything in the title that you would not write on the first page; anyone who opens the file can read it.</li>
+</ul>
+
+<h2 id="remove-instead">Want to remove metadata rather than change it?</h2>
+<p>
+  If the goal is to share a file anonymously, clear every field instead. The guide
+  <a href="{% url 'pages:guide_remove_metadata_from_pdf' %}">how to remove metadata from a PDF</a> covers that,
+  and the other places a PDF can give your name away.
+</p>

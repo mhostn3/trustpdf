@@ -1,0 +1,68 @@
+<p>
+  Accountants, banks, landlords, lenders and new employers regularly ask for a tax return, a payslip or a
+  bank statement as a PDF. These files hold the details a fraudster most wants: your full name and address,
+  tax or social security number, employer, salary and bank account. A few minutes of preparation make a big
+  difference if the email is forwarded, stored in the wrong place or the recipient's mailbox is breached.
+</p>
+
+<h2 id="ask">1. Check what is really needed</h2>
+<p>
+  Ask, or read the request again. "Proof of income" is often satisfied by the summary page of a tax return
+  or a single recent payslip, not the full 30-page return. Fewer pages means less to lose.
+</p>
+<p>
+  Keep only the pages you need with <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>, or
+  delete the others with <a href="{% url 'pages:remove_pdf_pages' %}">Remove PDF Pages</a>.
+</p>
+
+<h2 id="redact">2. Remove details the recipient doesn't need</h2>
+<p>
+  A landlord checking your income does not need your bank account number, your tax identification number or
+  your children's names. Black them out with <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a>: search for
+  a number to remove it on every page, or drag over an area. Unlike a black box drawn in an ordinary editor,
+  it removes the text from the file. <a href="{% url 'pages:guide_redact_pdf_without_uploading' %}">How to redact a PDF properly</a>
+  explains the difference and how to check the result.
+</p>
+<p>
+  Do not redact documents for your accountant, the tax office or a bank's formal process unless they agree:
+  they may need the full document.
+</p>
+
+<h2 id="metadata">3. Check the hidden information</h2>
+<p>
+  PDFs exported from payroll or tax software can carry metadata such as the software name, the company that
+  generated them and sometimes a person's name. It is usually harmless, but if you redacted the document,
+  clean the metadata too with the <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a>,
+  as described in <a href="{% url 'pages:guide_remove_metadata_from_pdf' %}">how to remove metadata from a PDF</a>.
+</p>
+
+<h2 id="encrypt">4. Put a password on it</h2>
+<p>
+  Ordinary email is not end-to-end encrypted, and attachments sit in at least two mailboxes, often for years.
+  Encrypting the PDF itself protects it wherever it ends up.
+</p>
+<ol>
+  <li>Open <a href="{% url 'pages:protect_pdf' %}">Protect PDF</a> and drop in the file.</li>
+  <li>Type a password to open the PDF, and repeat it. A long phrase of four or five random words is strong and easy to read out.</li>
+  <li>Click <strong>Protect PDF</strong> and save. The file is encrypted with AES-256.</li>
+</ol>
+<p>
+  Send the password through a <strong>different channel</strong> from the file: email the PDF, then text the
+  password or say it on the phone. Never put it in the same email. More in
+  <a href="{% url 'pages:guide_password_protect_pdf_free' %}">how to password protect a PDF</a>.
+</p>
+
+<h2 id="send">5. Send it to the right place</h2>
+<ul>
+  <li>If the bank, tax office or employer has a secure upload portal, use that instead of email.</li>
+  <li>Double-check the recipient's address. Payment and document fraud often starts with a lookalike address or a reply-to that is not the real one.</li>
+  <li>Be suspicious of an unexpected request for these documents, even from a known name. Confirm it by phone using a number you already have.</li>
+</ul>
+
+<h2 id="why-local">Why not use an online tool for this?</h2>
+<p>
+  Many free PDF sites upload the file to process it. For a tax return that means handing the unredacted,
+  unencrypted original, the very thing you are trying to protect, to a third party first. Every tool in this
+  guide runs in your browser, so the original never leaves your device.
+  <a href="{% url 'pages:guide_are_online_pdf_tools_safe' %}">Are online PDF tools safe?</a> goes into the details.
+</p>

@@ -1,0 +1,58 @@
+<p>
+  Many job portals ask for a single PDF, or let you upload only one or two files: your CV, cover letter,
+  diplomas, certificates and references all have to fit. Here is how to put them together into one clean,
+  small file that opens well on any computer, without uploading your personal documents to a converter
+  site on the way.
+</p>
+
+<h2 id="gather">1. Get every document into PDF form</h2>
+<ul>
+  <li><strong>CV and cover letter:</strong> export them from Word, Google Docs or Pages with <em>Save as PDF</em> or <em>Download as PDF</em>, rather than printing to PDF, so the text stays selectable.</li>
+  <li><strong>Paper certificates:</strong> scan them, or photograph them flat in good light. Turn the photos into a PDF with <a href="{% url 'pages:images_to_pdf' %}">Images to PDF</a>, choosing A4 or US Letter as the page size so every page has the same format.</li>
+  <li><strong>Pages you don't need:</strong> a ten-page transcript where only page 1 matters can be cut down with <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>.</li>
+</ul>
+
+<h2 id="merge">2. Merge them in a sensible order</h2>
+<p>
+  Open <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a>, add all the files and drag them into order. A
+  common order is cover letter, CV, then certificates and references from most to least relevant, unless
+  the job ad asks for something else. Click <strong>Merge PDFs</strong> and save.
+</p>
+<p>
+  If a certificate came out sideways, fix it with <a href="{% url 'pages:rotate_pdf_pages' %}">Rotate PDF Pages</a>.
+  For a long file, <a href="{% url 'pages:add_page_numbers' %}">page numbers</a> help the reader, especially if
+  your cover letter refers to the attachments.
+</p>
+
+<h2 id="size">3. Check the size limit</h2>
+<p>
+  Application portals often allow only a few megabytes per file. Scanned certificates are what make a file
+  big. If yours is over the limit, use <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a>:
+</p>
+<ul>
+  <li>Try <strong>Lossless</strong> first. It changes nothing visible and keeps the text of your CV selectable.</li>
+  <li>If that is not enough, compress only the scanned certificates with <strong>Strong</strong> before merging, then merge them with your CV. That way the scans get smaller while your CV and letter stay sharp, searchable text.</li>
+</ul>
+
+<h2 id="metadata">4. Fix the title and author</h2>
+<p>
+  A merged PDF takes its title and author from the first file. That might be the title of the template your
+  CV started from, or a former employer's name if you made it on a work laptop. Open the
+  <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a>, set the Title to something like
+  "Ana Silva, Application for Product Designer", set the Author to your name, keep
+  <strong>Also remove the embedded XMP metadata stream</strong> ticked, and save. The guide
+  <a href="{% url 'pages:guide_change_pdf_title_and_author' %}">how to change a PDF's title and author</a> has the details.
+</p>
+
+<h2 id="name">5. Name the file well</h2>
+<p>
+  Recruiters download hundreds of files called "CV.pdf". Use your name and the role, for example
+  <code>Ana-Silva-Product-Designer.pdf</code>, and avoid version numbers or words like "final".
+</p>
+
+<h2 id="final-check">A last check</h2>
+<ul>
+  <li>Open the final file and scroll through every page: right order, no sideways pages, nothing cut off.</li>
+  <li>Press Ctrl+F (Cmd+F on a Mac) and search for a word in your CV. If it is found, the text is still selectable, which matters for portals that read your CV automatically.</li>
+  <li>Do not password-protect an application file; portals and recruiters usually cannot open protected PDFs.</li>
+</ul>

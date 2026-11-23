@@ -1,0 +1,63 @@
+<p>
+  There are three ways to get a PDF job done without paying for a full editor: install a desktop program, use
+  an online service that processes the file on its servers, or use a web tool that does the work in your
+  browser. They look similar from the outside but handle your document very differently. This page compares
+  them on the points that matter, without picking on any particular product.
+</p>
+
+<h2 id="how-each-works">How each one works</h2>
+<ul>
+  <li><strong>Desktop program:</strong> you download and install software, and it processes files on your computer.</li>
+  <li><strong>Online (server-based) tool:</strong> you open a website, upload the file, the provider's server processes it, and you download the result from the server.</li>
+  <li><strong>In-browser tool:</strong> you open a website, the page downloads the program, and your browser processes the file on your device. The file is not sent anywhere. TrustPDF works this way.</li>
+</ul>
+
+<h2 id="comparison">Side by side</h2>
+<div class="table-responsive">
+<table class="table">
+  <thead>
+    <tr><th scope="col"></th><th scope="col">Desktop program</th><th scope="col">Online, server-based</th><th scope="col">In-browser</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">Where your file goes</th><td>Stays on your computer</td><td>Uploaded to the provider's server</td><td>Stays on your device</td></tr>
+    <tr><th scope="row">Installation</th><td>Required, often needs admin rights</td><td>None</td><td>None</td></tr>
+    <tr><th scope="row">Works on phones</th><td>Only with a separate app</td><td>Yes</td><td>Yes</td></tr>
+    <tr><th scope="row">Works offline</th><td>Yes</td><td>No</td><td>Yes, once the page has loaded</td></tr>
+    <tr><th scope="row">Speed with large files</th><td>Fast</td><td>Limited by your upload and download speed</td><td>Depends on your device; slow on old phones</td></tr>
+    <tr><th scope="row">Heavy jobs (OCR, Word conversion)</th><td>Usually best</td><td>Good: powerful servers do the work</td><td>Possible, but slower on weak devices</td></tr>
+    <tr><th scope="row">Updates</th><td>Varies: some update themselves, some you install by hand</td><td>Automatic</td><td>Automatic</td></tr>
+    <tr><th scope="row">Can you verify privacy?</th><td>Mostly: you can watch or block its network access</td><td>No: processing happens on a computer you can't see</td><td>Yes: go offline or watch the Network tab</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="privacy">The privacy difference</h2>
+<p>
+  With a server-based tool, a copy of your document exists on someone else's computer, at least for a while.
+  Reputable providers delete files after a set time and protect their servers well, but you cannot check that.
+  With a desktop program or an in-browser tool, the document stays with you. For anything personal or
+  confidential, such as IDs, contracts, tax papers, medical or HR records, that is the safer default. See
+  <a href="{% url 'pages:guide_are_online_pdf_tools_safe' %}">are online PDF tools safe?</a> for more.
+</p>
+<p>
+  "Runs in your browser" is still a claim. You can test it yourself in two minutes:
+  <a href="{% url 'pages:guide_check_pdf_tool_does_not_upload_files' %}">how to check that a PDF tool doesn't upload your files</a>.
+</p>
+
+<h2 id="which">Which one should you use?</h2>
+<ul>
+  <li><strong>You work with PDFs every day on one computer:</strong> a desktop program is worth installing.</li>
+  <li><strong>The document is not sensitive and you need a heavy conversion:</strong> a reputable server-based service is fine.</li>
+  <li><strong>The document is personal or confidential, you are on a phone, or you can't install software:</strong> an in-browser tool gives you the convenience of a website without handing over the file.</li>
+</ul>
+
+<h2 id="trustpdf">What TrustPDF does and doesn't do</h2>
+<p>
+  TrustPDF covers common jobs, such as <a href="{% url 'pages:merge_pdf' %}">merging</a>,
+  <a href="{% url 'pages:compress_pdf' %}">compressing</a>, <a href="{% url 'pages:sign_pdf' %}">signing</a>,
+  <a href="{% url 'pages:redact_pdf' %}">redacting</a>, <a href="{% url 'pages:protect_pdf' %}">password protection</a>
+  and <a href="{% url 'pages:pdf_metadata_editor' %}">editing metadata</a>, all in the browser and free. It does
+  not edit the existing text of a PDF, and OCR and Word conversion run slower than on a server because your
+  own device does the work. If you need full text editing every day, a desktop editor will serve you better;
+  <a href="{% url 'pages:guide_free_adobe_acrobat_alternatives' %}">free alternatives to Adobe Acrobat</a> lists options for each task.
+</p>

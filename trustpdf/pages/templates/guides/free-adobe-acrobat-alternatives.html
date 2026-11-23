@@ -1,0 +1,83 @@
+<p>
+  Adobe Acrobat Reader is free, but most of what people actually want to do with a PDF, such as merging,
+  splitting, compressing, password protecting, redacting or recognising text in scans, needs a paid Acrobat
+  plan. Adobe's website also offers some of these tasks as free online tools, which process your file on
+  Adobe's servers. For occasional use, free tools cover nearly all of it. This guide lists the main free options for
+  each task and is honest about where each one fits.
+</p>
+
+<h2 id="kinds">Three kinds of free PDF tools</h2>
+<ul>
+  <li><strong>Built into your system:</strong> macOS Preview, the iPhone and iPad Files app, and the PDF viewers in Chrome, Edge, Firefox and Safari. Nothing to install, but limited.</li>
+  <li><strong>Free desktop programs:</strong> for example PDFsam Basic (open source, merge and split), LibreOffice Draw (edit PDF text and layout) and the command-line tools qpdf and pdfunite. They work offline but need installing, which is not always possible on a work or shared computer.</li>
+  <li><strong>Web tools:</strong> nothing to install, they work on any device. Most upload your file to a server; a few, including TrustPDF, process it in your browser instead. <a href="{% url 'pages:guide_desktop_vs_online_vs_browser_pdf_tools' %}">Desktop, online or in-browser?</a> compares the three approaches.</li>
+</ul>
+
+<h2 id="by-task">Free options by task</h2>
+
+<h3>Reading, filling in forms and adding a signature</h3>
+<p>
+  Acrobat Reader itself does this for free, and so do Preview on a Mac and most browsers' built-in PDF viewers
+  for simple forms. In the browser, <a href="{% url 'pages:fill_pdf_form' %}">Fill PDF Form</a> and
+  <a href="{% url 'pages:sign_pdf' %}">Sign PDF</a> work on any device, phones included.
+</p>
+
+<h3>Merging and splitting</h3>
+<p>
+  On a Mac, Preview and Finder can merge; on Windows and Android there is nothing built in. PDFsam Basic is a
+  solid desktop choice. In the browser, <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a>,
+  <a href="{% url 'pages:split_pdf' %}">Split PDF</a> and <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>.
+  Step-by-step instructions for each device are in
+  <a href="{% url 'pages:guide_merge_pdf_on_mac_windows_iphone_android' %}">how to merge PDFs on Mac, Windows, iPhone and Android</a>.
+</p>
+
+<h3>Rotating, reordering and deleting pages</h3>
+<p>
+  Preview can do all three. Elsewhere: <a href="{% url 'pages:rotate_pdf_pages' %}">Rotate PDF Pages</a>,
+  <a href="{% url 'pages:reorder_pdf_pages' %}">Reorder PDF Pages</a> and
+  <a href="{% url 'pages:remove_pdf_pages' %}">Remove PDF Pages</a>.
+</p>
+
+<h3>Compressing</h3>
+<p>
+  Preview's <em>Reduce File Size</em> filter works, but it shrinks images hard and scans often come out blurry.
+  <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a> offers a lossless option that keeps the file
+  identical to the eye, plus stronger settings for scans.
+</p>
+
+<h3>Password protection</h3>
+<p>
+  Preview can encrypt a PDF when you export it, and LibreOffice can add a password when it exports a document
+  to PDF. To protect an existing PDF on any device, use <a href="{% url 'pages:protect_pdf' %}">Protect PDF</a>
+  (AES-256, like Acrobat). <a href="{% url 'pages:unlock_pdf' %}">Unlock PDF</a> removes a password you know.
+</p>
+
+<h3>Redaction</h3>
+<p>
+  This is where free tools most often go wrong: drawing a black box in Preview or another viewer usually leaves
+  the text underneath in the file. <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a> removes it, and
+  <a href="{% url 'pages:guide_redact_pdf_without_uploading' %}">how to redact a PDF</a> explains how to check.
+</p>
+
+<h3>OCR and converting to Word</h3>
+<p>
+  Microsoft Word can open a PDF and convert it to an editable document, with mixed results on complex layouts.
+  For scans, <a href="{% url 'pages:ocr_pdf' %}">OCR PDF</a> adds searchable text in the browser, and
+  <a href="{% url 'pages:pdf_to_word' %}">PDF to Word</a> converts to .docx.
+</p>
+
+<h3>Metadata</h3>
+<p>
+  Acrobat Reader and Preview show a document's properties but cannot clear them all. The
+  <a href="{% url 'pages:pdf_metadata_viewer' %}">PDF Metadata Viewer</a> and
+  <a href="{% url 'pages:pdf_metadata_editor' %}">PDF Metadata Editor</a> show and change the title and author,
+  or strip everything including the hidden XMP block.
+</p>
+
+<h2 id="when-acrobat">When paying for Acrobat still makes sense</h2>
+<p>
+  Free tools are best for one-off tasks. If you edit the text of PDFs all day, need to compare document
+  versions, prepare files for professional printing, or need certificate-based digital signatures that your
+  organisation manages, a full PDF editor such as Acrobat Pro is worth considering. For merging an invoice,
+  signing a lease or shrinking a scan, it is not necessary.
+</p>

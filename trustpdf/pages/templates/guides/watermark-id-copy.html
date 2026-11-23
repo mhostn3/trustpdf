@@ -1,0 +1,51 @@
+<p>
+  Hotels, landlords, letting agents, car rental firms, employers and online services often ask for a copy of
+  your passport or ID card. Once you send it, you lose control of it: it can sit in an inbox for years, be
+  leaked in a breach, or be reused to open accounts in your name. A simple watermark that says who the copy
+  is for and when makes it much less useful to anyone else.
+</p>
+
+<h2 id="why">What a watermark does, and what it doesn't</h2>
+<ul>
+  <li><strong>It marks the purpose.</strong> A copy stamped "For ACME Lettings, rental application, November 2026" is hard to pass off for anything else, and many places check for exactly that kind of marking.</li>
+  <li><strong>It shows where a leak came from.</strong> If a stamped copy turns up somewhere it shouldn't, you know who it was sent to.</li>
+  <li><strong>It does not make the document secret.</strong> Your name, photo and number can still be read. That is the point: the recipient needs to read them.</li>
+</ul>
+
+<h2 id="prepare">1. Turn your photo or scan into a PDF</h2>
+<p>
+  If you have a photo of your ID, open <a href="{% url 'pages:images_to_pdf' %}">Images to PDF</a>, add the
+  front and back images, and create the PDF. If you already have a PDF scan, skip this step.
+</p>
+
+<h2 id="watermark">2. Add the watermark</h2>
+<ol>
+  <li>Open <a href="{% url 'pages:watermark_pdf' %}">Watermark PDF</a> and drop in the PDF.</li>
+  <li>In <strong>Watermark text</strong>, write who it is for, why, and the date, for example <em>Copy for ACME Lettings – rental application – 23/11/2026</em>.</li>
+  <li>Choose <strong>Diagonal, across the page</strong> so the text runs over the document itself, not only the margin.</li>
+  <li>Set an opacity where the text is clearly visible but the photo and number can still be read, often around 25–40%.</li>
+  <li>Click <strong>Add Watermark</strong>, save the file and open it to check that everything is still readable.</li>
+</ol>
+
+<h2 id="harder-to-remove">3. Make it harder to remove</h2>
+<p>
+  The watermark is added as text on top of the page. Someone with a PDF editor and some effort could delete
+  it. To bake it into the image, run the watermarked file through
+  <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a> with the <strong>Strong</strong> setting, which redraws
+  each page as a single image. Check that the ID is still legible afterwards.
+</p>
+
+<h2 id="share-less">Share as little as you can</h2>
+<ul>
+  <li>Ask whether they really need a copy, or only need to see the original.</li>
+  <li>Some services only need the photo page of a passport, not every page.</li>
+  <li>Where the law and the recipient allow it, black out what they don't need, such as the document number or your signature, with <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a>. Many official bodies and banks do need the full document, so ask first.</li>
+  <li>Send it through the recipient's official upload page or a protected PDF rather than a chat app where it will stay forever.</li>
+</ul>
+
+<h2 id="why-local">Why do this offline?</h2>
+<p>
+  Watermarking an ID on a website that uploads it defeats the purpose: you would be giving an unmarked copy
+  to one more company. Watermark PDF, Images to PDF and Compress PDF run in your browser, so the image of your
+  ID never leaves your device.
+</p>

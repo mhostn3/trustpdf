@@ -1,0 +1,70 @@
+<p>
+  Some devices can combine PDFs with software that is already installed, others cannot. Here is what
+  works on each one, without buying anything and without uploading your documents to a website.
+</p>
+
+<h2 id="any-device">On any device: in the browser</h2>
+<p>
+  <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a> works the same way in Chrome, Edge, Firefox and Safari,
+  on a computer, a tablet or a phone. Add the files, drag them into order, click <strong>Merge PDFs</strong>
+  and save. The files are combined on the device itself, not on a server, so this is also the quickest
+  option on a computer you do not want to install software on.
+</p>
+
+<h2 id="mac">On a Mac: Preview or Finder</h2>
+<p>macOS can merge PDFs on its own, in two ways.</p>
+<ul>
+  <li>
+    <strong>Finder:</strong> select the PDFs, right-click (or Control-click) and choose
+    <strong>Quick Actions &rsaquo; Create PDF</strong>. The files are combined in the order Finder lists
+    them, so sort the window by name and rename the files first (01, 02, 03…) if the order matters.
+  </li>
+  <li>
+    <strong>Preview:</strong> open the first PDF, choose <strong>View &rsaquo; Thumbnails</strong>, then drag
+    the other PDFs from Finder into the thumbnail sidebar at the point where they should go. Use
+    <strong>File &rsaquo; Export as PDF</strong> to save the result as a new file.
+  </li>
+</ul>
+
+<h2 id="windows">On Windows</h2>
+<p>
+  Windows has no built-in way to merge PDF files. Microsoft Edge opens and annotates PDFs but cannot combine
+  them, and "Microsoft Print to PDF" prints one document at a time. The free options are a browser-based tool
+  like <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a>, which needs no installation, or a desktop program
+  such as the open source PDFsam Basic.
+</p>
+
+<h2 id="iphone">On an iPhone or iPad: the Files app</h2>
+<ol>
+  <li>Open the <strong>Files</strong> app and go to the folder with the PDFs.</li>
+  <li>Tap the <strong>More</strong> button (the circle with three dots), then <strong>Select</strong>, and tap each file.</li>
+  <li>Tap <strong>More</strong> again in the bottom corner and choose <strong>Create PDF</strong>.</li>
+</ol>
+<p>
+  The order is decided by the Files app, so number the file names first (01, 02, 03…) and check the result.
+  To choose the order yourself, open
+  <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a> in Safari instead and drag the files into place.
+</p>
+
+<h2 id="android">On Android</h2>
+<p>
+  Android has no built-in PDF merger either. Open <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a> in
+  Chrome, tap the box to pick files from your phone or from Google Drive, and save the result to your
+  Downloads folder. If your pages are photos rather than PDFs, convert them first with
+  <a href="{% url 'pages:images_to_pdf' %}">Images to PDF</a>.
+</p>
+
+<h2 id="linux">On Linux: the command line</h2>
+<p>Most distributions include, or can install, one of these:</p>
+<ul>
+  <li><code>pdfunite first.pdf second.pdf merged.pdf</code> from the poppler-utils package.</li>
+  <li><code>qpdf --empty --pages first.pdf second.pdf -- merged.pdf</code> from qpdf.</li>
+</ul>
+<p>Both run locally. If you prefer to drag and drop, the browser tool works on Linux too.</p>
+
+<h2 id="before-you-send">Before you send the merged file</h2>
+<ul>
+  <li>Check the page order by scrolling through the whole file once.</li>
+  <li>Locked PDFs have to be unlocked first; <a href="{% url 'pages:unlock_pdf' %}">Unlock PDF</a> removes a password you know.</li>
+  <li>The merged file usually keeps the title and author of the first file. Check them with the <a href="{% url 'pages:pdf_metadata_viewer' %}">PDF Metadata Viewer</a>.</li>
+</ul>

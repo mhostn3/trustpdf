@@ -1,0 +1,57 @@
+<p>
+  Visa applications, residence permits and rental applications all ask for the same kind of documents: a
+  passport, payslips, bank statements, an employment contract, sometimes a tax return. They are also exactly
+  the documents you should not upload to a free converter site just to get them into the right format.
+  This guide shows how to prepare them on your own device.
+</p>
+
+<h2 id="requirements">Start with the requirements</h2>
+<p>
+  Read the instructions of the embassy, the visa centre, the agency or the landlord before you begin, and
+  note:
+</p>
+<ul>
+  <li>whether they want <strong>one PDF</strong> with everything or <strong>one file per document</strong>;</li>
+  <li>the <strong>maximum file size</strong>, often a few megabytes per file;</li>
+  <li>whether scans must be in <strong>colour</strong> and at a particular resolution;</li>
+  <li>any rules for <strong>file names</strong>.</li>
+</ul>
+<p>Requirements differ a lot between countries and offices, so the official instructions always win.</p>
+
+<h2 id="scan">1. Turn paper documents into PDFs</h2>
+<p>
+  If you have photos or scans as JPG or PNG files, open <a href="{% url 'pages:images_to_pdf' %}">Images to PDF</a>,
+  add the images in order, choose <strong>A4</strong> (or <strong>US Letter</strong>) as the page size and
+  create the PDF. A fixed page size makes the pages print and display consistently. Take photos flat, in daylight,
+  with all four corners of the page visible.
+</p>
+
+<h2 id="combine">2. Combine pages that belong together</h2>
+<p>
+  Three months of payslips or bank statements usually arrive as three files. Combine them with
+  <a href="{% url 'pages:merge_pdf' %}">Merge PDF</a>, oldest first, so the reader sees one document per
+  category. If the application wants a single file for everything, merge all the categories in the order of
+  their checklist.
+</p>
+
+<h2 id="only-what-is-needed">3. Send only what is asked for</h2>
+<ul>
+  <li><strong>Leave out pages that aren't needed.</strong> A bank statement's transaction pages may not be required if a balance summary is enough. Keep only the pages that matter with <a href="{% url 'pages:extract_pdf_pages' %}">Extract PDF Pages</a>.</li>
+  <li><strong>Black out what isn't relevant,</strong> where the rules allow it. For a rental application, a landlord rarely needs your full account number or social security number. Use <a href="{% url 'pages:redact_pdf' %}">Redact PDF</a>, which removes the text for real, and see <a href="{% url 'pages:guide_redact_pdf_without_uploading' %}">how to redact a PDF properly</a>. Do not redact documents for a visa or a government office unless they say you may.</li>
+  <li><strong>Mark copies for a single use.</strong> For rental and other private applications, a watermark such as "Copy for the rental application to X, November 2026" makes a stolen copy less useful. See <a href="{% url 'pages:guide_watermark_id_copy' %}">how to watermark a copy of your ID</a>.</li>
+</ul>
+
+<h2 id="size">4. Get under the size limit</h2>
+<p>
+  Use <a href="{% url 'pages:compress_pdf' %}">Compress PDF</a>. <strong>Lossless</strong> keeps everything
+  exactly as it is. For scans, <strong>Strong</strong> (150 DPI) is usually still clear enough for an official
+  reader and makes files much smaller. Check that small print, such as a passport's machine-readable lines,
+  is still legible before you send it.
+</p>
+
+<h2 id="send">5. Send it the right way</h2>
+<ul>
+  <li>Use the official portal or the address given in the instructions, never one sent to you in an unexpected message.</li>
+  <li>If you email documents to a private landlord or agent, consider <a href="{% url 'pages:protect_pdf' %}">protecting the PDF with a password</a> and sending the password by text message. Official portals usually cannot accept protected files.</li>
+  <li>Keep a copy of exactly what you sent, with the date.</li>
+</ul>
