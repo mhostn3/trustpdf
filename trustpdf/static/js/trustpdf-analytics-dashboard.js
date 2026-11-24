@@ -12,9 +12,14 @@
   const css = getComputedStyle(document.body);
   const ink = css.getPropertyValue("--bs-secondary-color").trim() || "#6c757d";
   const grid = css.getPropertyValue("--bs-border-color").trim() || "#dee2e6";
+  // Weekend bars (Sat/Sun) use the same blue at lower opacity, so they read as
+  // a lighter shade on a light theme and a muted one on a dark theme.
+  const BLUE = "#0d6efd", WEEKEND = "rgba(13,110,253,.45)";
+  const weekend = x.map(d => { const w = new Date(d + "T00:00:00Z").getUTCDay(); return w === 0 || w === 6; });
+  const colors = weekend.map(w => w ? WEEKEND : BLUE);
   function bars(id, y, label) {
     Plotly.newPlot(id, [{
-      type: "bar", x, y, name: label, marker: { color: "#0d6efd" },
+      type: "bar", x, y, name: label, marker: { color: colors },
       hovertemplate: "%{x|%a %d %b}<br>" + label + ": %{y}<extra></extra>",
     }], {
       margin: { l: 36, r: 8, t: 4, b: 28 }, bargap: 0.25,

@@ -22,6 +22,11 @@
   .an-detail summary::marker { color: var(--bs-secondary-color); }
   .an-up { color: #1a7f37; } .an-down { color: #c62828; }
   .an-chart { height: 220px; }
+  .an-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+  .an-card-head h2 { margin-bottom: 0; }
+  .an-key { font-size: .75rem; color: var(--bs-secondary-color); white-space: nowrap; }
+  .an-key i { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; vertical-align: -1px; margin: 0 .25rem 0 .6rem; background: #0d6efd; }
+  .an-key i.we { background: rgba(13,110,253,.45); }
 </style>
 {% endblock %}
 {% block content %}
@@ -83,8 +88,8 @@
 
   {# ------------------------------------------------------------ daily charts #}
   <div class="row g-3 mb-3">
-    <div class="col-lg-6"><div class="an-card"><h2>Visitors per day</h2><div id="ch-visitors" class="an-chart"></div></div></div>
-    <div class="col-lg-6"><div class="an-card"><h2>Clicks in tools per day</h2><div id="ch-actions" class="an-chart"></div></div></div>
+    <div class="col-lg-6"><div class="an-card"><div class="an-card-head"><h2>Visitors per day</h2><span class="an-key"><i></i>Weekday<i class="we"></i>Weekend</span></div><div id="ch-visitors" class="an-chart"></div></div></div>
+    <div class="col-lg-6"><div class="an-card"><div class="an-card-head"><h2>Clicks in tools per day</h2><span class="an-key"><i></i>Weekday<i class="we"></i>Weekend</span></div><div id="ch-actions" class="an-chart"></div></div></div>
   </div>
 
   {# ------------------------------------------------------------ tools #}
