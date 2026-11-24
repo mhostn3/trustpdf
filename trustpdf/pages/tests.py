@@ -1,6 +1,7 @@
 import datetime
 import json
 import re
+import warnings
 from pathlib import Path
 from unittest import mock
 
@@ -86,6 +87,22 @@ class PageTests(SimpleTestCase):
         response = self.client.get("/does-not-exist/")
         self.assertEqual(response.status_code, 404)
         self.assertIn("Page not found", response.content.decode())
+
+    def test_static_files_carry_the_same_policy(self):
+        """A web worker takes its policy from its own script's response, not from the
+        page, so WhiteNoise must send the site's policy with the static files."""
+        from whitenoise.middleware import WhiteNoiseMiddleware
+
+        self.assertIn("whitenoise.middleware.WhiteNoiseMiddleware", settings.MIDDLEWARE)
+        headers = {}
+        settings.WHITENOISE_ADD_HEADERS_FUNCTION(headers, "/x/js/trustpdf-worker.js", "/static/js/trustpdf-worker.js")
+        self.assertEqual(headers["Content-Security-Policy"], self.client.get("/")["Content-Security-Policy"])
+        self.assertIn("connect-src 'self'", headers["Content-Security-Policy"])
+        # ... and WhiteNoise is really given that function.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # "No directory at STATIC_ROOT" before the first collectstatic
+            whitenoise = WhiteNoiseMiddleware(lambda request: None)
+        self.assertIs(whitenoise.add_headers_function, settings.WHITENOISE_ADD_HEADERS_FUNCTION)
 
     def test_security_headers(self):
         response = self.client.get(reverse("pages:index"))

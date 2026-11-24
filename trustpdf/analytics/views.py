@@ -34,7 +34,8 @@ def collect(request):
         name = " ".join(str(data.get("n") or "").split())[:120]
         value = data.get("v")
         value = float(value) if value is not None else None
-    except (ValueError, KeyError, TypeError):
+    except (ValueError, KeyError, TypeError, AttributeError, OverflowError):
+        # Not JSON, not an object, an unknown kind, or a number too large for a float.
         return HttpResponseBadRequest()
     if not path.startswith("/") or tracking.skip_path(path):
         return HttpResponse(status=204)

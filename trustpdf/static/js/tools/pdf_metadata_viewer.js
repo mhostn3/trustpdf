@@ -25,6 +25,26 @@
     }
   }
 
+  const STANDARD = ["Title", "Author", "Subject", "Keywords", "Creator", "Producer", "CreationDate", "ModDate"];
+
+  /** Info entries beyond the standard ones, e.g. Company or Manager written by Word. */
+  function otherEntries(doc) {
+    const rows = [];
+    for (const [key, value] of doc.getInfoDict().entries()) {
+      const name = key.decodeText();
+      if (STANDARD.includes(name)) continue;
+      let text;
+      try {
+        const resolved = doc.context.lookup(value);
+        text = resolved && typeof resolved.decodeText === "function" ? resolved.decodeText() : String(resolved);
+      } catch (_) {
+        text = "(unreadable)";
+      }
+      rows.push([`${name} (other entry)`, text.length > 300 ? `${text.slice(0, 300)}…` : text]);
+    }
+    return rows;
+  }
+
   function hasXmp(doc) {
     return doc.catalog.has(PDFLib.PDFName.of("Metadata"));
   }
@@ -60,6 +80,7 @@
         ["Creation date", formatDate(doc.getCreationDate())],
         ["Modification date", formatDate(doc.getModificationDate())],
         ["XMP metadata stream", hasXmp(doc) ? "Present (may contain additional details)" : "None"],
+        ...otherEntries(doc),
       ];
 
       const heading = document.createElement("h2");

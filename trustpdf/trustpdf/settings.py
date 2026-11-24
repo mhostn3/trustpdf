@@ -230,6 +230,22 @@ CSP_DIRECTIVES = {
 # analytics dashboard) need inline styles; the public pages do not get this exception.
 CSP_STAFF_OVERRIDES = {"style-src": ["'self'", "'unsafe-inline'"]}
 
+
+
+def _static_file_headers(headers, path, url):
+    """The same policy on every static file.
+
+    It matters for the worker scripts: a web worker does not inherit the policy
+    of the page that starts it, it takes the one sent with its own script.
+    Without this header the workers that handle the files (merge/split/compress,
+    PDF.js, OCR) would be free to contact any server.
+    """
+    headers["Content-Security-Policy"] = "; ".join(
+        f"{name} {' '.join(values)}" for name, values in CSP_DIRECTIVES.items())
+
+
+WHITENOISE_ADD_HEADERS_FUNCTION = _static_file_headers
+
 # Browser features no page of this site uses, switched off for the page and anything in it.
 PERMISSIONS_POLICY = (
     "accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), "

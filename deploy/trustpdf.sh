@@ -90,6 +90,12 @@ header_check() {
   elif grep -q "unsafe-inline" <<<"$csp"; then warn "the Content-Security-Policy of / allows 'unsafe-inline'"
   elif ! grep -q "connect-src 'self'" <<<"$csp"; then warn "connect-src is not limited to this site"
   else ok "Content-Security-Policy: scripts can talk to this site only, no inline code"; fi
+  # Web workers take their policy from their own script, not from the page.
+  local worker
+  worker=$(curl -sS --max-time 20 "${SITE_URL}/tools/merge-pdf/" 2>/dev/null | grep -o 'data-worker-src="[^"]*"' | head -n 1 | cut -d'"' -f2) || true
+  if [[ -z "$worker" ]]; then warn "could not find the worker script to check its Content-Security-Policy"
+  elif curl -sS -D - -o /dev/null --max-time 20 "${SITE_URL}${worker}" 2>/dev/null | tr -d '\r' | grep -i '^content-security-policy:' | grep -q "connect-src 'self'"; then ok "the worker script carries the same policy"
+  else warn "the worker script ${worker} has no Content-Security-Policy with connect-src 'self'; workers could contact other servers"; fi
   if grep -qi '^permissions-policy:' <<<"$headers"; then ok "Permissions-Policy is set"; else warn "no Permissions-Policy header on /"; fi
   if grep -qi '^strict-transport-security:' <<<"$headers"; then ok "HSTS is set"; else warn "no Strict-Transport-Security header on /"; fi
   if grep -qi '^set-cookie:' <<<"$headers"; then warn "the home page sets a cookie; it must not"; else ok "the home page sets no cookie"; fi

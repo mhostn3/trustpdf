@@ -57,10 +57,48 @@
     throw new CannotPrune("unreadable page contents");
   }
 
+  /**
+   * Old files have forms, tiling patterns and Type 3 fonts without a resource dictionary:
+   * they draw with the resources of the page that uses them. The names they use are
+   * therefore counted as names of the page, or their images and fonts would be dropped.
+   */
+  function withBorrowedNames(resources, used) {
+    const all = new Set(used);
+    const done = new Set();
+    const borrow = (stream) => { for (const n of namesIn([stream])) all.add(n); };
+    for (let before = -1; before !== all.size;) {
+      before = all.size;
+      for (const kind of ["XObject", "Pattern", "Font"]) {
+        const group = resources.lookup(N(kind));
+        if (!(group instanceof L().PDFDict)) continue;
+        for (const [name] of group.entries()) {
+          const id = `${kind}/${name.decodeText()}`;
+          if (!all.has(name.decodeText()) || done.has(id)) continue;
+          done.add(id);
+          const obj = group.lookup(name);
+          if (obj instanceof L().PDFStream) {
+            const drawn = obj.dict.get(N("Subtype")) === N("Form") || obj.dict.has(N("PatternType"));
+            if (drawn && !obj.dict.has(N("Resources"))) borrow(obj);
+          } else if (kind === "Font" && obj instanceof L().PDFDict && obj.get(N("Subtype")) === N("Type3") && !obj.has(N("Resources"))) {
+            const procs = obj.lookup(N("CharProcs"));
+            if (procs instanceof L().PDFDict) {
+              for (const [glyph] of procs.entries()) {
+                const proc = procs.lookup(glyph);
+                if (proc instanceof L().PDFStream) borrow(proc);
+              }
+            }
+          }
+        }
+      }
+    }
+    return all;
+  }
+
   /** A copy of `resources` with only the used names; nested content is pruned in place. */
   function prunedResources(context, resources, used, seen) {
     const out = L().PDFDict.withContext(context);
     if (!(resources instanceof L().PDFDict)) return out;
+    used = withBorrowedNames(resources, used);
     for (const [key, value] of resources.entries()) {
       const kind = key.decodeText();
       if (!RESOURCE_KINDS.includes(kind)) { out.set(key, value); continue; } // e.g. /ProcSet
@@ -139,7 +177,8 @@
   /**
    * After the pages are added to `doc`: point links at the pages of the new file,
    * drop references to pages that are not in it (links, annotation owners, form
-   * field trees), then delete every page object outside the page tree and every
+   * field trees, actions that list form fields), then delete every page object
+   * outside the page tree, every form field that is not on these pages and every
    * object nothing refers to any more.
    */
   function clean(doc) {
@@ -162,7 +201,9 @@
     }
     /** Point an explicit destination ([page /XYZ ...]) at a page of this file; false when it has none. */
     const retarget = (dest) => {
-      if (!(dest instanceof L().PDFArray)) return true; // a named destination: nothing to follow
+      if (!(dest instanceof L().PDFArray)) { // a named destination has nothing to follow
+        return dest instanceof L().PDFName || dest instanceof L().PDFString || dest instanceof L().PDFHexString;
+      }
       const target = dest.get(0);
       if (!(target instanceof L().PDFRef)) return true;
       if (pageRefs.has(target.toString())) return true;
@@ -187,11 +228,30 @@
           if (target && !(target instanceof L().PDFRef && own.has(target.toString()))) annot.delete(N(key));
         });
         if (annot.has(N("Dest")) && !retarget(annot.lookup(N("Dest")))) annot.delete(N("Dest"));
+        // Only actions that cannot name other objects stay: a web link, a named action,
+        // a jump to a page of this file. "Reset form", "Hide" and scripts list form
+        // fields, and a field holds the values typed on pages that are not in this file.
         const action = annot.lookup(N("A"));
-        if (action instanceof L().PDFDict && (action.has(N("Next")) || !retarget(action.lookup(N("D"))))) {
+        if (annot.has(N("A")) && !(action instanceof L().PDFDict && !action.has(N("Next")) && harmless(action, retarget))) {
           annot.delete(N("A"));
         }
+        annot.delete(N("AA"));
+        annot.delete(N("PA"));
       }
+    }
+    for (const page of pages) {
+      page.node.delete(N("AA")); // page open/close actions: the same kinds of action
+      page.node.delete(N("B"));  // article beads chain through the other pages
+    }
+    // Form fields that are not a widget on one of these pages (reached in a way not listed above).
+    const widgets = new Set();
+    for (const page of pages) {
+      const annots = page.node.lookup(N("Annots"));
+      if (annots instanceof L().PDFArray) annots.asArray().forEach((a) => widgets.add(a.toString()));
+    }
+    for (const [ref, obj] of ctx.enumerateIndirectObjects()) {
+      if (!(obj instanceof L().PDFDict) || widgets.has(ref.toString())) continue;
+      if (obj.has(N("FT")) || (obj.has(N("T")) && obj.has(N("Kids")))) ctx.delete(ref);
     }
 
     // Page objects that came along but are not pages of the new file.
@@ -199,6 +259,13 @@
       if (obj instanceof L().PDFDict && obj.get(N("Type")) === N("Page") && !pageRefs.has(ref.toString())) ctx.delete(ref);
     }
     collectGarbage(ctx);
+  }
+
+  /** True for an action that refers to nothing but a web address, a menu item or a page of this file. */
+  function harmless(action, retarget) {
+    const kind = action.get(N("S"));
+    if (kind === N("URI") || kind === N("Named")) return true;
+    return kind === N("GoTo") && !action.has(N("SD")) && retarget(action.lookup(N("D")));
   }
 
   /** Delete every indirect object that cannot be reached from the trailer. */

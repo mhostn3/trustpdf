@@ -108,6 +108,13 @@ class TrackingTests(TestCase):
             ("engage", "", "Merge PDF", 42.0, "mobile"),
         ])
 
+    def test_malformed_beacons_are_refused_not_crashed(self, _):
+        # A JSON list, a bare number, and a number too large for a float used to end in a 500.
+        for body in ('[]', '5', '"x"', '{"k":"engage","v":1' + "0" * 400 + '}', 'not json'):
+            r = self.client.post("/analytics/e/", body, content_type="text/plain", HTTP_USER_AGENT=UA, REMOTE_ADDR="193.2.1.10")
+            self.assertEqual(r.status_code, 400, body[:30])
+        self.assertEqual(Event.objects.count(), 0)
+
     def test_ignore_cookie(self, _):
         # A link (GET) or a form on another site must not be able to switch it.
         r = self.client.get("/analytics/ignore/?set=on", HTTP_USER_AGENT=UA)

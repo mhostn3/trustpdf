@@ -29,7 +29,8 @@ def make_pdf(path, n_pages, title):
     for p, c in zip(page_ids, contents):
         objs[p - 1] = (f"<< /Type /Page /Parent {pages} 0 R /MediaBox [0 0 595 842] /Contents {c} 0 R "
                        f"/Resources << /Font << /F1 {font} 0 R >> >> >>")
-    info = add(f"<< /Title ({title}) /Author (Fixture Author) /Producer (Fixture Producer) >>")
+    # /Company is not a standard entry: Word writes such custom properties into its PDFs.
+    info = add(f"<< /Title ({title}) /Author (Fixture Author) /Producer (Fixture Producer) /Company (Fixture Company) >>")
     xmp = (b"<?xpacket begin=''?><x:xmpmeta xmlns:x='adobe:ns:meta/'><rdf:RDF "
            b"xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><rdf:Description "
            b"xmlns:dc='http://purl.org/dc/elements/1.1/'><dc:creator><rdf:Seq><rdf:li>Hidden XMP Author"
@@ -129,15 +130,79 @@ def make_redact_shared_pdf(path):
     path.write_bytes(out)
 
 
+def make_redact_form_pdf(path):
+    """Three pages; page 2 holds a filled-in form field. A "Reset" button on page 1
+    lists that field in its action (and in a mouse-up action), so copying page 1 as
+    it is would bring the field, and the value typed on page 2, into the new file.
+    Page 1 also draws through an old-style form XObject that has no resources of its
+    own and borrows the page's font /F2, which must survive the pruning."""
+    texts = ["Form intro page", "Form page two", "Form public three"]
+    secret = "FORM-SECRET-24680 kim@example.org"
+    objs = ["<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"]  # 1
+
+    def stream(extra, body):
+        data = body.encode()
+        objs.append(f"<< {extra}/Length {len(data)} >>\nstream\n".encode() + data + b"\nendstream")
+        return len(objs)
+
+    legacy = stream("/Type /XObject /Subtype /Form /BBox [0 0 595 842] ", "BT /F2 14 Tf 72 600 Td (legacy form text) Tj ET")
+    contents = [stream("", f"BT /F1 20 Tf 72 700 Td ({t}) Tj ET" + (" q /Fm1 Do Q" if i == 0 else ""))
+                for i, t in enumerate(texts)]
+    look = stream("/Type /XObject /Subtype /Form /BBox [0 0 300 20] /Resources << /Font << /F1 1 0 R >> >> ",
+                  f"BT /F1 10 Tf 2 6 Td ({secret}) Tj ET")
+    page_ids = [len(objs) + 1 + i for i in range(3)]
+    pages_id = page_ids[-1] + 1
+    field_id, button_id, form_id = pages_id + 1, pages_id + 2, pages_id + 3
+    for i, c in enumerate(contents):
+        res = "/Font << /F1 1 0 R /F2 1 0 R >> /XObject << /Fm1 %d 0 R >>" % legacy if i == 0 else "/Font << /F1 1 0 R >>"
+        annots = {0: f" /Annots [{button_id} 0 R]", 1: f" /Annots [{field_id} 0 R]"}.get(i, "")
+        objs.append(f"<< /Type /Page /Parent {pages_id} 0 R /MediaBox [0 0 595 842] /Contents {c} 0 R "
+                    f"/Resources << {res} >>{annots} >>")
+    objs.append("<< /Type /Pages /Kids [" + " ".join(f"{p} 0 R" for p in page_ids) + "] /Count 3 >>")
+    objs.append(f"<< /Type /Annot /Subtype /Widget /FT /Tx /T (account) /V ({secret}) /Rect [72 600 372 620] "
+                f"/P {page_ids[1]} 0 R /AP << /N {look} 0 R >> >>")
+    objs.append(f"<< /Type /Annot /Subtype /Widget /FT /Btn /Ff 65536 /T (reset) /Rect [72 500 172 520] /P {page_ids[0]} 0 R "
+                f"/A << /S /ResetForm /Fields [{field_id} 0 R] >> /AA << /U << /S /Hide /T {field_id} 0 R >> >> >>")
+    objs.append(f"<< /Fields [{field_id} 0 R {button_id} 0 R] >>")
+    objs.append(f"<< /Type /Catalog /Pages {pages_id} 0 R /AcroForm {form_id} 0 R >>")
+    out = b"%PDF-1.4\n"
+    offsets = []
+    for i, obj in enumerate(objs, 1):
+        offsets.append(len(out))
+        body = obj if isinstance(obj, bytes) else obj.encode()
+        out += f"{i} 0 obj\n".encode() + body + b"\nendobj\n"
+    xref = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode()
+    for off in offsets:
+        out += f"{off:010d} 00000 n \n".encode()
+    out += f"trailer\n<< /Size {len(objs) + 1} /Root {len(objs)} 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    path.write_bytes(out)
+
+
 make_pdf(OUT / "five pages.pdf", 5, "Five Pages")
 make_redact_pdf(OUT / "redact.pdf")
 make_redact_shared_pdf(OUT / "redact-shared.pdf")
+make_redact_form_pdf(OUT / "redact-form.pdf")
 make_pdf(OUT / "three.pdf", 3, "Three")
 (OUT / "not-a-pdf.pdf").write_bytes(b"hello, this is not a pdf")
 for name, fmt, size in [("photo.jpg", "JPEG", (640, 480)), ("tall.png", "PNG", (300, 900))]:
     im = Image.new("RGB", size, (200, 80, 80))
     ImageDraw.Draw(im).rectangle([20, 20, size[0] - 20, size[1] - 20], outline=(0, 0, 0), width=10)
     im.save(OUT / name, fmt)
+# A phone photo: stored lying on its side with an EXIF note to turn it (orientation 6),
+# the camera and GPS position in EXIF, a comment, and data appended after the picture
+# (phones add depth maps or the video of a "motion photo" there). The red block is at the
+# top left of the stored pixels, so it must be at the top right once the photo is upright.
+phone = Image.new("RGB", (400, 200), "white")
+ImageDraw.Draw(phone).rectangle([0, 0, 199, 99], fill=(220, 0, 0))
+exif = Image.Exif()
+exif[0x0112] = 6               # Orientation: turn 90 degrees clockwise to view
+exif[0x010F] = "SECRETCAM"     # Make
+exif.get_ifd(0x8825)[2] = (46.0, 3.0, 5.0)  # GPSLatitude
+phone.save(OUT / "phone-photo.jpg", "JPEG", quality=90, exif=exif, comment=b"SECRETCOMMENT")
+with open(OUT / "phone-photo.jpg", "ab") as fh:
+    fh.write(b"TRAILERSECRET-MOTION-VIDEO" * 4)
+
 # A "scanned" PDF made of two high-resolution photos, for Compress PDF.
 pages = []
 for shade in (180, 120):

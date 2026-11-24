@@ -16,6 +16,10 @@ class ContentSecurityPolicyMiddleware:
 
     Pages under the secret staff path get settings.CSP_STAFF_OVERRIDES on top
     (inline styles for the Django admin and the dashboard charts).
+
+    Static files never reach this middleware (WhiteNoise answers them first);
+    they get the same policy from settings.WHITENOISE_ADD_HEADERS_FUNCTION,
+    which is what binds the web workers.
     """
 
     def __init__(self, get_response):

@@ -242,7 +242,8 @@ async function run(name, fn) {
     const text = await page.locator("#metadataResult").innerText();
     if (!text.includes("Fixture Producer")) throw new Error("producer overwritten: " + text.slice(0, 200));
     if (!text.includes("Present")) throw new Error("XMP not detected");
-    return "producer preserved, XMP detected";
+    if (!text.includes("Fixture Company")) throw new Error("custom Info entry not shown");
+    return "producer preserved, XMP detected, custom entry shown";
   });
 
   await run("metadata editor: strip all", async () => {
@@ -256,6 +257,26 @@ async function run(name, fn) {
     const d = await download();
     const i = await inspect();
     if (i.title || i.author || i.producer || i.xmp) throw new Error("metadata still present " + JSON.stringify(i));
+    // Not only unlinked: the XMP stream and the non-standard entries must be gone from the bytes.
+    const left = allPdfText(d.buf).match(/Hidden XMP Author|Fixture (Author|Producer|Company)|CreationDate|ModDate/);
+    if (left) throw new Error(`"${left[0]}" is still in the file`);
+    return d.name;
+  });
+
+  await run("metadata editor: changing the title keeps other entries and says so", async () => {
+    await page.click("#startAgainBtn");
+    await page.setInputFiles("#fileInput", path.join(FIX, "five pages.pdf"));
+    await waitIdle();
+    await page.fill("#pdfTitle", "New Title");
+    await page.click("#processBtn");
+    const d = await download();
+    const i = await inspect();
+    if (i.title !== "New Title" || i.author !== "Fixture Author") throw new Error(JSON.stringify(i));
+    const all = allPdfText(d.buf);
+    if (/Hidden XMP Author/.test(all)) throw new Error("the XMP stream is still in the file");
+    if (!/Fixture Company/.test(all)) throw new Error("the custom entry was removed without being asked");
+    const note = await page.locator("#toolMessage").innerText();
+    if (!/1 other entry was kept/.test(note)) throw new Error("note: " + note);
     return d.name;
   });
 
@@ -267,6 +288,31 @@ async function run(name, fn) {
     const d = await download();
     const i = await inspect(); if (i.pages !== 2) throw new Error("page count " + i.pages);
     return d.name;
+  });
+
+  await run("images to pdf: phone photo is upright and carries no EXIF, comment or trailer", async () => {
+    await open("images-to-pdf");
+    await page.setInputFiles("#fileInput", [path.join(FIX, "phone-photo.jpg")]);
+    await page.click("#processBtn");
+    const d = await download();
+    const left = allPdfText(d.buf).match(/SECRETCAM|SECRETCOMMENT|TRAILERSECRET|Exif/);
+    if (left) throw new Error(`"${left[0]}" is still in the file`);
+    const size = await page.evaluate(async () => (await PDFLib.PDFDocument.load(TrustPDF.download.bytes)).getPage(0).getSize());
+    if (size.width !== 200 || size.height !== 400) throw new Error(`page is ${size.width} x ${size.height}, expected 200 x 400`);
+    // The red block is at the top left of the stored pixels: top right once upright.
+    const b64 = d.buf.toString("base64");
+    const p = await page.context().newPage();
+    await p.goto(`${BASE}/tools/pdf-to-jpg/`);
+    const px = await p.evaluate(async (data) => {
+      const pdf = await TrustPDF.openWithPdfjs(Uint8Array.from(atob(data), (c) => c.charCodeAt(0)));
+      const { canvas } = await TrustPDF.renderPage(pdf, 1, 72);
+      const at = (x, y) => Array.from(canvas.getContext("2d").getImageData(x, y, 1, 1).data.slice(0, 3));
+      return { topRight: at(150, 50), topLeft: at(50, 50), bottomRight: at(150, 350) };
+    }, b64);
+    await p.close();
+    const red = ([r, g, b]) => r > 180 && g < 80 && b < 80;
+    if (!red(px.topRight) || red(px.topLeft) || red(px.bottomRight)) throw new Error("orientation " + JSON.stringify(px));
+    return `${d.name} ${size.width}x${size.height}`;
   });
 
   await run("jpg to pdf landing page", async () => {
@@ -344,12 +390,30 @@ async function run(name, fn) {
     return d.name;
   });
 
-  // A link to a left-out page, or a resource dictionary shared by all pages, must not
-  // carry that page's content into the saved file.
+  await run("redact: a button that lists a form field does not carry its value along", async () => {
+    await open("redact-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "redact-form.pdf"));
+    await waitIdle();
+    await page.click("#nextPageBtn");
+    await waitIdle();
+    const box = await page.locator("#previewOverlay").boundingBox();
+    await page.mouse.move(box.x + 20, box.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width - 20, box.y + box.height - 20, { steps: 4 });
+    await page.mouse.up();
+    await page.click("#processBtn");
+    const d = await download();
+    if (/FORM-SECRET|kim@example/.test(allPdfText(d.buf))) throw new Error("the form value of the redacted page is still in the file");
+    return d.name;
+  });
+
+  // A link to a left-out page, a resource dictionary shared by all pages, or a button
+  // whose action lists a form field of a left-out page, must not carry that page's
+  // content into the saved file.
   for (const [tool, pages, label] of [["remove-pdf-pages", "2", "remove"], ["extract-pdf-pages", "1,3", "extract"], ["split-pdf", "1,3", "split"]]) {
     await run(`${label}: left-out page not in the file`, async () => {
       const names = [];
-      for (const fixture of ["redact.pdf", "redact-shared.pdf"]) {
+      for (const fixture of ["redact.pdf", "redact-shared.pdf", "redact-form.pdf"]) {
         await open(tool);
         await page.setInputFiles("#fileInput", path.join(FIX, fixture));
         await waitIdle();
@@ -381,6 +445,24 @@ async function run(name, fn) {
     });
     if (r.target !== r.page2) throw new Error(`link points to ${r.target}, page 2 is ${r.page2}`);
     return "link -> page 2";
+  });
+
+  await run("remove: an old-style form without resources keeps the font it borrows from the page", async () => {
+    await open("remove-pdf-pages");
+    await page.setInputFiles("#fileInput", path.join(FIX, "redact-form.pdf"));
+    await waitIdle();
+    await page.fill("#pages", "2");
+    await page.click("#processBtn");
+    const d = await download();
+    const fonts = await page.evaluate(async () => {
+      const doc = await PDFLib.PDFDocument.load(TrustPDF.download.bytes);
+      const group = doc.getPage(0).node.Resources().lookup(PDFLib.PDFName.of("Font"));
+      return group.entries().map(([name]) => name.decodeText()).sort().join(",");
+    });
+    if (fonts !== "F1,F2") throw new Error(`page 1 fonts: ${fonts}`);
+    const text = await pageText(d.file);
+    if (!/legacy form text/.test(text[0])) throw new Error("text " + JSON.stringify(text));
+    return "fonts " + fonts;
   });
 
   await run("compress: lossless or 'already small' warning", async () => {

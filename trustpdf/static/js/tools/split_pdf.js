@@ -95,7 +95,9 @@
         return;
       }
 
-      T.finish(files[0], T.makeFilename(file.name, `pages-${T.formatPageRanges(wanted)}`), {
+      // "1,3,5,7..." of a long selection would make a file name too long to save.
+      const ranges = T.formatPageRanges(wanted);
+      T.finish(files[0], T.makeFilename(file.name, ranges.length <= 40 ? `pages-${ranges}` : `${wanted.length}-pages`), {
         note: `Extracted ${wanted.length} of ${total} pages.`,
       });
     },

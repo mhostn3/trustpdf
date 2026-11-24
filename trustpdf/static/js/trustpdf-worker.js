@@ -2,8 +2,11 @@
   TrustPDF worker: the heavy pdf-lib work of Merge, Split and Compress runs
   here, off the main thread, so a large file does not freeze the page.
 
-  Like everything else on the site this runs in the visitor's browser; a
-  worker has no more network access than the page (same Content-Security-Policy).
+  Like everything else on the site this runs in the visitor's browser. A worker
+  takes its Content-Security-Policy from the response that delivers its script,
+  not from the page, so the server sends the site's policy with every static
+  file (WHITENOISE_ADD_HEADERS_FUNCTION in settings.py): the worker can talk to
+  this site only, like the page.
 
   Protocol:
     page   -> { op, pdflib: <url of pdf-lib.min.js>, pagecopy: <url of trustpdf-pagecopy.js>, ...payload }

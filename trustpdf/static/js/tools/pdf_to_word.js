@@ -7,8 +7,10 @@
 
   function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-      // Control characters are not allowed in XML.
-      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "");
+      // Control characters, U+FFFE/U+FFFF and unpaired surrogates are not allowed in XML;
+      // Word refuses to open a document that contains one.
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g, "")
+      .replace(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, "");
   }
 
   /** Group PDF.js text items into lines, then lines into paragraphs. */
