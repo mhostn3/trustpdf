@@ -5,12 +5,13 @@ from datetime import date, datetime, time, timedelta
 from itertools import combinations
 
 from django.db.models import Count, Min, Q, Sum
-from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncDate, TruncHour
 from django.utils import timezone
 
 from .models import Event
 
-PERIODS = [(7, "7 days"), (28, "4 weeks"), (91, "3 months"), (365, "12 months")]
+# "24h" is a rolling window ending now; the rest are whole calendar days ending on `end`.
+PERIODS = [("24h", "24 hours"), (1, "1 day"), (7, "7 days"), (28, "4 weeks"), (91, "3 months"), (365, "12 months")]
 ACTION_KINDS = (Event.CLICK,)  # what visitors did themselves
 
 
@@ -20,39 +21,69 @@ class Period:
     end: date            # last day, inclusive
     days: int
     humans: bool = True  # only sessions whose browser ran the analytics script (no bots)
+    until: datetime | None = None  # set for a rolling 24 hours ending at this moment
+
+    @classmethod
+    def rolling(cls, until, humans=True):
+        tz = timezone.get_default_timezone()
+        return cls(timezone.localtime(until - timedelta(hours=24), tz).date(),
+                   timezone.localtime(until, tz).date(), 1, humans, until)
+
+    @property
+    def key(self):
+        """The `days` query value that selects this kind of period."""
+        return "24h" if self.until else self.days
+
+    @property
+    def hourly(self):
+        """Short periods chart per hour instead of per day."""
+        return self.days == 1
 
     @property
     def start_dt(self):
+        if self.until:
+            return self.until - timedelta(hours=24)
         return timezone.make_aware(datetime.combine(self.start, time.min), timezone.get_default_timezone())
 
     @property
     def end_dt(self):
+        if self.until:
+            return self.until
         return timezone.make_aware(datetime.combine(self.end + timedelta(days=1), time.min),
                                    timezone.get_default_timezone())
 
     def previous(self):
+        if self.until:
+            return Period.rolling(self.until - timedelta(hours=24), self.humans)
         return Period(self.start - timedelta(days=self.days), self.start - timedelta(days=1), self.days, self.humans)
 
     def next(self):
+        if self.until:
+            return Period.rolling(self.until + timedelta(hours=24), self.humans)
         return Period(self.end + timedelta(days=1), self.end + timedelta(days=self.days), self.days, self.humans)
 
     def with_all_traffic(self):
-        return Period(self.start, self.end, self.days, False)
+        return Period(self.start, self.end, self.days, False, self.until)
 
 
 def period_from_request(request):
-    try:
-        days = int(request.GET.get("days", 7))
-    except ValueError:
-        days = 7
-    days = days if days in dict(PERIODS) else 7
+    raw = request.GET.get("days", "7")
+    humans = request.GET.get("traffic") != "all"
     today = timezone.localdate()
     try:
         end = date.fromisoformat(request.GET.get("end", ""))
     except ValueError:
         end = today
     end = min(end, today)
-    return Period(end - timedelta(days=days - 1), end, days, request.GET.get("traffic") != "all")
+    if raw == "24h":
+        # The 24 hours up to this time of day on `end`, so stepping back keeps whole 24 h steps.
+        return Period.rolling(timezone.now() - timedelta(days=(today - end).days), humans)
+    try:
+        days = int(raw)
+    except ValueError:
+        days = 7
+    days = days if days in dict(PERIODS) else 7
+    return Period(end - timedelta(days=days - 1), end, days, humans)
 
 
 def _saved():
@@ -117,17 +148,27 @@ def _kinds(ks):
 
 
 def daily(period):
-    rows = {r["day"]: r for r in _qs(period).annotate(day=TruncDate("ts")).values("day").annotate(
+    """One row per day, or per hour for one-day periods (the key stays "day" for the charts)."""
+    tz = timezone.get_default_timezone()
+    trunc = TruncHour("ts", tzinfo=tz) if period.hourly else TruncDate("ts", tzinfo=tz)
+    rows = {r["day"]: r for r in _qs(period).annotate(day=trunc).values("day").annotate(
         pageviews=Count("id", filter=_kind(Event.PAGEVIEW)),
         visitors=Count("visitor", distinct=True),
         actions=Count("id", filter=_kinds(ACTION_KINDS)))}
+    if period.hourly:
+        rows = {timezone.localtime(k, tz).replace(tzinfo=None): v for k, v in rows.items()}
+        start = timezone.localtime(period.start_dt, tz).replace(minute=0, second=0, microsecond=0, tzinfo=None)
+        stop = timezone.localtime(period.end_dt, tz).replace(tzinfo=None)
+        step = timedelta(hours=1)
+    else:
+        start, stop, step = period.start, period.end + timedelta(days=1), timedelta(days=1)
     out = []
-    d = period.start
-    while d <= period.end:
+    d = start
+    while d < stop:
         r = rows.get(d, {})
         out.append(dict(day=d.isoformat(), pageviews=r.get("pageviews", 0),
                         visitors=r.get("visitors", 0), actions=r.get("actions", 0)))
-        d += timedelta(days=1)
+        d += step
     return out
 
 
@@ -257,8 +298,9 @@ def build_report(period):
         pageviews=everything.filter(kind=Event.PAGEVIEW).count() - cur["pageviews"],
     )
     return dict(
-        period=period, periods=PERIODS, prev=period.previous(),
-        next=period.next() if period.end < timezone.localdate() else None,
+        period=period, periods=PERIODS, prev=period.previous(), today=timezone.localdate(),
+        next=(period.next() if (period.until + timedelta(hours=24) <= timezone.now() + timedelta(minutes=1)
+                                if period.until else period.end < timezone.localdate()) else None),
         summary=cur, prev_summary=prev, kpis=kpis,
         daily=daily(period), tool_rows=tools(period),  # "tools" is the site menu
         countries=countries(period), cities=cities(period),

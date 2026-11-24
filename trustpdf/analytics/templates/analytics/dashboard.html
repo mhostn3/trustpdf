@@ -35,24 +35,28 @@
     <div>
       <h1 class="h3 mb-1"><i class="bi bi-graph-up"></i>&nbsp;Site analytics</h1>
       <div class="text-secondary small">
-        {{ period.start|date:"D j M Y" }} – {{ period.end|date:"D j M Y" }}
-        · compared with {{ prev.start|date:"j M" }} – {{ prev.end|date:"j M Y" }}
+        {% if period.until %}{{ period.start_dt|date:"D j M H:i" }} – {{ period.end_dt|date:"D j M Y H:i" }}
+        · compared with the 24 hours before
+        {% elif period.days == 1 %}{{ period.start|date:"D j M Y" }}{% if period.end == today %} (today so far){% endif %}
+        · compared with {{ prev.start|date:"D j M" }}
+        {% else %}{{ period.start|date:"D j M Y" }} – {{ period.end|date:"D j M Y" }}
+        · compared with {{ prev.start|date:"j M" }} – {{ prev.end|date:"j M Y" }}{% endif %}
         {% if first_event %}· data since {{ first_event|date:"j M Y" }}{% endif %}
       </div>
     </div>
     <form class="d-flex flex-wrap gap-2 align-items-center" method="get">
-      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}&end={{ prev.end|date:'Y-m-d' }}{% if not period.humans %}&traffic=all{% endif %}" title="Previous period"><i class="bi bi-chevron-left"></i></a>
+      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.key }}&end={{ prev.end|date:'Y-m-d' }}{% if not period.humans %}&traffic=all{% endif %}" title="Previous period"><i class="bi bi-chevron-left"></i></a>
       <select name="days" class="form-select form-select-sm w-auto" data-autosubmit>
-        {% for d, label in periods %}<option value="{{ d }}" {% if d == period.days %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        {% for d, label in periods %}<option value="{{ d }}" {% if d == period.key %}selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
       <select name="traffic" class="form-select form-select-sm w-auto" data-autosubmit title="Real browsers = sessions where the page's script ran; bots and scripts are left out">
         <option value="" {% if period.humans %}selected{% endif %}>Real browsers</option>
         <option value="all" {% if not period.humans %}selected{% endif %}>All traffic (incl. bots)</option>
       </select>
       <input type="date" name="end" class="form-control form-control-sm w-auto" value="{{ period.end|date:'Y-m-d' }}" data-autosubmit>
-      {% if next %}<a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}&end={{ next.end|date:'Y-m-d' }}{% if not period.humans %}&traffic=all{% endif %}" title="Next period"><i class="bi bi-chevron-right"></i></a>{% endif %}
-      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}{% if not period.humans %}&traffic=all{% endif %}">Today</a>
-      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.days }}&end={{ period.end|date:'Y-m-d' }}&format=csv"><i class="bi bi-download"></i>&nbsp;CSV (period)</a>
+      {% if next %}<a class="btn btn-outline-secondary btn-sm" href="?days={{ period.key }}&end={{ next.end|date:'Y-m-d' }}{% if not period.humans %}&traffic=all{% endif %}" title="Next period"><i class="bi bi-chevron-right"></i></a>{% endif %}
+      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.key }}{% if not period.humans %}&traffic=all{% endif %}">Today</a>
+      <a class="btn btn-outline-secondary btn-sm" href="?days={{ period.key }}&end={{ period.end|date:'Y-m-d' }}&format=csv"><i class="bi bi-download"></i>&nbsp;CSV (period)</a>
       <a class="btn btn-dark btn-sm" href="?format=csv&all=1" title="Every recorded event, for analysis elsewhere"><i class="bi bi-download"></i>&nbsp;Export all (CSV)</a>
     </form>
   </div>
@@ -82,14 +86,14 @@
     Returning visitors are recognised within the current quarter only.
     {% if period.humans and filtered.visitors %}
       <br><i class="bi bi-funnel"></i> Left out as bots or script-less clients: {{ filtered.visitors|intcomma }} visitors, {{ filtered.pageviews|intcomma }} page views
-      (<a href="?days={{ period.days }}&end={{ period.end|date:'Y-m-d' }}&traffic=all">show all traffic</a>).
+      (<a href="?days={{ period.key }}&end={{ period.end|date:'Y-m-d' }}&traffic=all">show all traffic</a>).
     {% endif %}
   </p>
 
   {# ------------------------------------------------------------ daily charts #}
   <div class="row g-3 mb-3">
-    <div class="col-lg-6"><div class="an-card"><div class="an-card-head"><h2>Visitors per day</h2><span class="an-key"><i></i>Weekday<i class="we"></i>Weekend</span></div><div id="ch-visitors" class="an-chart"></div></div></div>
-    <div class="col-lg-6"><div class="an-card"><div class="an-card-head"><h2>Clicks in tools per day</h2><span class="an-key"><i></i>Weekday<i class="we"></i>Weekend</span></div><div id="ch-actions" class="an-chart"></div></div></div>
+    <div class="col-lg-6"><div class="an-card"><div class="an-card-head"><h2>Visitors per {% if period.hourly %}hour{% else %}day{% endif %}</h2>{% if not period.hourly %}<span class="an-key"><i></i>Weekday<i class="we"></i>Weekend</span>{% endif %}</div><div id="ch-visitors" class="an-chart"></div></div></div>
+    <div class="col-lg-6"><div class="an-card"><div class="an-card-head"><h2>Clicks in tools per {% if period.hourly %}hour{% else %}day{% endif %}</h2>{% if not period.hourly %}<span class="an-key"><i></i>Weekday<i class="we"></i>Weekend</span>{% endif %}</div><div id="ch-actions" class="an-chart"></div></div></div>
   </div>
 
   {# ------------------------------------------------------------ tools #}
@@ -206,6 +210,7 @@
   </p>
 </div>
 {{ daily|json_script:"an-daily" }}
+{{ period.hourly|json_script:"an-hourly" }}
 {% endblock %}
 {% block script %}
 {# No inline scripts: the site's CSP forbids them. #}

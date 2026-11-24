@@ -248,6 +248,39 @@ class HelperTests(TestCase):
 
 
 @override_settings(**TEST_SETTINGS)
+class ShortPeriodTests(TestCase):
+    """"Last 24 hours" is a rolling window; "1 day" is a calendar day. Both chart per hour."""
+
+    def setUp(self):
+        self.client.force_login(User.objects.create_user("m", password="x", is_staff=True))
+        now = timezone.now()
+        for ago, v in [(timedelta(minutes=5), "a"), (timedelta(hours=20), "b"), (timedelta(hours=30), "c")]:
+            Event.objects.create(ts=now - ago, kind="pageview", path="/", visitor=v, session=v)
+            Event.objects.create(ts=now - ago, kind=Event.PING, path="/", visitor=v, session=v)
+
+    def test_last_24_hours(self):
+        r = self.client.get(reverse("analytics:dashboard") + "?days=24h")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.context["summary"]["visitors"], 2)
+        self.assertEqual(r.context["prev_summary"]["visitors"], 1)
+        self.assertIsNone(r.context["next"])
+        self.assertIn(len(r.context["daily"]), (24, 25))
+        self.assertEqual(sum(d["visitors"] for d in r.context["daily"]), 2)
+        self.assertContains(r, "Visitors per hour")
+        self.assertContains(r, '<option value="24h" selected>')
+        back = self.client.get(reverse("analytics:dashboard") + "?days=24h&end=" + str(r.context["prev"].end))
+        self.assertEqual(back.context["summary"]["visitors"], 1)
+        self.assertIsNotNone(back.context["next"])
+
+    def test_one_day_is_today_by_hour(self):
+        r = self.client.get(reverse("analytics:dashboard") + "?days=1")
+        today = timezone.localdate()
+        expected = Event.objects.filter(kind="pageview", ts__date=today).values("visitor").distinct().count()
+        self.assertEqual(r.context["summary"]["visitors"], expected)
+        self.assertEqual(len(r.context["daily"]), 24)
+        self.assertContains(r, "(today so far)")
+
+
 class AdminPathTests(TestCase):
     """Admin and dashboard under the secret ADMIN_PATH; login locked after 3 failures."""
 
