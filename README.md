@@ -102,10 +102,12 @@ python manage.py migrate        # small SQLite database for the usage statistics
 python manage.py runserver
 ```
 
-Run the Django tests (routing, SEO tags, security headers):
+Run the Django tests (routing, SEO tags, security headers) together with `check --deploy`:
 
 ```bash
-python manage.py test
+scripts/test.sh          # from the repository root
+scripts/test.sh --e2e    # also the browser smoke test below
+git config core.hooksPath scripts/githooks   # optional: run scripts/test.sh before every push
 ```
 
 Run the browser smoke test, which exercises every tool with real files
@@ -147,10 +149,12 @@ pip install uv
 uv pip compile --universal --python-version 3.10 --generate-hashes --upgrade requirements.in -o requirements.txt
 ```
 
-### Checks on every push
+### Where the tests run
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the Django tests, `check --deploy` and the
-browser smoke test on every push to `main`.
+Tests run locally before pushing (`scripts/test.sh`) and on the server before every deploy
+(`deploy/trustpdf.sh` stops if they fail). [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the
+same checks plus the browser smoke test on GitHub, but only when started by hand from the Actions tab
+("Run workflow"), so pushes don't use up Actions minutes.
 
 ---
 

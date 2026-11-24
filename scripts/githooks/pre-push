@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Runs the fast tests before every push. Enable with:
+#   git config core.hooksPath scripts/githooks
+# Skip once with: git push --no-verify
+exec "$(git rev-parse --show-toplevel)/scripts/test.sh"

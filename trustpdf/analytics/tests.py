@@ -281,6 +281,7 @@ class ShortPeriodTests(TestCase):
         self.assertContains(r, "(today so far)")
 
 
+@override_settings(**TEST_SETTINGS)
 class AdminPathTests(TestCase):
     """Admin and dashboard under the secret ADMIN_PATH; login locked after 3 failures."""
 

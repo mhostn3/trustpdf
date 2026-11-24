@@ -1,9 +1,11 @@
 name: CI
 
+# Manual only. The free plan's Actions minutes ran out fast with a run on every
+# push, so tests now run locally (scripts/test.sh, before pushing) and on the
+# server during every deploy (deploy/trustpdf.sh). Start this from the Actions
+# tab ("Run workflow") when a full browser run on GitHub is worth the minutes.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
