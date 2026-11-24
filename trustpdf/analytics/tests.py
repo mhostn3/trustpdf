@@ -333,3 +333,14 @@ class AdminPathTests(TestCase):
         self.assertEqual(len(r.content.decode().strip().splitlines()), 3)
         r = self.get(self.base + "analytics/?format=csv")
         self.assertEqual(len(r.content.decode().strip().splitlines()), 2)
+
+    def test_export_neutralises_formulas(self):
+        # Click names and referrers come from visitors; a spreadsheet must not run them.
+        self.client.force_login(self.user)
+        Event.objects.create(kind="click", name="=HYPERLINK(\"https://x.example\")", path="/",
+                             referrer="@sum(1)", visitor="a", session="c")
+        r = self.get(self.base + "analytics/?format=csv&all=1")
+        row = list(csvlib.DictReader(r.content.decode().splitlines()))[0]
+        self.assertEqual(row["name"], "'=HYPERLINK(\"https://x.example\")")
+        self.assertEqual(row["referrer"], "'@sum(1)")
+        self.assertEqual(row["path"], "/")

@@ -118,8 +118,16 @@ def export_csv(period, everything=False):
     browser_sessions = set(qs.filter(kind__in=Event.BROWSER_KINDS).values_list("session", flat=True))
     session_col = fields.index("session")
     for row in qs.order_by("ts").values_list(*fields).iterator():
-        w.writerow(row + (int(row[session_col] in browser_sessions),))
+        w.writerow(tuple(_csv_safe(v) for v in row) + (int(row[session_col] in browser_sessions),))
     return resp
+
+
+def _csv_safe(value):
+    """Click names, paths and referrers come from visitors. A text cell that starts like a
+    formula (=, +, -, @) would run as one in Excel or LibreOffice; a leading ' keeps it text."""
+    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
 
 
 def manifest(request):

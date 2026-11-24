@@ -181,7 +181,7 @@ printf '\n\033[1;31mDeploy failed. Rolling back to %s ...\033[0m\n' "$PREVIOUS_C
 STEP=90
 step "Rollback: checking out $PREVIOUS_COMMIT"
 as_app "git checkout -q '$PREVIOUS_COMMIT'" || fail "rollback checkout failed"
-as_app "pip install --quiet -r '$REPO_DIR/requirements.txt'" || fail "rollback pip install failed"
+as_app "pip install --quiet --require-hashes -r '$REPO_DIR/requirements.txt'" || fail "rollback pip install failed"
 warn "database migrations are not rolled back. They only ever add to the statistics database, and the older code runs fine with them."
 as_app "python manage.py collectstatic --noinput --clear -v 0" || fail "rollback collectstatic failed"
 if restart_and_check; then
