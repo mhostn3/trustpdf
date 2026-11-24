@@ -175,20 +175,15 @@
   }
 
   /**
-   * After the pages are added to `doc`: point links at the pages of the new file,
-   * drop references to pages that are not in it (links, annotation owners, form
-   * field trees, actions that list form fields), then delete every page object
-   * outside the page tree, every form field that is not on these pages and every
-   * object nothing refers to any more.
+   * copyPages() gives a link target its own copy of the page, outside the page tree,
+   * so even links between two copied pages lead nowhere. Both copies share the copied
+   * content stream, which maps such a stray copy to the real page.
+   * Returns { pageRefs, alias (stray ref -> real ref), retarget(dest) }.
    */
-  function clean(doc) {
+  function linkMap(doc) {
     const ctx = doc.context;
     const pages = doc.getPages();
     const pageRefs = new Set(pages.map((p) => p.ref.toString()));
-
-    // copyPages() gives a link target its own copy of the page, outside the page tree,
-    // so even links between two kept pages lead nowhere. Both copies share the copied
-    // content stream, which maps such a copy to the real page.
     const contentsKey = (dict) => { const c = dict.get(N("Contents")); return c ? c.toString() : null; };
     const byContents = new Map();
     pages.forEach((p) => { const key = contentsKey(p.node); if (key) byContents.set(key, p.ref); });
@@ -211,6 +206,49 @@
       if (real) dest.set(0, real);
       return Boolean(real);
     };
+    return { pageRefs, alias, retarget };
+  }
+
+  /**
+   * For Merge, where every page of every file is kept: make the links between
+   * pages work again (see linkMap) and drop the stray page copies. Nothing else
+   * is taken out.
+   */
+  function relink(doc) {
+    const ctx = doc.context;
+    const { alias, retarget } = linkMap(doc);
+    if (!alias.size) return;
+    for (const page of doc.getPages()) {
+      const annots = page.node.lookup(N("Annots"));
+      if (!(annots instanceof L().PDFArray)) continue;
+      for (let i = 0; i < annots.size(); i++) {
+        const annot = annots.lookup(i);
+        if (!(annot instanceof L().PDFDict)) continue;
+        const p = annot.get(N("P"));
+        if (p instanceof L().PDFRef && alias.has(p.toString())) annot.set(N("P"), page.ref);
+        if (annot.has(N("Dest"))) retarget(annot.lookup(N("Dest")));
+        const action = annot.lookup(N("A"));
+        if (action instanceof L().PDFDict && action.get(N("S")) === N("GoTo")) retarget(action.lookup(N("D")));
+      }
+    }
+    for (const ref of alias.keys()) {
+      const [number, generation] = ref.split(" ");
+      ctx.delete(L().PDFRef.of(Number(number), Number(generation)));
+    }
+    collectGarbage(ctx);
+  }
+
+  /**
+   * After the pages are added to `doc`: point links at the pages of the new file,
+   * drop references to pages that are not in it (links, annotation owners, form
+   * field trees, actions that list form fields), then delete every page object
+   * outside the page tree, every form field that is not on these pages and every
+   * object nothing refers to any more.
+   */
+  function clean(doc) {
+    const ctx = doc.context;
+    const pages = doc.getPages();
+    const { pageRefs, retarget } = linkMap(doc);
 
     for (const page of pages) {
       const annots = page.node.lookup(N("Annots"));
@@ -297,5 +335,5 @@
     return removed;
   }
 
-  root.TrustPDFPageCopy = { prepare, clean, collectGarbage, CannotPrune };
+  root.TrustPDFPageCopy = { prepare, clean, relink, collectGarbage, CannotPrune };
 })(typeof self !== "undefined" ? self : window);

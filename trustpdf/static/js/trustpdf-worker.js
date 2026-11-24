@@ -52,6 +52,7 @@ const OPS = {
       }
       buffers[i] = null; // free each input as soon as it is copied
     }
+    TrustPDFPageCopy.relink(merged); // links between the pages of each file work again
     const bytes = await merged.save();
     return { result: { bytes, pages: merged.getPageCount() }, transfer: [bytes.buffer] };
   },

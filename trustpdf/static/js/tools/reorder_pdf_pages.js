@@ -54,11 +54,32 @@
       handler.lock();
       picker.lock();
 
-      const source = await T.loadPdf(file);
-      const doc = await T.createPdf();
-      T.copyMetadata(source, doc);
-      const pages = await doc.copyPages(source, order);
-      pages.forEach((page) => doc.addPage(page));
+      // The pages are moved inside the file itself, not copied into a new one, so
+      // bookmarks, links between pages, form fields and metadata all stay as they are.
+      const doc = await T.loadPdf(file);
+      const pages = doc.getPages();
+      if (order.length !== pages.length || order.some((i) => !pages[i])) {
+        throw new T.ToolError("The preview does not match this PDF. Please select the file again.");
+      }
+      const N = (name) => PDFLib.PDFName.of(name);
+      // A page may take its size, rotation and resources from its place in the page
+      // tree; write them on the page before the tree is rebuilt.
+      for (const page of pages) {
+        for (const key of ["Resources", "MediaBox", "CropBox", "Rotate"]) {
+          const value = page.node.getInheritableAttribute(N(key));
+          if (value && !page.node.has(N(key))) page.node.set(N(key), value);
+        }
+      }
+      // One flat page tree in the new order; the old inner nodes are no longer needed.
+      const rootRef = doc.catalog.get(N("Pages"));
+      const root = doc.catalog.Pages();
+      for (const [ref, obj] of doc.context.enumerateIndirectObjects()) {
+        if (obj instanceof PDFLib.PDFPageTree && obj !== root) doc.context.delete(ref);
+      }
+      root.set(N("Kids"), doc.context.obj(order.map((i) => pages[i].ref)));
+      root.set(N("Count"), PDFLib.PDFNumber.of(order.length));
+      pages.forEach((page) => page.node.set(N("Parent"), rootRef));
+      doc.setModificationDate(new Date());
 
       const bytes = await doc.save();
       T.finish(bytes, T.makeFilename(file.name, "reordered"), {

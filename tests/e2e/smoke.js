@@ -234,6 +234,52 @@ async function run(name, fn) {
     return d.name;
   });
 
+  // Where the link on a page leads (as a page number), and how many page objects the file holds.
+  const linkTarget = (from) => page.evaluate(async (from) => {
+    const d = await PDFLib.PDFDocument.load(TrustPDF.download.bytes, { updateMetadata: false });
+    const N = PDFLib.PDFName.of;
+    const pages = d.getPages();
+    const dest = pages[from - 1].node.lookup(N("Annots")).lookup(0).lookup(N("Dest"));
+    let objects = 0;
+    for (const [, obj] of d.context.enumerateIndirectObjects()) if (obj instanceof PDFLib.PDFDict && obj.get(N("Type")) === N("Page")) objects++;
+    return { to: pages.findIndex((p) => p.ref.toString() === dest.get(0).toString()) + 1, objects, count: pages.length,
+             fields: d.getForm().getFields().length, title: d.getTitle() || "" };
+  }, from);
+
+  await run("reorder: links, form fields and metadata survive", async () => {
+    await open("reorder-pdf-pages");
+    await page.setInputFiles("#fileInput", path.join(FIX, "redact-form.pdf"));
+    await waitIdle();
+    await page.click("#reverseBtn");
+    await page.click("#processBtn");
+    let d = await download();
+    const fields = await page.evaluate(async () => (await PDFLib.PDFDocument.load(TrustPDF.download.bytes)).getForm().getFields().length);
+    if (fields !== 2) throw new Error(`${fields} form fields, expected 2`);
+    const text = await pageText(d.file);
+    if (!/public/i.test(text[0]) || !/intro/i.test(text[2])) throw new Error("order " + JSON.stringify(text));
+
+    await page.click("#startAgainBtn");
+    await page.setInputFiles("#fileInput", path.join(FIX, "redact.pdf"));
+    await waitIdle();
+    await page.click("#reverseBtn");
+    await page.click("#processBtn");
+    d = await download();
+    const r = await linkTarget(3);  // the intro page is last now; its link leads to the secret page, now page 2
+    if (r.to !== 2 || r.objects !== 3) throw new Error(JSON.stringify(r));
+    return `link on page 3 -> page ${r.to}, ${fields} fields`;
+  });
+
+  await run("merge: links inside a merged file still lead to their page", async () => {
+    await open("merge-pdf");
+    await page.setInputFiles("#fileInput", [path.join(FIX, "three.pdf"), path.join(FIX, "redact.pdf")]);
+    await page.click("#processBtn");
+    await download();
+    await needPdfLib();
+    const r = await linkTarget(4);  // redact.pdf's page 1 is page 4; its link leads to its page 2, now page 5
+    if (r.to !== 5 || r.count !== 6 || r.objects !== 6) throw new Error(JSON.stringify(r));
+    return `link on page 4 -> page ${r.to}`;
+  });
+
   await run("metadata viewer", async () => {
     await open("pdf-metadata-viewer");
     await page.setInputFiles("#fileInput", path.join(FIX, "five pages.pdf"));
