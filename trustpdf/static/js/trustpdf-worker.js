@@ -6,7 +6,7 @@
   worker has no more network access than the page (same Content-Security-Policy).
 
   Protocol:
-    page   -> { op, pdflib: <url of pdf-lib.min.js>, ...payload }
+    page   -> { op, pdflib: <url of pdf-lib.min.js>, pagecopy: <url of trustpdf-pagecopy.js>, ...payload }
     worker -> { progress: { index, total } }   (zero or more)
     worker -> { result: ... }  or  { error: { name, message, index } }
 */
@@ -62,8 +62,11 @@ const OPS = {
       if (each) self.postMessage({ progress: { index: i, total: groups.length } });
       const doc = await createPdf();
       copyMetadata(source, doc);
-      const copied = await doc.copyPages(source, groups[i].map((n) => n - 1));
+      const indices = groups[i].map((n) => n - 1);
+      TrustPDFPageCopy.prepare(source, indices); // so pages left out cannot come along
+      const copied = await doc.copyPages(source, indices);
       copied.forEach((page) => doc.addPage(page));
+      TrustPDFPageCopy.clean(doc);
       files.push(await doc.save());
     }
     return { result: { files, total: source.getPageCount() }, transfer: files.map((f) => f.buffer) };
@@ -83,9 +86,9 @@ const OPS = {
 };
 
 self.onmessage = async (event) => {
-  const { op, pdflib, ...payload } = event.data;
+  const { op, pdflib, pagecopy, ...payload } = event.data;
   try {
-    if (typeof PDFLib === "undefined") importScripts(pdflib);
+    if (typeof PDFLib === "undefined") importScripts(pdflib, pagecopy);
     const { result, transfer } = await OPS[op](payload);
     self.postMessage({ result }, transfer);
   } catch (error) {

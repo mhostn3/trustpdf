@@ -87,8 +87,10 @@
 
       const doc = await T.createPdf();
       T.copyMetadata(source, doc);
+      TrustPDFPageCopy.prepare(source, keep); // so the removed pages cannot come along
       const pages = await doc.copyPages(source, keep);
       pages.forEach((page) => doc.addPage(page));
+      TrustPDFPageCopy.clean(doc);
 
       const bytes = await doc.save();
       T.finish(bytes, T.makeFilename(file.name, "pages-removed"), {

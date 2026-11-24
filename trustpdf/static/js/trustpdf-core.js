@@ -409,7 +409,12 @@
         event.preventDefault();
         done(reject, new Error(event.message || "The PDF engine stopped unexpectedly."));
       };
-      worker.postMessage({ op, pdflib: new URL(ASSETS.pdflibSrc, location.href).href, ...payload }, transfer);
+      worker.postMessage({
+        op,
+        pdflib: new URL(ASSETS.pdflibSrc, location.href).href,
+        pagecopy: new URL(ASSETS.pagecopySrc, location.href).href,
+        ...payload,
+      }, transfer);
     });
   }
 

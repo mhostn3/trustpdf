@@ -87,8 +87,51 @@ def make_redact_pdf(path):
     path.write_bytes(out)
 
 
+def make_redact_shared_pdf(path):
+    """Three pages drawn by form XObjects that all sit in ONE resource dictionary,
+    inherited from the page tree (some producers and scanners write files like this).
+    Copying page 1 as it is would also copy page 2's form, secret text included."""
+    texts = ["Shared intro page", "SHARED-SECRET-67890 lee@example.org", "Shared public three"]
+    objs = ["<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"]  # 1
+    res_id = 2
+    objs.append(None)  # 2: the shared resources, filled in below
+    forms = []
+    for t in texts:
+        stream = f"BT /F1 20 Tf 72 700 Td ({t}) Tj ET".encode()
+        objs.append(f"<< /Type /XObject /Subtype /Form /BBox [0 0 595 842] /Resources {res_id} 0 R "
+                    f"/Length {len(stream)} >>\nstream\n".encode() + stream + b"\nendstream")
+        forms.append(len(objs))
+    objs[res_id - 1] = ("<< /Font << /F1 1 0 R >> /XObject << "
+                        + " ".join(f"/Fm{i + 1} {f} 0 R" for i, f in enumerate(forms)) + " >> >>")
+    contents = []
+    for i in range(3):
+        stream = f"q /Fm{i + 1} Do Q".encode()
+        objs.append(f"<< /Length {len(stream)} >>\nstream\n".encode() + stream + b"\nendstream")
+        contents.append(len(objs))
+    page_ids = [len(objs) + 1 + i for i in range(3)]
+    pages_id = page_ids[-1] + 1
+    for c in contents:
+        objs.append(f"<< /Type /Page /Parent {pages_id} 0 R /MediaBox [0 0 595 842] /Contents {c} 0 R >>")
+    objs.append(f"<< /Type /Pages /Kids [{' '.join(f'{p} 0 R' for p in page_ids)}] /Count 3 "
+                f"/Resources {res_id} 0 R >>")
+    objs.append(f"<< /Type /Catalog /Pages {pages_id} 0 R >>")
+    out = b"%PDF-1.4\n"
+    offsets = []
+    for i, obj in enumerate(objs, 1):
+        offsets.append(len(out))
+        body = obj if isinstance(obj, bytes) else obj.encode()
+        out += f"{i} 0 obj\n".encode() + body + b"\nendobj\n"
+    xref = len(out)
+    out += f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode()
+    for off in offsets:
+        out += f"{off:010d} 00000 n \n".encode()
+    out += f"trailer\n<< /Size {len(objs) + 1} /Root {len(objs)} 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    path.write_bytes(out)
+
+
 make_pdf(OUT / "five pages.pdf", 5, "Five Pages")
 make_redact_pdf(OUT / "redact.pdf")
+make_redact_shared_pdf(OUT / "redact-shared.pdf")
 make_pdf(OUT / "three.pdf", 3, "Three")
 (OUT / "not-a-pdf.pdf").write_bytes(b"hello, this is not a pdf")
 for name, fmt, size in [("photo.jpg", "JPEG", (640, 480)), ("tall.png", "PNG", (300, 900))]:

@@ -263,22 +263,6 @@
     }
   }
 
-  /** Remove any page object (and its content) that is in the file but not one of its pages. */
-  function dropStrayPages(doc) {
-    const kept = new Set(doc.getPages().map((p) => p.ref.toString()));
-    const stray = [];
-    for (const [ref, obj] of doc.context.enumerateIndirectObjects()) {
-      if (obj instanceof PDFLib.PDFDict && obj.get(N("Type")) === N("Page") && !kept.has(ref.toString())) stray.push([ref, obj]);
-    }
-    for (const [ref, obj] of stray) {
-      const contents = obj.get(N("Contents"));
-      const refs = contents instanceof PDFLib.PDFArray ? contents.asArray() : [contents];
-      refs.forEach((r) => { if (r instanceof PDFLib.PDFRef) doc.context.delete(r); });
-      doc.context.delete(ref);
-    }
-    return stray.length;
-  }
-
   const handler = T.initTool({
     files: {
       multiple: false,
@@ -326,8 +310,10 @@
       handler.lock();
       locked = true;
       const dpi = Number($("redactDpi").value) || 200;
-      const rasterise = (n) => everyPage || marked.has(n);
-      const keep = [];
+      // Kept pages whose resources cannot be separated safely are rebuilt as images too.
+      const unsafe = new Set();
+      const rasterise = (n) => everyPage || marked.has(n) || unsafe.has(n);
+      let keep = [];
       for (let n = 1; n <= pageCount; n++) if (!rasterise(n)) keep.push(n);
 
       const out = await T.createPdf();
@@ -335,6 +321,10 @@
       if (keep.length) {
         const src = await T.loadPdf(file);
         const srcPages = src.getPages();
+        // Kept pages get resources of their own, so the forms and images of the
+        // redacted pages cannot come along through a shared resource dictionary.
+        TrustPDFPageCopy.prepare(src, keep.map((n) => n - 1)).forEach((i) => unsafe.add(i + 1));
+        keep = keep.filter((n) => !unsafe.has(n));
         keep.forEach((n) => detachPage(srcPages[n - 1]));
         copied = await out.copyPages(src, keep.map((n) => n - 1));
       }
@@ -365,9 +355,9 @@
         }
       }
 
-      dropStrayPages(out);
+      TrustPDFPageCopy.clean(out); // stray pages and anything only they referred to
       const bytes = await out.save();
-      const count = everyPage ? pageCount : marked.size;
+      const count = everyPage ? pageCount : marked.size + unsafe.size;
       const areas = [...marked].reduce((sum, n) => sum + boxes.get(n).length, 0);
       const rebuilt = `${count} page${count === 1 ? " was" : "s were"} rebuilt as image${count === 1 ? "" : "s"}`;
       T.finish(bytes, T.makeFilename(file.name, "redacted"), {

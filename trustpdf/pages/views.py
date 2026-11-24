@@ -249,7 +249,7 @@ OFFLINE_STATIC = [
     "fonts/bootstrap-icons.woff2",
     "js/bootstrap.bundle.min.js", "js/trustpdf-analytics.js", "js/trustpdf-offline.js", "js/trustpdf-home.js",
     "js/trustpdf-core.js", "js/trustpdf-pages.js", "js/trustpdf-preview.js", "js/trustpdf-zip.js",
-    "js/trustpdf-qpdf.js", "js/trustpdf-worker.js",
+    "js/trustpdf-qpdf.js", "js/trustpdf-worker.js", "js/trustpdf-pagecopy.js",
     "js/pdf-lib.min.js", "js/pdf.min.js", "js/pdf.worker.min.js", "js/Sortable.min.js",
     "img/brand/trustpdf-icon-black.webp", "img/favicon.ico", "img/icon-192.png", "img/icon-512.png",
     "img/apple-touch-icon.png",

@@ -125,11 +125,13 @@
 
 {% block script %}
 {# Each tool page loads only the libraries its tool uses (tool.libs in pages/tools.py). #}
-{% if "pdflib" in tool.libs %}<script src="{% static 'js/pdf-lib.min.js' %}"></script>{% endif %}
+{% if "pdflib" in tool.libs %}<script src="{% static 'js/pdf-lib.min.js' %}"></script>
+<script src="{% static 'js/trustpdf-pagecopy.js' %}"></script>{% endif %}
 {% if "sortable" in tool.libs %}<script src="{% static 'js/Sortable.min.js' %}"></script>{% endif %}
 <script src="{% static 'js/trustpdf-core.js' %}"
         data-pdflib-src="{% static 'js/pdf-lib.min.js' %}"
         data-worker-src="{% static 'js/trustpdf-worker.js' %}"
+        data-pagecopy-src="{% static 'js/trustpdf-pagecopy.js' %}"
         data-fontkit-src="{% get_static_prefix %}vendor/fontkit-2.0.12/fontkit.umd.min.js"
         data-font-regular="{% get_static_prefix %}vendor/noto-sans/NotoSans-Regular.ttf"
         data-font-bold="{% get_static_prefix %}vendor/noto-sans/NotoSans-Bold.ttf"></script>

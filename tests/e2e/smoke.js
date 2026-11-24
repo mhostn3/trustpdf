@@ -60,7 +60,11 @@ function allPdfText(buf) {
   return parts.join("\n");
 }
 
+// ONLY=redact node tests/e2e/smoke.js runs just the tests whose name contains "redact".
+const ONLY = process.env.ONLY || "";
+
 async function run(name, fn) {
+  if (ONLY && !name.includes(ONLY)) return;
   process.stdout.write(`${name.padEnd(40)}`);
   try {
     const result = await fn();
@@ -321,6 +325,62 @@ async function run(name, fn) {
     const pageObjects = (everything.match(/\/Type\s*\/Page(?!s)/g) || []).length;
     if (pageObjects !== 3) throw new Error(`${pageObjects} page objects in the file`);
     return `${d.name}; ${info}`;
+  });
+
+  await run("redact: shared resources do not carry a redacted page along", async () => {
+    await open("redact-pdf");
+    await page.setInputFiles("#fileInput", path.join(FIX, "redact-shared.pdf"));
+    await waitIdle();
+    await page.fill("#findText", "shared-secret");
+    await page.click("#findBtn");
+    await waitIdle();
+    const info = await page.locator("#redactInfo").innerText();
+    if (!/1 area marked on page 2/.test(info)) throw new Error("find: " + info);
+    await page.click("#processBtn");
+    const d = await download();
+    const text = await pageText(d.file);
+    if (!/intro/i.test(text[0]) || text[1].trim() !== "" || !/public/i.test(text[2])) throw new Error("text " + JSON.stringify(text));
+    if (/SHARED-SECRET|lee@example/.test(allPdfText(d.buf))) throw new Error("redacted text is still in the file");
+    return d.name;
+  });
+
+  // A link to a left-out page, or a resource dictionary shared by all pages, must not
+  // carry that page's content into the saved file.
+  for (const [tool, pages, label] of [["remove-pdf-pages", "2", "remove"], ["extract-pdf-pages", "1,3", "extract"], ["split-pdf", "1,3", "split"]]) {
+    await run(`${label}: left-out page not in the file`, async () => {
+      const names = [];
+      for (const fixture of ["redact.pdf", "redact-shared.pdf"]) {
+        await open(tool);
+        await page.setInputFiles("#fileInput", path.join(FIX, fixture));
+        await waitIdle();
+        await page.fill("#pages", pages);
+        await page.click("#processBtn");
+        const d = await download();
+        const text = await pageText(d.file);
+        if (text.length !== 2 || !/intro/i.test(text[0]) || !/public/i.test(text[1])) throw new Error(`${fixture}: text ${JSON.stringify(text)}`);
+        if (/SECRET|example\.(com|org)/.test(allPdfText(d.buf))) throw new Error(`${fixture}: the left-out page is still in the file`);
+        names.push(d.name);
+      }
+      return names.join(", ");
+    });
+  }
+
+  await run("remove: a link to a kept page still leads to it", async () => {
+    await open("remove-pdf-pages");
+    await page.setInputFiles("#fileInput", path.join(FIX, "redact.pdf"));
+    await waitIdle();
+    await page.fill("#pages", "3");
+    await page.click("#processBtn");
+    await download();
+    const r = await page.evaluate(async () => {
+      const d = await PDFLib.PDFDocument.load(TrustPDF.download.bytes);
+      const pages = d.getPages();
+      const link = pages[0].node.lookup(PDFLib.PDFName.of("Annots")).lookup(0);
+      const dest = link.lookup(PDFLib.PDFName.of("Dest"));
+      return { target: dest ? dest.get(0).toString() : null, page2: pages[1].ref.toString() };
+    });
+    if (r.target !== r.page2) throw new Error(`link points to ${r.target}, page 2 is ${r.page2}`);
+    return "link -> page 2";
   });
 
   await run("compress: lossless or 'already small' warning", async () => {
