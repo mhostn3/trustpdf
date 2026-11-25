@@ -115,6 +115,23 @@ async function run(name, fn) {
     return chooser.isMultiple() ? "file chooser opened (multiple)" : "opened";
   });
 
+  await run("button before a file -> picker, no error", async () => {
+    for (const tool of ["merge-pdf", "pdf-metadata-editor"]) {
+      await open(tool);
+      await page.waitForFunction(() => window.TrustPDF);
+      await page.evaluate(() => { window.__errors = []; window.tpError = (c) => window.__errors.push(c); });
+      const [chooser] = await Promise.all([
+        page.waitForEvent("filechooser", { timeout: 5000 }).catch(() => null),
+        page.click("#processBtn"),
+      ]);
+      if (!chooser) throw new Error(`${tool}: the button did not open the file picker`);
+      if (await page.locator("#toolMessage .alert-danger").count()) throw new Error(`${tool}: showed an error`);
+      if (!(await page.locator("#toolMessage .alert-info").count())) throw new Error(`${tool}: no hint shown`);
+      const errors = await page.evaluate(() => window.__errors);
+      if (errors.length) throw new Error(`${tool}: reported error ${errors}`);
+    }
+  });
+
   await run("merge", async () => {
     await open("merge-pdf");
     await page.setInputFiles("#fileInput", [path.join(FIX, "five pages.pdf"), path.join(FIX, "three.pdf")]);

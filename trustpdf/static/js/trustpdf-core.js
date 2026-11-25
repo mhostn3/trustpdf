@@ -850,7 +850,19 @@
 
     const processBtn = $("processBtn");
     if (processBtn) {
-      processBtn.addEventListener("click", () => runTool(config.process, config.busyText));
+      processBtn.addEventListener("click", () => {
+        // Visitors often press the big button first, before choosing a file. That is not a
+        // failure: open the file picker for them (still inside the click, so the browser allows
+        // it) and leave a hint in case they close the picker.
+        const handler = state.fileHandler;
+        if (handler && !handler.locked && !handler.getFiles().length) {
+          const what = handler.multiple ? handler.accept.label : `a ${handler.accept.label.replace(/ files$/, "")} file`;
+          messages.info(`Choose ${what} first: drop ${handler.multiple ? "them" : "it"} on the box above, or click the box to select from your device.`);
+          if (handler.input) handler.input.click();
+          return;
+        }
+        runTool(config.process, config.busyText);
+      });
     }
     const downloadBtn = $("downloadBtn");
     if (downloadBtn) {
